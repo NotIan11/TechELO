@@ -22,9 +22,13 @@ export default async function InboxPage() {
     .in('status', ['pending_start', 'in_progress', 'pending_result'])
     .order('created_at', { ascending: false })
 
-  const pendingItems: { match: (typeof matches)[0]; action: 'accept_start' | 'decline_start' | 'report_result' }[] = []
+  type PendingItem = {
+    match: NonNullable<typeof matches>[number]
+    action: 'accept_start' | 'decline_start' | 'report_result'
+  }
+  const pendingItems: PendingItem[] = []
 
-  for (const match of matches || []) {
+  for (const match of matches ?? []) {
     const isPlayer1 = match.player1_id === user.id
     const isPlayer2 = match.player2_id === user.id
 
