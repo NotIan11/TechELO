@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { getHouseColor } from '@/lib/utils'
+import { getHouseColor, getHouseTextColor } from '@/lib/utils'
 
 interface Dorm {
   id: string
@@ -66,39 +66,42 @@ export default function JoinDormList({ dorms, userDormId }: JoinDormListProps) {
         </div>
       )}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {dorms.map((dorm) => (
-          <div
-            key={dorm.id}
-            className="block rounded-lg p-6 shadow hover:shadow-lg transition-shadow text-white"
-            style={{ backgroundColor: getHouseColor(dorm.name) }}
-          >
-            <div className="flex items-start justify-between mb-2">
-              <h2 className="text-xl font-semibold">{dorm.name}</h2>
-              {userDormId === dorm.id && (
-                <span className="rounded-full bg-white/20 px-2 py-1 text-xs font-medium">
-                  Current
-                </span>
+        {dorms.map((dorm) => {
+          const isDarkText = getHouseTextColor(dorm.name) === 'black'
+          return (
+            <div
+              key={dorm.id}
+              className={`block rounded-lg p-6 shadow hover:shadow-lg transition-shadow ${isDarkText ? 'text-gray-900' : 'text-white'}`}
+              style={{ backgroundColor: getHouseColor(dorm.name) }}
+            >
+              <div className="flex items-start justify-between mb-2">
+                <h2 className="text-xl font-semibold">{dorm.name}</h2>
+                {userDormId === dorm.id && (
+                  <span className={`rounded-full px-2 py-1 text-xs font-medium ${isDarkText ? 'bg-black/20' : 'bg-white/20'}`}>
+                    Current
+                  </span>
+                )}
+              </div>
+              {dorm.description && (
+                <p className={`text-sm mb-4 line-clamp-2 ${isDarkText ? 'text-gray-800' : 'text-white/90'}`}>{dorm.description}</p>
               )}
+              <div className="flex items-center justify-between">
+                <span className={`text-sm ${isDarkText ? 'text-gray-800' : 'text-white/80'}`}>{dorm.total_members} members</span>
+                {userDormId === dorm.id ? (
+                  <span className={`text-sm ${isDarkText ? 'text-gray-700' : 'text-white/70'}`}>Already a member</span>
+                ) : (
+                  <button
+                    onClick={() => handleJoin(dorm.id)}
+                    disabled={loading === dorm.id}
+                    className={`rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50 ${isDarkText ? 'bg-black/25 hover:bg-black/35' : 'bg-white/25 hover:bg-white/35'}`}
+                  >
+                    {loading === dorm.id ? 'Joining...' : 'Join'}
+                  </button>
+                )}
+              </div>
             </div>
-            {dorm.description && (
-              <p className="text-sm text-white/90 mb-4 line-clamp-2">{dorm.description}</p>
-            )}
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-white/80">{dorm.total_members} members</span>
-              {userDormId === dorm.id ? (
-                <span className="text-sm text-white/70">Already a member</span>
-              ) : (
-                <button
-                  onClick={() => handleJoin(dorm.id)}
-                  disabled={loading === dorm.id}
-                  className="rounded-md bg-white/25 px-4 py-2 text-sm font-medium hover:bg-white/35 disabled:opacity-50"
-                >
-                  {loading === dorm.id ? 'Joining...' : 'Join'}
-                </button>
-              )}
-            </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
     </div>
   )

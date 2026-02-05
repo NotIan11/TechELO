@@ -61,3 +61,10 @@ export function getHouseColor(houseName: string | null | undefined): string {
   const trimmed = houseName.trim()
   return HOUSE_COLORS[trimmed] ?? DEFAULT_HOUSE_COLOR
 }
+
+/** Returns 'black' for light house colors (e.g. Lloyd), 'white' otherwise */
+export function getHouseTextColor(houseName: string | null | undefined): 'black' | 'white' {
+  if (houseName == null || houseName === '') return 'white'
+  if (houseName.trim() === 'Lloyd') return 'black'
+  return 'white'
+}

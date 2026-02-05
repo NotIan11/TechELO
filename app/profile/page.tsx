@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import NavBar from '@/components/layout/NavBar'
-import { getHouseColor } from '@/lib/utils'
+import { getHouseColor, getHouseTextColor } from '@/lib/utils'
 
 export default async function ProfilePage() {
   const supabase = await createClient()
@@ -105,16 +105,16 @@ export default async function ProfilePage() {
           </div>
 
           <div
-            className="rounded-lg p-6 shadow text-white"
+            className={`rounded-lg p-6 shadow ${getHouseTextColor(profile?.dorms?.name ?? undefined) === 'black' ? 'text-gray-900' : 'text-white'}`}
             style={{ backgroundColor: getHouseColor(profile?.dorms?.name ?? undefined) }}
           >
             <h2 className="text-lg font-semibold">House</h2>
-            <p className="mt-2 text-lg text-white/90">
+            <p className={`mt-2 text-lg ${getHouseTextColor(profile?.dorms?.name ?? undefined) === 'black' ? 'text-gray-800' : 'text-white/90'}`}>
               {profile?.dorms?.name || 'No house assigned'}
             </p>
             <Link
               href={profile?.dorms ? "/dorms" : "/profile/join-dorm"}
-              className="mt-2 text-sm text-white/90 hover:text-white underline"
+              className={`mt-2 text-sm underline ${getHouseTextColor(profile?.dorms?.name ?? undefined) === 'black' ? 'text-gray-800 hover:text-gray-900' : 'text-white/90 hover:text-white'}`}
             >
               {profile?.dorms ? 'Change house' : 'Join a house'}
             </Link>
