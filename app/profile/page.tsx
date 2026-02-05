@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import NavBar from '@/components/layout/NavBar'
+import { getHouseColor } from '@/lib/utils'
 
 export default async function ProfilePage() {
   const supabase = await createClient()
@@ -103,7 +104,10 @@ export default async function ProfilePage() {
             </p>
           </div>
 
-          <div className="rounded-lg bg-gray-800 p-6 shadow">
+          <div
+            className="rounded-lg bg-gray-800 p-6 shadow border-l-4"
+            style={{ borderLeftColor: getHouseColor(profile?.dorms?.name ?? undefined) }}
+          >
             <h2 className="text-lg font-semibold text-white">House</h2>
             <p className="mt-2 text-lg text-gray-300">
               {profile?.dorms?.name || 'No house assigned'}

@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { getHouseColor } from '@/lib/utils'
 
 interface Dorm {
   id: string
@@ -18,12 +19,6 @@ export default function DormList({ dorms, userDormId }: DormListProps) {
     return (
       <div className="rounded-lg bg-gray-800 p-8 text-center shadow">
         <p className="text-gray-400 mb-4">No houses yet. Create the first one!</p>
-        <Link
-          href="/dorms/new"
-          className="inline-block rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-        >
-          Create House
-        </Link>
       </div>
     )
   }
@@ -34,7 +29,8 @@ export default function DormList({ dorms, userDormId }: DormListProps) {
         <Link
           key={dorm.id}
           href={`/dorms/${dorm.id}`}
-          className="block rounded-lg bg-gray-800 p-6 shadow hover:shadow-lg transition-shadow"
+          className="block rounded-lg bg-gray-800 p-6 shadow hover:shadow-lg transition-shadow border-l-4"
+          style={{ borderLeftColor: getHouseColor(dorm.name) }}
         >
           <div className="flex items-start justify-between mb-2">
             <h2 className="text-xl font-semibold text-white">{dorm.name}</h2>

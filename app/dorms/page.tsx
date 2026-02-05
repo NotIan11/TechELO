@@ -1,6 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
 import DormList from '@/components/dorm/DormList'
 import NavBar from '@/components/layout/NavBar'
 
@@ -29,14 +28,8 @@ export default async function DormsPage() {
     <div className="min-h-screen bg-gray-900">
       <NavBar />
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-8">
           <h1 className="text-3xl font-bold text-white">Houses</h1>
-          <Link
-            href="/dorms/new"
-            className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-          >
-            Create New House
-          </Link>
         </div>
         <DormList dorms={dorms || []} userDormId={userProfile?.dorm_id || null} />
       </div>

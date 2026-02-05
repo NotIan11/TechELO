@@ -40,3 +40,24 @@ export function formatDateTime(date: Date | string): string {
     minute: '2-digit',
   })
 }
+
+/** Default gray for unknown/missing house */
+const DEFAULT_HOUSE_COLOR = '#4b5563'
+
+/** House name -> hex color for Houses tab and profile */
+export const HOUSE_COLORS: Record<string, string> = {
+  Lloyd: '#d9b65a',
+  Page: '#3180c3',
+  Venerable: '#003060',
+  Avery: '#a279b6',
+  Ricketts: '#0b0b0b',
+  Fleming: '#b30119',
+  Dabney: '#015a21',
+  Blacker: '#000000',
+}
+
+export function getHouseColor(houseName: string | null | undefined): string {
+  if (houseName == null || houseName === '') return DEFAULT_HOUSE_COLOR
+  const trimmed = houseName.trim()
+  return HOUSE_COLORS[trimmed] ?? DEFAULT_HOUSE_COLOR
+}

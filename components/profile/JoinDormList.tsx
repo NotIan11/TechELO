@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
+import { getHouseColor } from '@/lib/utils'
 
 interface Dorm {
   id: string
@@ -54,12 +54,6 @@ export default function JoinDormList({ dorms, userDormId }: JoinDormListProps) {
     return (
       <div className="rounded-lg bg-gray-800 p-8 text-center shadow">
         <p className="text-gray-400 mb-4">No houses available yet.</p>
-        <Link
-          href="/dorms/new"
-          className="inline-block rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-        >
-          Create First House
-        </Link>
       </div>
     )
   }
@@ -75,7 +69,8 @@ export default function JoinDormList({ dorms, userDormId }: JoinDormListProps) {
         {dorms.map((dorm) => (
           <div
             key={dorm.id}
-            className="block rounded-lg bg-gray-800 p-6 shadow hover:shadow-lg transition-shadow"
+            className="block rounded-lg bg-gray-800 p-6 shadow hover:shadow-lg transition-shadow border-l-4"
+            style={{ borderLeftColor: getHouseColor(dorm.name) }}
           >
             <div className="flex items-start justify-between mb-2">
               <h2 className="text-xl font-semibold text-white">{dorm.name}</h2>
