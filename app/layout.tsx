@@ -3,13 +3,13 @@ import './globals.css'
 import { ThemeProvider } from '@/components/ui/ThemeProvider'
 
 export const metadata: Metadata = {
-  title: 'HouseRank - ELO Tracking for Pool & Ping Pong',
-  description: 'Track ELO ratings for pool and ping pong matches in your dorm',
+  title: 'Tech ELO - ELO Tracking for Pool & Ping Pong',
+  description: 'Track ELO ratings for pool and ping pong matches in your house',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'HouseRank',
+    title: 'Tech ELO',
   },
 }
 

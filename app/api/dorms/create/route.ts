@@ -15,7 +15,7 @@ export async function POST(request: Request) {
 
     if (!name || !name.trim()) {
       return NextResponse.json(
-        { error: 'Dorm name is required' },
+        { error: 'House name is required' },
         { status: 400 }
       )
     }
@@ -34,7 +34,7 @@ export async function POST(request: Request) {
       if (error.code === '23505') {
         // Unique constraint violation
         return NextResponse.json(
-          { error: 'A dorm with this name already exists' },
+          { error: 'A house with this name already exists' },
           { status: 400 }
         )
       }

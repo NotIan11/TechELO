@@ -30,12 +30,12 @@ export default async function DormsPage() {
       <NavBar />
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-8 flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-white">Dorms</h1>
+          <h1 className="text-3xl font-bold text-white">Houses</h1>
           <Link
             href="/dorms/new"
             className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
           >
-            Create New Dorm
+            Create New House
           </Link>
         </div>
         <DormList dorms={dorms || []} userDormId={userProfile?.dorm_id || null} />

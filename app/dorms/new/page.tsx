@@ -15,7 +15,7 @@ export default async function NewDormPage() {
     <div className="min-h-screen bg-gray-900">
       <NavBar />
       <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold text-white mb-8">Create New Dorm</h1>
+        <h1 className="text-3xl font-bold text-white mb-8">Create New House</h1>
         <CreateDormForm />
       </div>
     </div>

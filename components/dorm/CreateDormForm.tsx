@@ -16,7 +16,7 @@ export default function CreateDormForm() {
     setError('')
 
     if (!name.trim()) {
-      setError('Dorm name is required')
+      setError('House name is required')
       setLoading(false)
       return
     }
@@ -36,7 +36,7 @@ export default function CreateDormForm() {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to create dorm')
+        throw new Error(data.error || 'Failed to create house')
       }
 
       router.push(`/dorms/${data.dorm.id}`)
@@ -51,7 +51,7 @@ export default function CreateDormForm() {
     <form onSubmit={handleSubmit} className="space-y-6 rounded-lg bg-gray-800 p-6 shadow">
       <div>
         <label htmlFor="name" className="block text-sm font-medium text-gray-300">
-          Dorm Name *
+          House Name *
         </label>
         <input
           id="name"
@@ -74,7 +74,7 @@ export default function CreateDormForm() {
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           className="mt-1 block w-full rounded-md border border-gray-600 bg-gray-700 text-white px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
-          placeholder="Optional description of your dorm..."
+          placeholder="Optional description of your house..."
         />
       </div>
 
@@ -90,7 +90,7 @@ export default function CreateDormForm() {
           disabled={loading}
           className="flex-1 rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
         >
-          {loading ? 'Creating...' : 'Create Dorm'}
+          {loading ? 'Creating...' : 'Create House'}
         </button>
         <button
           type="button"

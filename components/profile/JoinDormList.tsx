@@ -38,7 +38,7 @@ export default function JoinDormList({ dorms, userDormId }: JoinDormListProps) {
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to join dorm')
+        throw new Error(data.error || 'Failed to join house')
       }
 
       router.push('/profile')
@@ -53,12 +53,12 @@ export default function JoinDormList({ dorms, userDormId }: JoinDormListProps) {
   if (dorms.length === 0) {
     return (
       <div className="rounded-lg bg-gray-800 p-8 text-center shadow">
-        <p className="text-gray-400 mb-4">No dorms available yet.</p>
+        <p className="text-gray-400 mb-4">No houses available yet.</p>
         <Link
           href="/dorms/new"
           className="inline-block rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
         >
-          Create First Dorm
+          Create First House
         </Link>
       </div>
     )

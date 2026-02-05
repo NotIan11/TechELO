@@ -1,6 +1,6 @@
-# HouseRank
+# Tech ELO
 
-ELO tracking application for pool and ping pong matches in university dorms.
+ELO tracking application for pool and ping pong matches in university houses.
 
 ## Features
 
@@ -8,7 +8,7 @@ ELO tracking application for pool and ping pong matches in university dorms.
 - **Match Acceptance System**: Both players must confirm match start and result before ELO updates
 - **Player Profiles**: Public profiles with stats, match history, and ELO progression
 - **Global Leaderboards**: Filter by game type (pool/ping pong) with pagination
-- **Dorm/Clan System**: Create and join dorms, view dorm-specific leaderboards and statistics
+- **House/Clan System**: Create and join houses, view house-specific leaderboards and statistics
 - **Real-time Updates**: Live match status updates using Supabase Realtime
 - **PWA Support**: Installable as a mobile app
 
@@ -100,7 +100,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 The application uses the following main tables:
 
 - **users**: User profiles extending Supabase auth.users
-- **dorms**: Residence halls/clans
+- **dorms**: Houses (residence halls/clans)
 - **matches**: Match records with acceptance tracking
 - **elo_ratings**: Separate ELO ratings for pool and ping pong
 - **match_disputes**: Dispute records for matches
@@ -117,18 +117,18 @@ See `supabase/migrations/` for complete schema and database functions.
 ## Project Structure
 
 ```
-HouseRank/
+Tech ELO/
 ├── app/                    # Next.js App Router pages
 │   ├── api/               # API routes
 │   ├── auth/              # Auth callbacks
 │   ├── dashboard/         # User dashboard
-│   ├── dorms/             # Dorm pages
+│   ├── dorms/             # House pages
 │   ├── leaderboard/       # Leaderboard page
 │   ├── matches/           # Match pages
 │   └── profile/           # Player profile pages
 ├── components/            # React components
 │   ├── auth/             # Auth components
-│   ├── dorm/             # Dorm components
+│   ├── dorm/             # House components
 │   ├── leaderboard/      # Leaderboard components
 │   ├── match/            # Match components
 │   └── ui/               # Reusable UI components
@@ -161,4 +161,3 @@ The app can be deployed to any platform that supports Next.js:
 ## License
 
 ISC
-# TechELO

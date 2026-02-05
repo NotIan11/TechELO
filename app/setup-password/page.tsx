@@ -79,7 +79,7 @@ export default function SetupPasswordPage() {
         <div>
           <h1 className="text-3xl font-bold text-center text-white">Set Your Password</h1>
           <p className="mt-2 text-center text-gray-400">
-            Please set a password for your account to continue using HouseRank
+            Please set a password for your account to continue using Tech ELO
           </p>
         </div>
 

@@ -21,6 +21,12 @@ export default function Error({
         <p className="text-gray-600 mb-6">
           {error.message || 'An unexpected error occurred'}
         </p>
+        {error.digest && (
+          <p className="text-sm text-gray-500 mb-4 font-mono">Digest: {error.digest}</p>
+        )}
+        <p className="text-sm text-gray-500 mb-6">
+          If this happens on Vercel, add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in Project Settings → Environment Variables.
+        </p>
         <div className="flex gap-4 justify-center">
           <button
             onClick={reset}

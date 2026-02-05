@@ -77,10 +77,10 @@ export default function DormDetails({
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to join dorm')
+        throw new Error(data.error || 'Failed to join house')
       }
 
-      setMessage('Successfully joined dorm!')
+      setMessage('Successfully joined house!')
       setTimeout(() => {
         router.refresh()
       }, 1000)
@@ -111,7 +111,7 @@ export default function DormDetails({
               disabled={loading}
               className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 disabled:opacity-50"
             >
-              {loading ? 'Joining...' : 'Join Dorm'}
+              {loading ? 'Joining...' : 'Join House'}
             </button>
           )}
           {isMember && (

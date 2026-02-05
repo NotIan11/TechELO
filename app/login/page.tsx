@@ -6,7 +6,7 @@ function LoginFallback() {
     <div className="flex min-h-screen flex-col items-center justify-center p-4 bg-gray-900">
       <div className="w-full max-w-md space-y-8 rounded-lg border border-gray-700 bg-gray-800 p-8 shadow-lg">
         <div>
-          <h1 className="text-3xl font-bold text-center text-white">HouseRank</h1>
+          <h1 className="text-3xl font-bold text-center text-white">Tech ELO</h1>
           <p className="mt-2 text-center text-gray-400">Sign in to your account</p>
         </div>
         <div className="flex justify-center py-8">

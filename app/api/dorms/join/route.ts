@@ -29,7 +29,7 @@ export async function POST(request: Request) {
 
     if (dormError || !dorm) {
       return NextResponse.json(
-        { error: 'Dorm not found' },
+        { error: 'House not found' },
         { status: 404 }
       )
     }

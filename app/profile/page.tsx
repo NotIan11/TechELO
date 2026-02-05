@@ -2,7 +2,6 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import NavBar from '@/components/layout/NavBar'
-import Image from 'next/image'
 
 export default async function ProfilePage() {
   const supabase = await createClient()
@@ -52,9 +51,10 @@ export default async function ProfilePage() {
         <div className="mb-8 flex items-center justify-between">
           <div className="flex items-center gap-4">
             {profile?.profile_image_url ? (
-              <Image
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
                 src={profile.profile_image_url}
-                alt={profile.display_name}
+                alt={profile.display_name ?? 'Profile'}
                 width={64}
                 height={64}
                 className="rounded-full"
@@ -104,15 +104,15 @@ export default async function ProfilePage() {
           </div>
 
           <div className="rounded-lg bg-gray-800 p-6 shadow">
-            <h2 className="text-lg font-semibold text-white">Dorm</h2>
+            <h2 className="text-lg font-semibold text-white">House</h2>
             <p className="mt-2 text-lg text-gray-300">
-              {profile?.dorms?.name || 'No dorm assigned'}
+              {profile?.dorms?.name || 'No house assigned'}
             </p>
             <Link
               href={profile?.dorms ? "/dorms" : "/profile/join-dorm"}
               className="mt-2 text-sm text-blue-400 hover:text-blue-300"
             >
-              {profile?.dorms ? 'Change dorm' : 'Join a dorm'}
+              {profile?.dorms ? 'Change house' : 'Join a house'}
             </Link>
           </div>
         </div>

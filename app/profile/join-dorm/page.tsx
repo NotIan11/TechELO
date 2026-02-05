@@ -28,7 +28,7 @@ export default async function JoinDormPage() {
     <div className="min-h-screen bg-gray-900">
       <NavBar />
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold text-white mb-8">Join a Dorm</h1>
+        <h1 className="text-3xl font-bold text-white mb-8">Join a House</h1>
         <JoinDormList dorms={dorms || []} userDormId={userProfile?.dorm_id || null} />
       </div>
     </div>

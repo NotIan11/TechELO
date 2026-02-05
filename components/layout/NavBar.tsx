@@ -8,7 +8,7 @@ export default function NavBar() {
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center gap-6">
             <Link href="/" className="text-xl font-bold text-white">
-              HouseRank
+              Tech ELO
             </Link>
             <div className="hidden md:flex gap-4">
               <Link href="/" className="text-sm text-gray-300 hover:text-white">
@@ -18,7 +18,7 @@ export default function NavBar() {
                 Matches
               </Link>
               <Link href="/dorms" className="text-sm text-gray-300 hover:text-white">
-                Dorms
+                Houses
               </Link>
               <Link href="/profile" className="text-sm text-gray-300 hover:text-white">
                 Profile

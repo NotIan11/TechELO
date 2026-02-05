@@ -100,14 +100,14 @@ export default function LeaderboardClient({
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Dorm Filter
+              House Filter
             </label>
             <select
               value={selectedDormId || ''}
               onChange={(e) => handleDormChange(e.target.value || null)}
               className="rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
             >
-              <option value="">All Dorms</option>
+              <option value="">All Houses</option>
               {dorms.map((dorm) => (
                 <option key={dorm.id} value={dorm.id}>
                   {dorm.name}
@@ -137,7 +137,7 @@ export default function LeaderboardClient({
                   Record
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
-                  Dorm
+                  House
                 </th>
               </tr>
             </thead>

@@ -2,8 +2,8 @@ import { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'HouseRank',
-    short_name: 'HouseRank',
+    name: 'Tech ELO',
+    short_name: 'Tech ELO',
     description: 'ELO Tracking for Pool & Ping Pong',
     start_url: '/',
     display: 'standalone',

@@ -120,7 +120,7 @@ export default function SignupForm() {
             {isCompletingProfile ? 'Complete Your Profile' : 'Create Account'}
           </h1>
           <p className="mt-2 text-center text-gray-400">
-            {isCompletingProfile ? 'Please provide your name to continue' : 'Sign up for HouseRank'}
+            {isCompletingProfile ? 'Please provide your name to continue' : 'Sign up for Tech ELO'}
           </p>
         </div>
 
