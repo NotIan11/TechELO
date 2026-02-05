@@ -105,16 +105,16 @@ export default async function ProfilePage() {
           </div>
 
           <div
-            className="rounded-lg bg-gray-800 p-6 shadow border-l-4"
-            style={{ borderLeftColor: getHouseColor(profile?.dorms?.name ?? undefined) }}
+            className="rounded-lg p-6 shadow text-white"
+            style={{ backgroundColor: getHouseColor(profile?.dorms?.name ?? undefined) }}
           >
-            <h2 className="text-lg font-semibold text-white">House</h2>
-            <p className="mt-2 text-lg text-gray-300">
+            <h2 className="text-lg font-semibold">House</h2>
+            <p className="mt-2 text-lg text-white/90">
               {profile?.dorms?.name || 'No house assigned'}
             </p>
             <Link
               href={profile?.dorms ? "/dorms" : "/profile/join-dorm"}
-              className="mt-2 text-sm text-blue-400 hover:text-blue-300"
+              className="mt-2 text-sm text-white/90 hover:text-white underline"
             >
               {profile?.dorms ? 'Change house' : 'Join a house'}
             </Link>

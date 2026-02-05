@@ -29,21 +29,21 @@ export default function DormList({ dorms, userDormId }: DormListProps) {
         <Link
           key={dorm.id}
           href={`/dorms/${dorm.id}`}
-          className="block rounded-lg bg-gray-800 p-6 shadow hover:shadow-lg transition-shadow border-l-4"
-          style={{ borderLeftColor: getHouseColor(dorm.name) }}
+          className="block rounded-lg p-6 shadow hover:shadow-lg transition-shadow text-white"
+          style={{ backgroundColor: getHouseColor(dorm.name) }}
         >
           <div className="flex items-start justify-between mb-2">
-            <h2 className="text-xl font-semibold text-white">{dorm.name}</h2>
+            <h2 className="text-xl font-semibold">{dorm.name}</h2>
             {userDormId === dorm.id && (
-              <span className="rounded-full bg-blue-900/30 px-2 py-1 text-xs font-medium text-blue-200">
+              <span className="rounded-full bg-white/20 px-2 py-1 text-xs font-medium">
                 Your House
               </span>
             )}
           </div>
           {dorm.description && (
-            <p className="text-sm text-gray-400 mb-4 line-clamp-2">{dorm.description}</p>
+            <p className="text-sm text-white/90 mb-4 line-clamp-2">{dorm.description}</p>
           )}
-          <div className="flex items-center justify-between text-sm text-gray-400">
+          <div className="flex items-center justify-between text-sm text-white/80">
             <span>{dorm.total_members} members</span>
             <span>View Details →</span>
           </div>

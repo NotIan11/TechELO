@@ -69,29 +69,29 @@ export default function JoinDormList({ dorms, userDormId }: JoinDormListProps) {
         {dorms.map((dorm) => (
           <div
             key={dorm.id}
-            className="block rounded-lg bg-gray-800 p-6 shadow hover:shadow-lg transition-shadow border-l-4"
-            style={{ borderLeftColor: getHouseColor(dorm.name) }}
+            className="block rounded-lg p-6 shadow hover:shadow-lg transition-shadow text-white"
+            style={{ backgroundColor: getHouseColor(dorm.name) }}
           >
             <div className="flex items-start justify-between mb-2">
-              <h2 className="text-xl font-semibold text-white">{dorm.name}</h2>
+              <h2 className="text-xl font-semibold">{dorm.name}</h2>
               {userDormId === dorm.id && (
-                <span className="rounded-full bg-green-900/30 px-2 py-1 text-xs font-medium text-green-200">
+                <span className="rounded-full bg-white/20 px-2 py-1 text-xs font-medium">
                   Current
                 </span>
               )}
             </div>
             {dorm.description && (
-              <p className="text-sm text-gray-400 mb-4 line-clamp-2">{dorm.description}</p>
+              <p className="text-sm text-white/90 mb-4 line-clamp-2">{dorm.description}</p>
             )}
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-400">{dorm.total_members} members</span>
+              <span className="text-sm text-white/80">{dorm.total_members} members</span>
               {userDormId === dorm.id ? (
-                <span className="text-sm text-gray-500">Already a member</span>
+                <span className="text-sm text-white/70">Already a member</span>
               ) : (
                 <button
                   onClick={() => handleJoin(dorm.id)}
                   disabled={loading === dorm.id}
-                  className="rounded-md bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700 disabled:opacity-50"
+                  className="rounded-md bg-white/25 px-4 py-2 text-sm font-medium hover:bg-white/35 disabled:opacity-50"
                 >
                   {loading === dorm.id ? 'Joining...' : 'Join'}
                 </button>
