@@ -3,7 +3,8 @@ import { redirect, notFound } from 'next/navigation'
 import MatchDetails from '@/components/match/MatchDetails'
 import NavBar from '@/components/layout/NavBar'
 
-export default async function MatchPage({ params }: { params: { id: string } }) {
+export default async function MatchPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -19,7 +20,7 @@ export default async function MatchPage({ params }: { params: { id: string } }) 
       player1:users!player1_id(id, display_name),
       player2:users!player2_id(id, display_name)
     `)
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (error || !match) {

@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import { ThemeProvider } from '@/components/ui/ThemeProvider'
 
@@ -6,17 +6,18 @@ export const metadata: Metadata = {
   title: 'HouseRank - ELO Tracking for Pool & Ping Pong',
   description: 'Track ELO ratings for pool and ping pong matches in your dorm',
   manifest: '/manifest.json',
-  themeColor: '#2563eb',
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
-  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
     title: 'HouseRank',
   },
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  themeColor: '#2563eb',
 }
 
 export default function RootLayout({

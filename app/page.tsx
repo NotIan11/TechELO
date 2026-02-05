@@ -5,12 +5,13 @@ import NavBar from '@/components/layout/NavBar'
 export default async function Home({
   searchParams,
 }: {
-  searchParams: { game_type?: string; page?: string; dorm_id?: string }
+  searchParams: Promise<{ game_type?: string; page?: string; dorm_id?: string }>
 }) {
+  const { game_type, page: pageParam, dorm_id } = await searchParams
   const supabase = await createClient()
-  const gameType = (searchParams.game_type as 'pool' | 'ping_pong') || 'pool'
-  const page = parseInt(searchParams.page || '1')
-  const dormId = searchParams.dorm_id || null
+  const gameType = (game_type as 'pool' | 'ping_pong') || 'pool'
+  const page = parseInt(pageParam || '1')
+  const dormId = dorm_id || null
   const limit = 50
   const offset = (page - 1) * limit
 

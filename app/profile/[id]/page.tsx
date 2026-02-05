@@ -4,10 +4,11 @@ import { formatDateTime } from '@/lib/utils'
 import Link from 'next/link'
 import NavBar from '@/components/layout/NavBar'
 
-export default async function ProfilePage({ params }: { params: { id: string } }) {
+export default async function ProfilePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  const isOwnProfile = user?.id === params.id
+  const isOwnProfile = user?.id === id
 
   // Get user profile
   const { data: profile } = await supabase
@@ -20,7 +21,7 @@ export default async function ProfilePage({ params }: { params: { id: string } }
         description
       )
     `)
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (!profile) {
@@ -31,7 +32,7 @@ export default async function ProfilePage({ params }: { params: { id: string } }
   const { data: eloRatings } = await supabase
     .from('elo_ratings')
     .select('*')
-    .eq('user_id', params.id)
+    .eq('user_id', id)
     .order('game_type')
 
   // Get match history
@@ -42,7 +43,7 @@ export default async function ProfilePage({ params }: { params: { id: string } }
       player1:users!player1_id(id, display_name),
       player2:users!player2_id(id, display_name)
     `)
-    .or(`player1_id.eq.${params.id},player2_id.eq.${params.id}`)
+    .or(`player1_id.eq.${id},player2_id.eq.${id}`)
     .eq('status', 'completed')
     .order('completed_at', { ascending: false })
     .limit(20)
@@ -165,9 +166,9 @@ export default async function ProfilePage({ params }: { params: { id: string } }
           ) : (
             <div className="space-y-4">
               {matches.map((match: any) => {
-                const isPlayer1 = match.player1_id === params.id
+                const isPlayer1 = match.player1_id === id
                 const opponent = isPlayer1 ? match.player2 : match.player1
-                const won = match.winner_id === params.id
+                const won = match.winner_id === id
                 const eloChange = isPlayer1
                   ? (match.player1_elo_after || 0) - (match.player1_elo_before || 0)
                   : (match.player2_elo_after || 0) - (match.player2_elo_before || 0)

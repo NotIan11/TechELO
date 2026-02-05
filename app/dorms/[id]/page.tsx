@@ -3,7 +3,8 @@ import { notFound, redirect } from 'next/navigation'
 import DormDetails from '@/components/dorm/DormDetails'
 import NavBar from '@/components/layout/NavBar'
 
-export default async function DormPage({ params }: { params: { id: string } }) {
+export default async function DormPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -15,7 +16,7 @@ export default async function DormPage({ params }: { params: { id: string } }) {
   const { data: dorm } = await supabase
     .from('dorms')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (!dorm) {
@@ -26,7 +27,7 @@ export default async function DormPage({ params }: { params: { id: string } }) {
   const { data: members } = await supabase
     .from('users')
     .select('id, display_name, university_email, profile_image_url, created_at')
-    .eq('dorm_id', params.id)
+    .eq('dorm_id', id)
     .order('display_name')
 
   // Get user's current dorm
@@ -36,21 +37,21 @@ export default async function DormPage({ params }: { params: { id: string } }) {
     .eq('id', user.id)
     .single()
 
-  const isMember = userProfile?.dorm_id === params.id
+  const isMember = userProfile?.dorm_id === id
 
   // Get dorm leaderboard for both game types
   const { data: poolLeaderboard } = await supabase.rpc('get_leaderboard', {
     p_game_type: 'pool',
     p_limit: 10,
     p_offset: 0,
-    p_dorm_id: params.id,
+    p_dorm_id: id,
   })
 
   const { data: pingPongLeaderboard } = await supabase.rpc('get_leaderboard', {
     p_game_type: 'ping_pong',
     p_limit: 10,
     p_offset: 0,
-    p_dorm_id: params.id,
+    p_dorm_id: id,
   })
 
   // Get dorm statistics
