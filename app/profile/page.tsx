@@ -171,8 +171,19 @@ export default async function ProfilePage() {
           <div className="mt-8">
             <h2 className="text-xl font-semibold text-white">Recent Matches</h2>
             <div className="mt-4 space-y-4">
-              {recentMatches.map((match: any) => (
-                <div key={match.id} className="rounded-lg bg-gray-800 p-4 shadow">
+              {recentMatches.map((match: any) => {
+                const isWin = match.status === 'completed' && match.winner_id === user.id
+                const isLoss = match.status === 'completed' && match.winner_id != null && match.winner_id !== user.id
+                const isDisputed = match.status === 'disputed'
+                const cardBg = isWin
+                  ? 'bg-green-900/30'
+                  : isLoss
+                    ? 'bg-red-900/30'
+                    : isDisputed
+                      ? 'bg-yellow-900/30'
+                      : 'bg-gray-800'
+                return (
+                <div key={match.id} className={`rounded-lg ${cardBg} p-4 shadow`}>
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-medium text-white">
@@ -192,7 +203,8 @@ export default async function ProfilePage() {
                     </div>
                   </div>
                 </div>
-              ))}
+              );
+              })}
             </div>
           </div>
         )}
