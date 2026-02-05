@@ -41,25 +41,17 @@ export async function GET(request: Request) {
       .eq('id', user.id)
       .single()
 
-    // If user doesn't exist, create profile using database function
+    // If user doesn't exist, create profile using database function first (so they always get a row)
+    // Then validate domain and redirect if needed. This handles both: trigger not run in production, and callback as fallback.
     if (!existingUser && checkError?.code === 'PGRST116') {
-      const universityDomain = process.env.NEXT_PUBLIC_UNIVERSITY_EMAIL_DOMAIN || '@university.edu'
       const email = user.email.toLowerCase()
-      
-      // Validate university email
-      if (!email.endsWith(universityDomain.toLowerCase())) {
-        console.error('Invalid university email domain')
-        return NextResponse.redirect(new URL(`/login?error=invalid_domain&domain=${encodeURIComponent(universityDomain)}`, requestUrl.origin))
-      }
-
-      // Get user metadata (first_name, last_name) from auth user
       const firstName = user.user_metadata?.first_name || ''
       const lastName = user.user_metadata?.last_name || ''
-      const displayName = firstName && lastName 
+      const displayName = firstName && lastName
         ? `${firstName} ${lastName}`.trim()
         : email.split('@')[0]
 
-      // Use database function to create user profile (bypasses RLS)
+      // Always create the profile so the user exists in public.users (fixes missing trigger in prod)
       const { error: createError } = await supabase.rpc('create_user_profile', {
         p_user_id: user.id,
         p_university_email: email,
@@ -70,8 +62,15 @@ export async function GET(request: Request) {
 
       if (createError) {
         console.error('Create user profile error:', createError)
-        // Still redirect to profile - user might exist but query failed
-        // The app will handle missing profile gracefully
+        // Still continue - user might exist but query failed; app will handle missing profile
+      }
+
+      // After ensuring profile exists, enforce university email domain if configured
+      const universityDomain = process.env.NEXT_PUBLIC_UNIVERSITY_EMAIL_DOMAIN || ''
+      if (universityDomain && !email.endsWith(universityDomain.toLowerCase())) {
+        return NextResponse.redirect(
+          new URL(`/login?error=invalid_domain&domain=${encodeURIComponent(universityDomain)}`, requestUrl.origin)
+        )
       }
     }
 
