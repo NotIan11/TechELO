@@ -13,7 +13,7 @@ export default async function ProfilePage() {
   }
 
   // Get user profile
-  const { data: profile, error: profileError } = await supabase
+  let { data: profile, error: profileError } = await supabase
     .from('users')
     .select(`
       *,
@@ -23,6 +23,26 @@ export default async function ProfilePage() {
     `)
     .eq('id', user.id)
     .single()
+
+  // If authenticated but no row in users (e.g. trigger/callback didn't run), create it now
+  if (!profile && profileError?.code === 'PGRST116') {
+    const email = (user.email ?? '').toLowerCase()
+    const firstName = user.user_metadata?.first_name ?? ''
+    const lastName = user.user_metadata?.last_name ?? ''
+    const displayName =
+      firstName && lastName ? `${firstName} ${lastName}`.trim() : email.split('@')[0] || 'User'
+    const { error: createError } = await supabase.rpc('create_user_profile', {
+      p_user_id: user.id,
+      p_university_email: email,
+      p_display_name: displayName,
+      p_first_name: firstName || null,
+      p_last_name: lastName || null,
+    })
+    if (!createError) {
+      redirect('/profile') // refetch so profile is loaded
+    }
+    // If RPC failed (e.g. function not in DB), continue and show profile with empty data; they may need to complete signup
+  }
 
   // Get user's ELO ratings
   const { data: eloRatings } = await supabase
