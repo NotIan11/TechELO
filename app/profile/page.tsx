@@ -3,15 +3,10 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import NavBar from '@/components/layout/NavBar'
 import Image from 'next/image'
-import { appendFile } from 'fs/promises'
 
 export default async function ProfilePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-
-  // #region agent log
-  await appendFile('/Users/iankim/Desktop/Programming/HouseRank/.cursor/debug.log', JSON.stringify({location:'profile/page.tsx:10',message:'Profile page accessed',data:{hasUser:!!user,userId:user?.id},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'}) + '\n').catch(()=>{});
-  // #endregion
 
   if (!user) {
     redirect('/login')
@@ -28,10 +23,6 @@ export default async function ProfilePage() {
     `)
     .eq('id', user.id)
     .single()
-
-  // #region agent log
-  await appendFile('/Users/iankim/Desktop/Programming/HouseRank/.cursor/debug.log', JSON.stringify({location:'profile/page.tsx:28',message:'Profile query result',data:{hasProfile:!!profile,profileId:profile?.id,hasError:!!profileError,errorCode:profileError?.code,errorMessage:profileError?.message},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A,C,D'}) + '\n').catch(()=>{});
-  // #endregion
 
   // Get user's ELO ratings
   const { data: eloRatings } = await supabase
