@@ -14,6 +14,9 @@ export default function NavBar() {
               <Link href="/" className="text-sm text-gray-300 hover:text-white">
                 Leaderboard
               </Link>
+              <Link href="/inbox" className="text-sm text-gray-300 hover:text-white">
+                Inbox
+              </Link>
               <Link href="/matches" className="text-sm text-gray-300 hover:text-white">
                 Matches
               </Link>

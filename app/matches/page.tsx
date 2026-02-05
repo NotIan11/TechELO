@@ -36,6 +36,8 @@ export default async function MatchesPage() {
         return 'bg-green-900/30 text-green-200'
       case 'disputed':
         return 'bg-red-900/30 text-red-200'
+      case 'cancelled':
+        return 'bg-gray-700 text-gray-400'
       default:
         return 'bg-gray-700 text-gray-200'
     }

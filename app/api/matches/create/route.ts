@@ -60,7 +60,7 @@ export async function POST(request: Request) {
     const player1Rating = player1Elo?.rating || getInitialRating()
     const player2Rating = player2Elo?.rating || getInitialRating()
 
-    // Create match
+    // Create match (initiator is player1 and auto-accepts start; only opponent needs to accept)
     const { data: match, error } = await supabase
       .from('matches')
       .insert({
@@ -70,6 +70,7 @@ export async function POST(request: Request) {
         player1_elo_before: player1Rating,
         player2_elo_before: player2Rating,
         status: 'pending_start',
+        player1_start_accepted: true,
       })
       .select()
       .single()

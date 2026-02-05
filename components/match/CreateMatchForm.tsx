@@ -48,7 +48,7 @@ export default function CreateMatchForm({ users }: CreateMatchFormProps) {
         throw new Error(data.error || 'Failed to create match')
       }
 
-      router.push(`/matches/${data.match.id}`)
+      router.push('/inbox')
     } catch (err: any) {
       setError(err.message || 'An error occurred')
     } finally {
