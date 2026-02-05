@@ -78,17 +78,17 @@ export async function POST(request: Request) {
       }
     }
 
-    // Check if both players have accepted and winner matches
+    // Check if both players have accepted
     const player1Accepted = isPlayer1 ? true : match.player1_result_accepted
     const player2Accepted = !isPlayer1 ? true : match.player2_result_accepted
-    const finalWinner = updateData.winner_id || match.winner_id
 
-    // If both accepted and winner is set, complete the match
-    if (player1Accepted && player2Accepted && finalWinner) {
-      // Verify both players agree on winner
-      if (match.winner_id && match.winner_id !== finalWinner) {
-        // Dispute - winners don't match
+    // When both have accepted, either complete (if they agree on winner) or mark disputed (if they disagree)
+    if (player1Accepted && player2Accepted) {
+      const otherPlayersWinner = match.winner_id
+      const playersDisagree = otherPlayersWinner != null && winner_id !== otherPlayersWinner
+      if (playersDisagree) {
         updateData.status = 'disputed'
+        updateData.winner_id = null
       } else {
         updateData.status = 'completed'
         updateData.completed_at = new Date().toISOString()
