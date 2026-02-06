@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import UserButton from '@/components/auth/UserButton'
+import InboxButton from '@/components/layout/InboxButton'
 
 export default function NavBar() {
   return (
@@ -23,9 +24,7 @@ export default function NavBar() {
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <Link href="/inbox" className="text-sm text-gray-300 hover:text-white">
-              Inbox
-            </Link>
+            <InboxButton />
             <UserButton />
           </div>
         </div>
