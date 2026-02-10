@@ -56,20 +56,17 @@ export default function LoginForm() {
       })
 
       if (error) {
-        // Check if error is due to unconfirmed email
-        const isUnconfirmedEmail = 
+        // Only treat as unconfirmed when Supabase explicitly says so (do not resend on "Invalid login credentials")
+        const isUnconfirmedEmail =
           error.message?.toLowerCase().includes('email not confirmed') ||
           error.message?.toLowerCase().includes('email_not_confirmed') ||
-          error.message?.toLowerCase().includes('confirm your email') ||
-          error.status === 400 && error.message?.toLowerCase().includes('email')
-        
+          error.message?.toLowerCase().includes('confirm your email')
+
         if (isUnconfirmedEmail) {
-          // Automatically resend confirmation email
           const { error: resendError } = await supabase.auth.resend({
             type: 'signup',
             email: email,
           })
-          
           if (resendError) {
             console.error('Failed to resend confirmation email:', resendError)
             setError(`Please confirm your email address. Failed to resend confirmation email: ${resendError.message}`)
@@ -77,20 +74,7 @@ export default function LoginForm() {
             setError(`Please confirm your email address. A new confirmation email has been sent to ${email}. Please check your email and click the confirmation link before trying to log in again.`)
           }
         } else if (error.message?.includes('Invalid login credentials')) {
-          // Check if user exists but email might be unconfirmed
-          // Try to resend confirmation email as a fallback
-          const { error: resendError } = await supabase.auth.resend({
-            type: 'signup',
-            email: email,
-          })
-          
-          // If resend succeeds, it means user exists but email is unconfirmed
-          if (!resendError) {
-            setError(`Please confirm your email address. A new confirmation email has been sent to ${email}. Please check your email and click the confirmation link before trying to log in again.`)
-          } else {
-            // Resend failed, likely wrong credentials
-            setError('Invalid email or password. If you signed up with a magic link, please contact support or use password reset.')
-          }
+          setError('Incorrect password.')
         } else {
           throw error
         }
