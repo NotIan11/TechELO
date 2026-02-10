@@ -3,6 +3,15 @@ import { NextResponse } from 'next/server'
 import { getInitialRating } from '@/lib/elo'
 import { sendEmail } from '@/lib/email'
 
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 export async function POST(request: Request) {
   try {
     const supabase = await createClient()
@@ -29,10 +38,10 @@ export async function POST(request: Request) {
       )
     }
 
-    // Verify player2 exists and get display_name + email for notification
+    // Verify player2 exists and get display_name, email, first_name for notification
     const { data: player2 } = await supabase
       .from('users')
-      .select('id, display_name, university_email')
+      .select('id, display_name, university_email, first_name')
       .eq('id', player2_id)
       .single()
 
@@ -91,11 +100,32 @@ export async function POST(request: Request) {
         process.env.NEXT_PUBLIC_APP_URL ||
         (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : '')
       const gameLabel = game_type === 'ping_pong' ? 'ping pong' : game_type
-      const inboxHint = baseUrl ? `${baseUrl}/inbox` : 'the app inbox'
+      const inboxUrl = baseUrl ? `${baseUrl}/inbox` : '#'
+      const challengerName = challenger?.display_name || 'Someone'
+      const recipientName = player2.first_name || player2.display_name?.split(' ')[0] || 'there'
       const subject = `You've been challenged to a ${gameLabel} match`
-      const text = `${challenger?.display_name || 'Someone'} challenged you to a ${gameLabel} match. Open ${inboxHint} to accept.`
+      const text = `${challengerName} challenged you to a ${gameLabel} match. Open ${inboxUrl} to accept or decline.`
+      const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: system-ui, sans-serif; line-height: 1.6; color: #111827; max-width: 560px; margin: 0 auto; padding: 24px;">
+  <p style="margin: 0 0 16px;">Hello ${escapeHtml(recipientName)},</p>
+  <p style="margin: 0 0 16px;">
+    ${escapeHtml(challengerName)} has challenged you to a ${escapeHtml(gameLabel)} match. Please accept or decline in your inbox using the link below:
+  </p>
+  <p style="margin: 0 0 24px;">
+    <a href="${escapeHtml(inboxUrl)}" style="color: #2563eb; text-decoration: underline;">Accept in inbox</a>
+  </p>
+  <p style="margin: 0; font-size: 0.875rem;">Tech ELO</p>
+</body>
+</html>
+      `.trim()
       try {
-        await sendEmail(player2.university_email, subject, text)
+        await sendEmail(player2.university_email, subject, text, html)
       } catch (emailErr) {
         console.error('Challenge email failed:', emailErr)
       }
