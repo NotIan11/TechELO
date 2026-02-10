@@ -5,9 +5,15 @@ import NavBar from '@/components/layout/NavBar'
 export default async function Home({
   searchParams,
 }: {
-  searchParams: Promise<{ game_type?: string; page?: string; dorm_id?: string }>
+  searchParams: Promise<{ game_type?: string; page?: string; dorm_id?: string; error_code?: string }>
 }) {
-  const { game_type, page: pageParam, dorm_id } = await searchParams
+  const params = await searchParams
+  const { game_type, page: pageParam, dorm_id, error_code } = params
+
+  if (error_code === 'otp_expired') {
+    redirect('/login?error=link_expired')
+  }
+
   const supabase = await createClient()
   const gameType = (game_type as 'pool' | 'ping_pong') || 'pool'
   const page = parseInt(pageParam || '1')

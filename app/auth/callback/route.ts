@@ -5,6 +5,11 @@ export async function GET(request: Request) {
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get('code')
   const next = requestUrl.searchParams.get('next') || '/profile'
+  const errorCode = requestUrl.searchParams.get('error_code')
+
+  if (!code && errorCode === 'otp_expired') {
+    return NextResponse.redirect(new URL('/login?error=link_expired', requestUrl.origin))
+  }
 
   if (code) {
     const supabase = await createClient()

@@ -19,7 +19,9 @@ export default function LoginForm() {
   // Check for error messages from URL params
   useEffect(() => {
     const errorParam = searchParams.get('error')
-    if (errorParam === 'email_not_confirmed') {
+    if (errorParam === 'link_expired') {
+      setError('This confirmation link was already used or has expired. Sign in with your email and password below to receive a new confirmation email.')
+    } else if (errorParam === 'email_not_confirmed') {
       setError('Please confirm your email address before logging in. Check your email for the confirmation link.')
     } else if (errorParam === 'auth_failed') {
       setError('Authentication failed. Please try again.')
