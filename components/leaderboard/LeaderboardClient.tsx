@@ -77,7 +77,7 @@ export default function LeaderboardClient({
             <div className="flex gap-2">
               <button
                 onClick={() => handleGameTypeChange('pool')}
-                className={`rounded-md px-4 py-2 text-sm font-medium ${
+                className={`min-h-[44px] rounded-md px-4 py-3 text-sm font-medium ${
                   gameType === 'pool'
                     ? 'bg-blue-600 text-white'
                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
@@ -87,7 +87,7 @@ export default function LeaderboardClient({
               </button>
               <button
                 onClick={() => handleGameTypeChange('ping_pong')}
-                className={`rounded-md px-4 py-2 text-sm font-medium ${
+                className={`min-h-[44px] rounded-md px-4 py-3 text-sm font-medium ${
                   gameType === 'ping_pong'
                     ? 'bg-green-600 text-white'
                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
@@ -105,7 +105,7 @@ export default function LeaderboardClient({
             <select
               value={selectedDormId || ''}
               onChange={(e) => handleDormChange(e.target.value || null)}
-              className="rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
+              className="min-h-[44px] rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 text-base shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
             >
               <option value="">All Houses</option>
               {dorms.map((dorm) => (
@@ -192,14 +192,14 @@ export default function LeaderboardClient({
             <button
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
-              className="relative inline-flex items-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
+              className="relative inline-flex min-h-[44px] items-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
             >
               Previous
             </button>
             <button
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
-              className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
+              className="relative ml-3 inline-flex min-h-[44px] items-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
             >
               Next
             </button>

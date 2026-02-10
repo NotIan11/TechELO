@@ -118,7 +118,7 @@ export default function InboxClient({ pendingItems: initialItems }: InboxClientP
     return (
       <div className="rounded-lg bg-gray-800 p-8 text-center shadow">
         <p className="text-gray-400">No pending challenges or results.</p>
-        <Link href="/matches/new" className="mt-4 inline-block rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">
+        <Link href="/matches/new" className="mt-4 inline-flex min-h-[44px] items-center rounded-md bg-blue-600 px-4 py-3 text-white hover:bg-blue-700">
           Create a match
         </Link>
       </div>
@@ -168,7 +168,7 @@ export default function InboxClient({ pendingItems: initialItems }: InboxClientP
                         type="button"
                         onClick={() => setConfirming({ matchId: match.id, action: 'accept_start' })}
                         disabled={!!loading}
-                        className="rounded-md bg-green-600 px-4 py-2 text-white hover:bg-green-700 disabled:opacity-50"
+                        className="min-h-[44px] rounded-md bg-green-600 px-4 py-3 text-white hover:bg-green-700 disabled:opacity-50"
                       >
                         Accept
                       </button>
@@ -176,7 +176,7 @@ export default function InboxClient({ pendingItems: initialItems }: InboxClientP
                         type="button"
                         onClick={() => setConfirming({ matchId: match.id, action: 'decline_start' })}
                         disabled={!!loading}
-                        className="rounded-md bg-gray-600 px-4 py-2 text-white hover:bg-gray-700 disabled:opacity-50"
+                        className="min-h-[44px] rounded-md bg-gray-600 px-4 py-3 text-white hover:bg-gray-700 disabled:opacity-50"
                       >
                         Decline
                       </button>
@@ -188,7 +188,7 @@ export default function InboxClient({ pendingItems: initialItems }: InboxClientP
                         type="button"
                         onClick={() => setConfirming({ matchId: match.id, action: 'report_result', winnerId: match.player1_id })}
                         disabled={!!loading}
-                        className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
+                        className="min-h-[44px] rounded-md bg-blue-600 px-4 py-3 text-white hover:bg-blue-700 disabled:opacity-50"
                       >
                         {match.player1.display_name} won
                       </button>
@@ -196,7 +196,7 @@ export default function InboxClient({ pendingItems: initialItems }: InboxClientP
                         type="button"
                         onClick={() => setConfirming({ matchId: match.id, action: 'report_result', winnerId: match.player2_id })}
                         disabled={!!loading}
-                        className="rounded-md bg-green-600 px-4 py-2 text-white hover:bg-green-700 disabled:opacity-50"
+                        className="min-h-[44px] rounded-md bg-green-600 px-4 py-3 text-white hover:bg-green-700 disabled:opacity-50"
                       >
                         {match.player2.display_name} won
                       </button>
@@ -215,7 +215,7 @@ export default function InboxClient({ pendingItems: initialItems }: InboxClientP
                           type="button"
                           onClick={() => handleAcceptStart(match.id)}
                           disabled={busy}
-                          className="rounded-md bg-green-600 px-4 py-2 text-white hover:bg-green-700 disabled:opacity-50"
+                          className="min-h-[44px] rounded-md bg-green-600 px-4 py-3 text-white hover:bg-green-700 disabled:opacity-50"
                         >
                           {busy ? 'Accepting...' : 'Confirm'}
                         </button>
@@ -223,7 +223,7 @@ export default function InboxClient({ pendingItems: initialItems }: InboxClientP
                           type="button"
                           onClick={() => setConfirming(null)}
                           disabled={busy}
-                          className="rounded-md bg-gray-600 px-4 py-2 text-white hover:bg-gray-700"
+                          className="min-h-[44px] rounded-md bg-gray-600 px-4 py-3 text-white hover:bg-gray-700"
                         >
                           Cancel
                         </button>
@@ -238,7 +238,7 @@ export default function InboxClient({ pendingItems: initialItems }: InboxClientP
                           type="button"
                           onClick={() => handleDecline(match.id)}
                           disabled={busy}
-                          className="rounded-md bg-red-600 px-4 py-2 text-white hover:bg-red-700 disabled:opacity-50"
+                          className="min-h-[44px] rounded-md bg-red-600 px-4 py-3 text-white hover:bg-red-700 disabled:opacity-50"
                         >
                           {busy ? 'Declining...' : 'Confirm decline'}
                         </button>
@@ -246,7 +246,7 @@ export default function InboxClient({ pendingItems: initialItems }: InboxClientP
                           type="button"
                           onClick={() => setConfirming(null)}
                           disabled={busy}
-                          className="rounded-md bg-gray-600 px-4 py-2 text-white hover:bg-gray-700"
+                          className="min-h-[44px] rounded-md bg-gray-600 px-4 py-3 text-white hover:bg-gray-700"
                         >
                           Cancel
                         </button>
@@ -263,7 +263,7 @@ export default function InboxClient({ pendingItems: initialItems }: InboxClientP
                           type="button"
                           onClick={() => handleAcceptResult(match.id, confirming.winnerId!)}
                           disabled={busy}
-                          className="rounded-md bg-green-600 px-4 py-2 text-white hover:bg-green-700 disabled:opacity-50"
+                          className="min-h-[44px] rounded-md bg-green-600 px-4 py-3 text-white hover:bg-green-700 disabled:opacity-50"
                         >
                           {busy ? 'Submitting...' : 'Confirm'}
                         </button>
@@ -271,7 +271,7 @@ export default function InboxClient({ pendingItems: initialItems }: InboxClientP
                           type="button"
                           onClick={() => setConfirming(null)}
                           disabled={busy}
-                          className="rounded-md bg-gray-600 px-4 py-2 text-white hover:bg-gray-700"
+                          className="min-h-[44px] rounded-md bg-gray-600 px-4 py-3 text-white hover:bg-gray-700"
                         >
                           Cancel
                         </button>

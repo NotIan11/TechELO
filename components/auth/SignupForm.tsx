@@ -136,7 +136,7 @@ export default function SignupForm() {
                 required
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
-                className="mt-1 block w-full rounded-md border border-gray-600 bg-gray-700 text-white px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
+                className="mt-1 block w-full min-h-[44px] rounded-md border border-gray-600 bg-gray-700 text-white px-3 py-2 text-base shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
                 placeholder="John"
               />
             </div>
@@ -152,7 +152,7 @@ export default function SignupForm() {
                 required
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
-                className="mt-1 block w-full rounded-md border border-gray-600 bg-gray-700 text-white px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
+                className="mt-1 block w-full min-h-[44px] rounded-md border border-gray-600 bg-gray-700 text-white px-3 py-2 text-base shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
                 placeholder="Doe"
               />
             </div>
@@ -169,7 +169,7 @@ export default function SignupForm() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={isCompletingProfile}
-                className="mt-1 block w-full rounded-md border border-gray-600 bg-gray-700 text-white px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 disabled:opacity-50"
+                className="mt-1 block w-full min-h-[44px] rounded-md border border-gray-600 bg-gray-700 text-white px-3 py-2 text-base shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 disabled:opacity-50"
                 placeholder={`your.email${universityDomain}`}
               />
               <p className="mt-1 text-xs text-gray-400">
@@ -190,7 +190,7 @@ export default function SignupForm() {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="mt-1 block w-full rounded-md border border-gray-600 bg-gray-700 text-white px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
+                    className="mt-1 block w-full min-h-[44px] rounded-md border border-gray-600 bg-gray-700 text-white px-3 py-2 text-base shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
                     placeholder="Choose a password"
                   />
                 </div>
@@ -206,7 +206,7 @@ export default function SignupForm() {
                     required
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="mt-1 block w-full rounded-md border border-gray-600 bg-gray-700 text-white px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
+                    className="mt-1 block w-full min-h-[44px] rounded-md border border-gray-600 bg-gray-700 text-white px-3 py-2 text-base shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
                     placeholder="Confirm your password"
                   />
                 </div>
@@ -228,7 +228,7 @@ export default function SignupForm() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+              className="w-full min-h-[44px] rounded-md bg-blue-600 px-4 py-3 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
             >
               {loading ? (isCompletingProfile ? 'Updating...' : 'Creating...') : (isCompletingProfile ? 'Update Profile' : 'Create Account')}
             </button>

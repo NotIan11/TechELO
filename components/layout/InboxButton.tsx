@@ -47,7 +47,7 @@ export default function InboxButton() {
     <>
       <Link
         href="/inbox"
-        className="relative inline-flex rounded-md bg-gray-700 px-4 py-2 text-sm font-medium text-white hover:bg-gray-600"
+        className="relative inline-flex min-h-[44px] items-center rounded-md bg-gray-700 px-4 py-3 text-sm font-medium text-white hover:bg-gray-600"
       >
         Inbox
         {count > 0 && (
@@ -58,13 +58,13 @@ export default function InboxButton() {
       </Link>
       {showToast && (
         <div
-          className="fixed bottom-4 right-4 z-50 flex max-w-sm flex-col gap-2 rounded-lg bg-gray-800 p-4 shadow-lg ring-1 ring-gray-700"
+          className="fixed bottom-4 left-4 right-4 z-50 flex max-w-sm flex-col gap-2 rounded-lg bg-gray-800 p-4 shadow-lg ring-1 ring-gray-700 sm:left-auto sm:right-4"
           role="alert"
         >
           <p className="text-sm text-white">You have new items in your inbox.</p>
           <Link
             href="/inbox"
-            className="text-sm font-medium text-orange-400 hover:text-orange-300"
+            className="inline-flex min-h-[44px] items-center text-sm font-medium text-orange-400 hover:text-orange-300"
             onClick={() => setShowToast(false)}
           >
             View Inbox

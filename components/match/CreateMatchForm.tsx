@@ -66,7 +66,7 @@ export default function CreateMatchForm({ users }: CreateMatchFormProps) {
           id="gameType"
           value={gameType}
           onChange={(e) => setGameType(e.target.value as 'pool' | 'ping_pong')}
-          className="mt-1 block w-full rounded-md border border-gray-600 bg-gray-700 text-white px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
+          className="mt-1 block w-full min-h-[44px] rounded-md border border-gray-600 bg-gray-700 text-white px-3 py-2 text-base shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
         >
           <option value="pool">Pool</option>
           <option value="ping_pong">Ping Pong</option>
@@ -81,7 +81,7 @@ export default function CreateMatchForm({ users }: CreateMatchFormProps) {
           id="opponent"
           value={opponentId}
           onChange={(e) => setOpponentId(e.target.value)}
-          className="mt-1 block w-full rounded-md border border-gray-600 bg-gray-700 text-white px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
+          className="mt-1 block w-full min-h-[44px] rounded-md border border-gray-600 bg-gray-700 text-white px-3 py-2 text-base shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
           required
         >
           <option value="">Select an opponent</option>
@@ -102,7 +102,7 @@ export default function CreateMatchForm({ users }: CreateMatchFormProps) {
       <button
         type="submit"
         disabled={loading}
-        className="w-full rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+        className="w-full min-h-[44px] rounded-md bg-blue-600 px-4 py-3 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
       >
         {loading ? 'Creating...' : 'Create Match'}
       </button>

@@ -47,11 +47,11 @@ export default async function MatchesPage() {
     <div className="min-h-screen bg-gray-900">
       <NavBar />
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <h1 className="text-3xl font-bold text-white">Match History</h1>
           <Link
             href="/matches/new"
-            className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+            className="inline-flex min-h-[44px] items-center justify-center rounded-md bg-blue-600 px-4 py-3 text-white hover:bg-blue-700 sm:shrink-0"
           >
             New Match
           </Link>
@@ -62,7 +62,7 @@ export default async function MatchesPage() {
             <p className="text-gray-400">No matches yet. Start your first match!</p>
             <Link
               href="/matches/new"
-              className="mt-4 inline-block rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+              className="mt-4 inline-flex min-h-[44px] items-center rounded-md bg-blue-600 px-4 py-3 text-white hover:bg-blue-700"
             >
               Create Match
             </Link>
@@ -75,8 +75,8 @@ export default async function MatchesPage() {
                 href={`/matches/${match.id}`}
                 className="block rounded-lg bg-gray-800 p-6 shadow hover:shadow-md transition-shadow"
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-4">
                       <span className={`rounded-full px-3 py-1 text-xs font-medium ${getStatusColor(match.status)}`}>
                         {match.status.replace('_', ' ').toUpperCase()}
@@ -95,18 +95,16 @@ export default async function MatchesPage() {
                       </p>
                     )}
                   </div>
-                  <div className="text-right">
-                    {match.player1_elo_after && match.player2_elo_after && (
-                      <div className="text-sm">
-                        <p className="text-gray-300">
-                          {match.player1.display_name}: {match.player1_elo_before} → {match.player1_elo_after}
-                        </p>
-                        <p className="text-gray-300">
-                          {match.player2.display_name}: {match.player2_elo_before} → {match.player2_elo_after}
-                        </p>
-                      </div>
-                    )}
-                  </div>
+                  {(match.player1_elo_after && match.player2_elo_after) && (
+                    <div className="text-sm sm:text-right border-t border-gray-700 pt-4 sm:border-t-0 sm:pt-0">
+                      <p className="text-gray-300">
+                        {match.player1.display_name}: {match.player1_elo_before} → {match.player1_elo_after}
+                      </p>
+                      <p className="text-gray-300">
+                        {match.player2.display_name}: {match.player2_elo_before} → {match.player2_elo_after}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </Link>
             ))}

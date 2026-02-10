@@ -40,7 +40,7 @@ export default function UserButton() {
     return (
       <a
         href="/login"
-        className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+        className="inline-flex min-h-[44px] items-center rounded-md bg-blue-600 px-4 py-3 text-white hover:bg-blue-700"
       >
         Sign In
       </a>
@@ -48,16 +48,17 @@ export default function UserButton() {
   }
 
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex items-center gap-2 sm:gap-4">
       <a
         href="/profile"
-        className="text-sm text-gray-300 hover:text-white"
+        className="inline-flex min-h-[44px] items-center text-sm text-gray-300 hover:text-white"
       >
         Profile
       </a>
       <button
+        type="button"
         onClick={handleSignOut}
-        className="rounded-md bg-gray-700 px-4 py-2 text-sm text-gray-300 hover:bg-gray-600"
+        className="inline-flex min-h-[44px] items-center rounded-md bg-gray-700 px-4 py-3 text-sm text-gray-300 hover:bg-gray-600"
       >
         Sign Out
       </button>

@@ -69,7 +69,7 @@ export default async function ProfilePage() {
     <div className="min-h-screen bg-gray-900">
       <NavBar />
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
             {profile?.profile_image_url ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -78,25 +78,25 @@ export default async function ProfilePage() {
                 alt={profile.display_name ?? 'Profile'}
                 width={64}
                 height={64}
-                className="rounded-full"
+                className="rounded-full shrink-0"
               />
             ) : (
-              <div className="w-16 h-16 rounded-full bg-gray-700 flex items-center justify-center">
+              <div className="w-16 h-16 shrink-0 rounded-full bg-gray-700 flex items-center justify-center">
                 <span className="text-white text-2xl font-semibold">
                   {profile?.display_name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase()}
                 </span>
               </div>
             )}
-            <div>
+            <div className="min-w-0">
               <h1 className="text-3xl font-bold text-white">Profile</h1>
-              <p className="mt-1 text-gray-400">
+              <p className="mt-1 text-gray-400 truncate">
                 {profile?.display_name || user.email}
               </p>
             </div>
           </div>
           <Link
             href="/profile/edit"
-            className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+            className="inline-flex min-h-[44px] items-center justify-center rounded-md bg-blue-600 px-4 py-3 text-white hover:bg-blue-700 sm:shrink-0"
           >
             Edit Profile
           </Link>
@@ -147,19 +147,19 @@ export default async function ProfilePage() {
           <div className="mt-4 flex flex-wrap gap-4">
             <Link
               href="/matches/new"
-              className="rounded-md bg-blue-600 px-6 py-3 text-white hover:bg-blue-700"
+              className="inline-flex min-h-[44px] items-center rounded-md bg-blue-600 px-6 py-3 text-white hover:bg-blue-700"
             >
               Start New Match
             </Link>
             <Link
               href="/matches"
-              className="rounded-md bg-gray-700 px-6 py-3 text-gray-300 hover:bg-gray-600"
+              className="inline-flex min-h-[44px] items-center rounded-md bg-gray-700 px-6 py-3 text-gray-300 hover:bg-gray-600"
             >
               View Match History
             </Link>
             <Link
               href="/"
-              className="rounded-md bg-gray-700 px-6 py-3 text-gray-300 hover:bg-gray-600"
+              className="inline-flex min-h-[44px] items-center rounded-md bg-gray-700 px-6 py-3 text-gray-300 hover:bg-gray-600"
             >
               View Leaderboard
             </Link>

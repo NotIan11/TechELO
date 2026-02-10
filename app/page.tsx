@@ -49,7 +49,7 @@ export default async function Home({
       <NavBar />
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h1 className="text-6xl font-bold text-white mb-4">Tech ELO</h1>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-4">Tech ELO</h1>
         </div>
         <LeaderboardClient
           leaderboard={leaderboard || []}

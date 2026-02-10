@@ -148,7 +148,7 @@ export default function ProfileEditForm({ profile }: ProfileEditFormProps) {
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="rounded-md bg-gray-700 px-4 py-2 text-sm text-gray-300 hover:bg-gray-600"
+              className="min-h-[44px] rounded-md bg-gray-700 px-4 py-3 text-sm text-gray-300 hover:bg-gray-600"
             >
               Change Picture
             </button>
@@ -172,7 +172,7 @@ export default function ProfileEditForm({ profile }: ProfileEditFormProps) {
           required
           value={displayName}
           onChange={(e) => setDisplayName(e.target.value)}
-          className="mt-1 block w-full rounded-md border border-gray-600 bg-gray-700 text-white px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
+          className="mt-1 block w-full min-h-[44px] rounded-md border border-gray-600 bg-gray-700 text-white px-3 py-2 text-base shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
           placeholder="Your display name"
         />
       </div>
@@ -193,14 +193,14 @@ export default function ProfileEditForm({ profile }: ProfileEditFormProps) {
         <button
           type="submit"
           disabled={loading}
-          className="flex-1 rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+          className="flex-1 min-h-[44px] rounded-md bg-blue-600 px-4 py-3 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
         >
           {loading ? 'Saving...' : 'Save Changes'}
         </button>
         <button
           type="button"
           onClick={() => router.back()}
-          className="rounded-md bg-gray-700 px-4 py-2 text-gray-300 hover:bg-gray-600"
+          className="min-h-[44px] rounded-md bg-gray-700 px-4 py-3 text-gray-300 hover:bg-gray-600"
         >
           Cancel
         </button>
