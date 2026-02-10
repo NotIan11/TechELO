@@ -1,3 +1,4 @@
+import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import LeaderboardClient from '@/components/leaderboard/LeaderboardClient'
 import NavBar from '@/components/layout/NavBar'
