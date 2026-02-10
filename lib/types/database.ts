@@ -12,6 +12,7 @@ export interface Database {
           dorm_id: string | null
           created_at: string
           profile_image_url: string | null
+          phone_number: string | null
         }
         Insert: {
           id: string
@@ -20,6 +21,7 @@ export interface Database {
           dorm_id?: string | null
           created_at?: string
           profile_image_url?: string | null
+          phone_number?: string | null
         }
         Update: {
           id?: string
@@ -28,6 +30,7 @@ export interface Database {
           dorm_id?: string | null
           created_at?: string
           profile_image_url?: string | null
+          phone_number?: string | null
         }
       }
       dorms: {

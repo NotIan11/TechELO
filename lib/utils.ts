@@ -6,6 +6,19 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
+ * Normalize phone to E.164 for Twilio (digits only; 10-digit US gets +1).
+ * Returns null if too short or invalid.
+ */
+export function normalizePhoneToE164(phone: string | null | undefined): string | null {
+  if (phone == null || typeof phone !== 'string') return null
+  const digits = phone.replace(/\D/g, '')
+  if (digits.length === 10) return `+1${digits}`
+  if (digits.length === 11 && digits.startsWith('1')) return `+${digits}`
+  if (digits.length >= 10 && digits.length <= 15) return `+${digits}`
+  return null
+}
+
+/**
  * Validate if email is from university domain
  */
 export function isValidUniversityEmail(email: string, domain: string): boolean {

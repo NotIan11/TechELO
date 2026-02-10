@@ -5,7 +5,8 @@ CREATE OR REPLACE FUNCTION create_user_profile(
     p_university_email TEXT,
     p_display_name TEXT,
     p_first_name TEXT DEFAULT NULL,
-    p_last_name TEXT DEFAULT NULL
+    p_last_name TEXT DEFAULT NULL,
+    p_phone_number TEXT DEFAULT NULL
 )
 RETURNS VOID
 SECURITY DEFINER
@@ -13,8 +14,8 @@ SET search_path = public
 AS $$
 BEGIN
     -- Insert user profile if it doesn't exist
-    INSERT INTO users (id, university_email, display_name, first_name, last_name)
-    VALUES (p_user_id, p_university_email, p_display_name, p_first_name, p_last_name)
+    INSERT INTO users (id, university_email, display_name, first_name, last_name, phone_number)
+    VALUES (p_user_id, p_university_email, p_display_name, p_first_name, p_last_name, p_phone_number)
     ON CONFLICT (id) DO NOTHING;
 END;
 $$ LANGUAGE plpgsql;
@@ -28,11 +29,13 @@ DECLARE
     v_display_name TEXT;
     v_first_name TEXT;
     v_last_name TEXT;
+    v_phone_number TEXT;
 BEGIN
     -- Get email and metadata
     v_email := COALESCE(NEW.email, '');
     v_first_name := NEW.raw_user_meta_data->>'first_name';
     v_last_name := NEW.raw_user_meta_data->>'last_name';
+    v_phone_number := NEW.raw_user_meta_data->>'phone_number';
     
     -- Generate display name from metadata or email
     IF v_first_name IS NOT NULL AND v_last_name IS NOT NULL THEN
@@ -47,8 +50,8 @@ BEGIN
     
     -- Insert user profile (this happens in the same transaction as auth.users insert)
     -- Use ON CONFLICT to handle cases where profile already exists
-    INSERT INTO public.users (id, university_email, display_name, first_name, last_name)
-    VALUES (NEW.id, v_email, v_display_name, v_first_name, v_last_name)
+    INSERT INTO public.users (id, university_email, display_name, first_name, last_name, phone_number)
+    VALUES (NEW.id, v_email, v_display_name, v_first_name, v_last_name, v_phone_number)
     ON CONFLICT (id) DO NOTHING;
     
     RETURN NEW;

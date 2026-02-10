@@ -4,7 +4,6 @@ import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Image from 'next/image'
-
 interface Profile {
   id: string
   display_name: string
@@ -90,7 +89,6 @@ export default function ProfileEditForm({ profile }: ProfileEditFormProps) {
         imageUrl = urlData.publicUrl
       }
 
-      // Update profile
       const { error: updateError } = await supabase
         .from('users')
         .update({
