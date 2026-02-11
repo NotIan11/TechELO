@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import NavBar from '@/components/layout/NavBar'
 import InboxClient from '@/components/inbox/InboxClient'
+import { isChallengeExpired } from '@/lib/utils'
 
 export default async function InboxPage() {
   const supabase = await createClient()
@@ -32,7 +33,7 @@ export default async function InboxPage() {
     const isPlayer1 = match.player1_id === user.id
     const isPlayer2 = match.player2_id === user.id
 
-    if (match.status === 'pending_start' && isPlayer2 && !match.player2_start_accepted) {
+    if (match.status === 'pending_start' && isPlayer2 && !match.player2_start_accepted && !isChallengeExpired(match.created_at)) {
       pendingItems.push({ match, action: 'accept_start' })
     } else if (
       (match.status === 'in_progress' || match.status === 'pending_result') &&

@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { isChallengeExpired } from '@/lib/utils'
 
 export async function POST(request: Request) {
   try {
@@ -39,6 +40,18 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { error: 'Not authorized to accept this match' },
         { status: 403 }
+      )
+    }
+
+    // Reject expired challenges and mark as challenge_expired
+    if (match.status === 'pending_start' && isChallengeExpired(match.created_at)) {
+      await supabase
+        .from('matches')
+        .update({ status: 'challenge_expired' })
+        .eq('id', match_id)
+      return NextResponse.json(
+        { error: 'This challenge has expired.' },
+        { status: 400 }
       )
     }
 

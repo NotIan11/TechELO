@@ -1,5 +1,5 @@
 export type GameType = 'pool' | 'ping_pong'
-export type MatchStatus = 'pending_start' | 'in_progress' | 'pending_result' | 'completed' | 'disputed' | 'cancelled'
+export type MatchStatus = 'pending_start' | 'in_progress' | 'pending_result' | 'completed' | 'disputed' | 'cancelled' | 'challenge_expired'
 
 export interface Database {
   public: {

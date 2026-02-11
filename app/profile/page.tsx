@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import NavBar from '@/components/layout/NavBar'
-import { getHouseColor, getHouseTextColor } from '@/lib/utils'
+import { getHouseColor, getHouseTextColor, getMatchStatusLabel } from '@/lib/utils'
 
 export default async function ProfilePage() {
   const supabase = await createClient()
@@ -193,7 +193,7 @@ export default async function ProfilePage() {
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-medium text-white capitalize">
-                        {match.status.replace('_', ' ')}
+                        {getMatchStatusLabel(match.status)}
                       </p>
                       {match.winner_id && (
                         <p className="text-xs text-gray-400">

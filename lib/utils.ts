@@ -18,6 +18,26 @@ export function normalizePhoneToE164(phone: string | null | undefined): string |
   return null
 }
 
+/** Challenge (pending_start match) expires after this many milliseconds (1 hour) */
+export const CHALLENGE_EXPIRY_MS = 60 * 60 * 1000
+
+/**
+ * Returns true if a challenge created at createdAt is past the expiry window (1 hour).
+ */
+export function isChallengeExpired(createdAt: string | number | Date): boolean {
+  const created = typeof createdAt === 'object' && createdAt instanceof Date
+    ? createdAt.getTime()
+    : new Date(createdAt).getTime()
+  return Date.now() - created > CHALLENGE_EXPIRY_MS
+}
+
+/** User-facing label for match status (e.g. "Challenge expired", "Cancelled") */
+export function getMatchStatusLabel(status: string): string {
+  if (status === 'challenge_expired') return 'Challenge expired'
+  if (status === 'cancelled') return 'Cancelled'
+  return status.replace(/_/g, ' ')
+}
+
 /**
  * Validate if email is from university domain
  */

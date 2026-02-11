@@ -37,6 +37,7 @@ export default async function MatchesPage() {
       case 'disputed':
         return 'bg-red-900/30 text-red-200'
       case 'cancelled':
+      case 'challenge_expired':
         return 'bg-gray-700 text-gray-400'
       default:
         return 'bg-gray-700 text-gray-200'
@@ -79,7 +80,7 @@ export default async function MatchesPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-4">
                       <span className={`rounded-full px-3 py-1 text-xs font-medium ${getStatusColor(match.status)}`}>
-                        {match.status.replace('_', ' ').toUpperCase()}
+                        {match.status === 'challenge_expired' ? 'Challenge expired' : match.status === 'cancelled' ? 'Cancelled' : match.status.replace('_', ' ').toUpperCase()}
                       </span>
                       <span className="text-sm text-gray-400 capitalize">{match.game_type}</span>
                     </div>

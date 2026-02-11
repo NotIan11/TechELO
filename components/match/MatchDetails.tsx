@@ -65,6 +65,7 @@ export default function MatchDetails({ match: initialMatch, currentUserId }: Mat
       case 'disputed':
         return 'bg-red-900/30 text-red-200'
       case 'cancelled':
+      case 'challenge_expired':
         return 'bg-gray-700 text-gray-400'
       default:
         return 'bg-gray-700 text-gray-200'
@@ -77,7 +78,7 @@ export default function MatchDetails({ match: initialMatch, currentUserId }: Mat
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-2xl font-bold text-white">Match Details</h1>
           <span className={`rounded-full px-3 py-1 text-sm font-medium ${getStatusColor(match.status)}`}>
-            {match.status.replace('_', ' ').toUpperCase()}
+            {match.status === 'challenge_expired' ? 'Challenge expired' : match.status === 'cancelled' ? 'Cancelled' : match.status.replace('_', ' ').toUpperCase()}
           </span>
         </div>
 
