@@ -3,26 +3,53 @@
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import ThemeToggle from '@/components/ui/ThemeToggle'
+import Link from 'next/link'
+import Avatar from '@/components/ui/Avatar'
+import Button from '@/components/ui/Button'
+
+interface ProfileSummary {
+  display_name: string
+  profile_image_url: string | null
+}
 
 export default function UserButton() {
-  const [user, setUser] = useState<any>(null)
+  const [userId, setUserId] = useState<string | null>(null)
+  const [profile, setProfile] = useState<ProfileSummary | null>(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
   useEffect(() => {
     const supabase = createClient()
-    
+    let cancelled = false
+
+    const loadProfile = async (id: string) => {
+      const { data } = await supabase
+        .from('users')
+        .select('display_name, profile_image_url')
+        .eq('id', id)
+        .single()
+      if (!cancelled) setProfile(data)
+    }
+
     supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user)
+      if (cancelled) return
+      setUserId(user?.id ?? null)
       setLoading(false)
+      if (user) loadProfile(user.id)
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
+      if (cancelled) return
+      const id = session?.user?.id ?? null
+      setUserId(id)
+      if (id) loadProfile(id)
+      else setProfile(null)
     })
 
-    return () => subscription.unsubscribe()
+    return () => {
+      cancelled = true
+      subscription.unsubscribe()
+    }
   }, [])
 
   const handleSignOut = async () => {
@@ -33,34 +60,40 @@ export default function UserButton() {
   }
 
   if (loading) {
-    return <div className="h-8 w-8 animate-pulse rounded-full bg-gray-700" />
+    return <div className="h-9 w-9 animate-pulse rounded-full bg-white/[0.06]" />
   }
 
-  if (!user) {
+  if (!userId) {
     return (
-      <a
-        href="/login"
-        className="inline-flex min-h-[44px] items-center rounded-md bg-blue-600 px-4 py-3 text-white hover:bg-blue-700"
-      >
+      <Button href="/login" size="sm">
         Sign In
-      </a>
+      </Button>
     )
   }
 
   return (
-    <div className="flex items-center gap-2 sm:gap-4">
-      <a
+    <div className="flex items-center gap-1.5">
+      <Link
         href="/profile"
-        className="inline-flex min-h-[44px] items-center text-sm text-gray-300 hover:text-white"
+        aria-label="Your profile"
+        className="rounded-full transition hover:ring-2 hover:ring-orange-400/50"
       >
-        Profile
-      </a>
+        <Avatar src={profile?.profile_image_url} name={profile?.display_name || 'Me'} size="sm" />
+      </Link>
       <button
         type="button"
         onClick={handleSignOut}
-        className="inline-flex min-h-[44px] items-center rounded-md bg-gray-700 px-4 py-3 text-sm text-gray-300 hover:bg-gray-600"
+        aria-label="Sign out"
+        title="Sign out"
+        className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-slate-400 transition hover:bg-white/[0.06] hover:text-white"
       >
-        Sign Out
+        <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9"
+          />
+        </svg>
       </button>
     </div>
   )

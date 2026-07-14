@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import NavBar from '@/components/layout/NavBar'
+import AppShell from '@/components/layout/AppShell'
+import PageHeader from '@/components/ui/PageHeader'
 import InboxClient from '@/components/inbox/InboxClient'
 import { isChallengeExpired } from '@/lib/utils'
 
@@ -9,15 +10,15 @@ export default async function InboxPage() {
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect('/login')
+    redirect('/login?redirect=/inbox')
   }
 
   const { data: matches } = await supabase
     .from('matches')
     .select(`
       *,
-      player1:users!player1_id(id, display_name),
-      player2:users!player2_id(id, display_name)
+      player1:users!player1_id(id, display_name, profile_image_url),
+      player2:users!player2_id(id, display_name, profile_image_url)
     `)
     .or(`player1_id.eq.${user.id},player2_id.eq.${user.id}`)
     .in('status', ['pending_start', 'in_progress', 'pending_result'])
@@ -25,7 +26,7 @@ export default async function InboxPage() {
 
   type PendingItem = {
     match: NonNullable<typeof matches>[number]
-    action: 'accept_start' | 'decline_start' | 'report_result'
+    action: 'accept_start' | 'report_result'
   }
   const pendingItems: PendingItem[] = []
 
@@ -33,7 +34,12 @@ export default async function InboxPage() {
     const isPlayer1 = match.player1_id === user.id
     const isPlayer2 = match.player2_id === user.id
 
-    if (match.status === 'pending_start' && isPlayer2 && !match.player2_start_accepted && !isChallengeExpired(match.created_at)) {
+    if (
+      match.status === 'pending_start' &&
+      isPlayer2 &&
+      !match.player2_start_accepted &&
+      !isChallengeExpired(match.created_at)
+    ) {
       pendingItems.push({ match, action: 'accept_start' })
     } else if (
       (match.status === 'in_progress' || match.status === 'pending_result') &&
@@ -44,12 +50,9 @@ export default async function InboxPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900">
-      <NavBar />
-      <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold text-white mb-8">Inbox</h1>
-        <InboxClient pendingItems={pendingItems} />
-      </div>
-    </div>
+    <AppShell width="4xl">
+      <PageHeader title="Inbox" subtitle="Challenges and results waiting on you" />
+      <InboxClient pendingItems={pendingItems} currentUserId={user.id} />
+    </AppShell>
   )
 }

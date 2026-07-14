@@ -1,4 +1,3 @@
-import { redirect } from 'next/navigation'
 import ConfirmEmail from '@/components/auth/ConfirmEmail'
 
 type SearchParams = { token_hash?: string; type?: string }

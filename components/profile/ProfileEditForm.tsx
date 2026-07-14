@@ -3,7 +3,10 @@
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import Image from 'next/image'
+import Avatar from '@/components/ui/Avatar'
+import Button from '@/components/ui/Button'
+import Card from '@/components/ui/Card'
+
 interface Profile {
   id: string
   display_name: string
@@ -27,19 +30,16 @@ export default function ProfileEditForm({ profile }: ProfileEditFormProps) {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      // Validate file type
       if (!file.type.startsWith('image/')) {
         setError('Please select an image file')
         return
       }
-      // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         setError('Image size must be less than 5MB')
         return
       }
       setProfileImage(file)
       setError('')
-      // Create preview
       const reader = new FileReader()
       reader.onloadend = () => {
         setPreviewUrl(reader.result as string)
@@ -64,15 +64,13 @@ export default function ProfileEditForm({ profile }: ProfileEditFormProps) {
       const supabase = createClient()
       let imageUrl = profile.profile_image_url
 
-      // Upload image if selected
       if (profileImage) {
         const fileExt = profileImage.name.split('.').pop()
         const fileName = `${profile.id}-${Date.now()}.${fileExt}`
-        const filePath = fileName
 
         const { error: uploadError } = await supabase.storage
           .from('profile-pictures')
-          .upload(filePath, profileImage, {
+          .upload(fileName, profileImage, {
             cacheControl: '3600',
             upsert: true,
           })
@@ -81,10 +79,9 @@ export default function ProfileEditForm({ profile }: ProfileEditFormProps) {
           throw new Error(`Failed to upload image: ${uploadError.message}`)
         }
 
-        // Get public URL
         const { data: urlData } = supabase.storage
           .from('profile-pictures')
-          .getPublicUrl(filePath)
+          .getPublicUrl(fileName)
 
         imageUrl = urlData.publicUrl
       }
@@ -101,11 +98,11 @@ export default function ProfileEditForm({ profile }: ProfileEditFormProps) {
         throw new Error(updateError.message)
       }
 
-      setMessage('Profile updated successfully!')
+      setMessage('Profile updated!')
       setTimeout(() => {
         router.push(`/profile/${profile.id}`)
         router.refresh()
-      }, 1000)
+      }, 800)
     } catch (err: any) {
       setError(err.message || 'An error occurred')
     } finally {
@@ -114,97 +111,66 @@ export default function ProfileEditForm({ profile }: ProfileEditFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 rounded-lg bg-gray-800 p-6 shadow">
-      {/* Profile Picture */}
-      <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">
-          Profile Picture
-        </label>
-        <div className="flex items-center gap-4">
-          <div className="relative w-24 h-24 rounded-full overflow-hidden bg-gray-700">
-            {previewUrl ? (
-              <Image
-                src={previewUrl}
-                alt="Profile"
-                fill
-                className="object-cover"
+    <Card>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Profile Picture */}
+        <div>
+          <p className="label">Profile Picture</p>
+          <div className="flex items-center gap-5">
+            <Avatar src={previewUrl} name={displayName || profile.display_name} size="xl" />
+            <div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="hidden"
               />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-gray-500">
-                <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-              </div>
-            )}
-          </div>
-          <div>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
-              className="hidden"
-            />
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="min-h-[44px] rounded-md bg-gray-700 px-4 py-3 text-sm text-gray-300 hover:bg-gray-600"
-            >
-              Change Picture
-            </button>
-            {profileImage && (
-              <p className="mt-1 text-xs text-gray-400">
-                {profileImage.name}
-              </p>
-            )}
+              <Button type="button" variant="secondary" size="sm" onClick={() => fileInputRef.current?.click()}>
+                Change picture
+              </Button>
+              {profileImage && <p className="mt-1.5 text-xs text-slate-500">{profileImage.name}</p>}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Display Name */}
-      <div>
-        <label htmlFor="displayName" className="block text-sm font-medium text-gray-300">
-          Display Name
-        </label>
-        <input
-          id="displayName"
-          type="text"
-          required
-          value={displayName}
-          onChange={(e) => setDisplayName(e.target.value)}
-          className="mt-1 block w-full min-h-[44px] rounded-md border border-gray-600 bg-gray-700 text-white px-3 py-2 text-base shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
-          placeholder="Your display name"
-        />
-      </div>
-
-      {error && (
-        <div className="rounded-md bg-red-900/20 p-4">
-          <p className="text-sm text-red-200">{error}</p>
+        {/* Display Name */}
+        <div>
+          <label htmlFor="displayName" className="label">
+            Display Name
+          </label>
+          <input
+            id="displayName"
+            type="text"
+            required
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+            className="input"
+            placeholder="Your display name"
+          />
         </div>
-      )}
 
-      {message && (
-        <div className="rounded-md bg-green-900/20 p-4">
-          <p className="text-sm text-green-200">{message}</p>
+        {error && (
+          <div className="rounded-xl border border-red-500/25 bg-red-500/10 p-4">
+            <p className="text-sm text-red-300">{error}</p>
+          </div>
+        )}
+
+        {message && (
+          <div className="rounded-xl border border-emerald-500/25 bg-emerald-500/10 p-4">
+            <p className="text-sm text-emerald-300">{message}</p>
+          </div>
+        )}
+
+        <div className="flex gap-3">
+          <Button type="submit" disabled={loading} className="flex-1">
+            {loading ? 'Saving…' : 'Save changes'}
+          </Button>
+          <Button type="button" variant="secondary" onClick={() => router.back()}>
+            Cancel
+          </Button>
         </div>
-      )}
-
-      <div className="flex gap-4">
-        <button
-          type="submit"
-          disabled={loading}
-          className="flex-1 min-h-[44px] rounded-md bg-blue-600 px-4 py-3 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
-        >
-          {loading ? 'Saving...' : 'Save Changes'}
-        </button>
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="min-h-[44px] rounded-md bg-gray-700 px-4 py-3 text-gray-300 hover:bg-gray-600"
-        >
-          Cancel
-        </button>
-      </div>
-    </form>
+      </form>
+    </Card>
   )
 }

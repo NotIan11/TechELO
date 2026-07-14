@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { isMissingRpc, matchRpcErrorMessage } from '@/lib/utils'
 
 export async function POST(request: Request) {
   try {
@@ -20,7 +21,25 @@ export async function POST(request: Request) {
       )
     }
 
-    // Get match
+    // Validated, race-safe path (migration 012)
+    const { data: rpcRows, error: rpcError } = await supabase.rpc('report_match_result', {
+      p_match_id: match_id,
+      p_winner_id: winner_id,
+    })
+
+    if (!rpcError) {
+      const updatedMatch = Array.isArray(rpcRows) ? rpcRows[0] : rpcRows
+      return NextResponse.json({ match: updatedMatch }, { status: 200 })
+    }
+
+    if (!isMissingRpc(rpcError)) {
+      return NextResponse.json(
+        { error: matchRpcErrorMessage(rpcError.message) },
+        { status: 400 }
+      )
+    }
+
+    // Legacy fallback for databases without migration 012
     const { data: match, error: matchError } = await supabase
       .from('matches')
       .select('*')
@@ -34,7 +53,6 @@ export async function POST(request: Request) {
       )
     }
 
-    // Verify match is in correct status
     if (match.status !== 'in_progress' && match.status !== 'pending_result') {
       return NextResponse.json(
         { error: 'Match is not in a state to accept results' },
@@ -42,7 +60,6 @@ export async function POST(request: Request) {
       )
     }
 
-    // Verify user is part of the match
     if (match.player1_id !== user.id && match.player2_id !== user.id) {
       return NextResponse.json(
         { error: 'Not authorized to accept this match' },
@@ -50,7 +67,6 @@ export async function POST(request: Request) {
       )
     }
 
-    // Verify winner is one of the players
     if (winner_id !== match.player1_id && winner_id !== match.player2_id) {
       return NextResponse.json(
         { error: 'Winner must be one of the players' },
@@ -58,27 +74,23 @@ export async function POST(request: Request) {
       )
     }
 
-    // Update acceptance status
     const isPlayer1 = match.player1_id === user.id
     const updateData: any = {
       status: 'pending_result',
     }
-    
+
     if (isPlayer1) {
       updateData.player1_result_accepted = true
-      // If player1 is setting the result, set winner
       if (!match.winner_id) {
         updateData.winner_id = winner_id
       }
     } else {
       updateData.player2_result_accepted = true
-      // If player2 is setting the result, set winner
       if (!match.winner_id) {
         updateData.winner_id = winner_id
       }
     }
 
-    // Check if both players have accepted
     const player1Accepted = isPlayer1 ? true : match.player1_result_accepted
     const player2Accepted = !isPlayer1 ? true : match.player2_result_accepted
 

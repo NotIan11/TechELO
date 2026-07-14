@@ -1,14 +1,20 @@
 import type { Metadata, Viewport } from 'next'
+import { Inter, Space_Grotesk } from 'next/font/google'
 import './globals.css'
-import { ThemeProvider } from '@/components/ui/ThemeProvider'
+
+const inter = Inter({ subsets: ['latin'], variable: '--font-body' })
+const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-display' })
 
 export const metadata: Metadata = {
-  title: 'Tech ELO - ELO Tracking for Pool & Ping Pong',
-  description: 'Track ELO ratings for pool and ping pong matches in your house',
-  manifest: '/manifest.json',
+  title: {
+    default: 'Tech ELO — Pool & Ping Pong Rankings',
+    template: '%s · Tech ELO',
+  },
+  description:
+    'Challenge your housemates, report results, and climb the pool and ping pong rankings.',
   appleWebApp: {
     capable: true,
-    statusBarStyle: 'default',
+    statusBarStyle: 'black-translucent',
     title: 'Tech ELO',
   },
 }
@@ -16,7 +22,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#2563eb',
+  themeColor: '#0a0e16',
 }
 
 export default function RootLayout({
@@ -25,14 +31,8 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <link rel="icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" href="/icon-192.png" />
-      </head>
-      <body className="antialiased">
-        <ThemeProvider>{children}</ThemeProvider>
-      </body>
+    <html lang="en" className={`dark ${inter.variable} ${spaceGrotesk.variable}`}>
+      <body className="font-sans antialiased">{children}</body>
     </html>
   )
 }

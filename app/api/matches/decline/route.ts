@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { isMissingRpc, matchRpcErrorMessage } from '@/lib/utils'
 
 export async function POST(request: Request) {
   try {
@@ -20,6 +21,24 @@ export async function POST(request: Request) {
       )
     }
 
+    // Validated, race-safe path (migration 012)
+    const { data: rpcRows, error: rpcError } = await supabase.rpc('decline_match', {
+      p_match_id: match_id,
+    })
+
+    if (!rpcError) {
+      const updatedMatch = Array.isArray(rpcRows) ? rpcRows[0] : rpcRows
+      return NextResponse.json({ match: updatedMatch }, { status: 200 })
+    }
+
+    if (!isMissingRpc(rpcError)) {
+      return NextResponse.json(
+        { error: matchRpcErrorMessage(rpcError.message) },
+        { status: 400 }
+      )
+    }
+
+    // Legacy fallback for databases without migration 012
     const { data: match, error: matchError } = await supabase
       .from('matches')
       .select('*')

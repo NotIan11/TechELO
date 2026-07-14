@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { getInitialRating } from '@/lib/elo'
 import { sendEmail } from '@/lib/email'
+import { isChallengeExpired } from '@/lib/utils'
 
 function escapeHtml(s: string): string {
   return s
@@ -52,6 +53,27 @@ export async function POST(request: Request) {
       )
     }
 
+    // One active match per pair per game (also enforced by a DB unique index
+    // after migration 012 — this check just gives a friendlier error first)
+    const { data: existingMatches } = await supabase
+      .from('matches')
+      .select('id, player1_id, player2_id, created_at, status')
+      .eq('game_type', game_type)
+      .in('status', ['pending_start', 'in_progress', 'pending_result'])
+      .or(
+        `and(player1_id.eq.${user.id},player2_id.eq.${player2_id}),and(player1_id.eq.${player2_id},player2_id.eq.${user.id})`
+      )
+
+    const activeMatch = (existingMatches ?? []).find(
+      (m) => !(m.status === 'pending_start' && isChallengeExpired(m.created_at))
+    )
+    if (activeMatch) {
+      return NextResponse.json(
+        { error: 'You already have an active match with this player. Finish or cancel it first.' },
+        { status: 409 }
+      )
+    }
+
     // Get current ELO ratings
     const { data: player1Elo } = await supabase
       .from('elo_ratings')
@@ -86,6 +108,12 @@ export async function POST(request: Request) {
       .single()
 
     if (error) {
+      if (error.code === '23505') {
+        return NextResponse.json(
+          { error: 'You already have an active match with this player. Finish or cancel it first.' },
+          { status: 409 }
+        )
+      }
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 

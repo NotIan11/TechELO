@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import DormDetails from '@/components/dorm/DormDetails'
-import NavBar from '@/components/layout/NavBar'
+import AppShell from '@/components/layout/AppShell'
 
 export default async function DormPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -9,10 +9,9 @@ export default async function DormPage({ params }: { params: Promise<{ id: strin
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect('/login')
+    redirect(`/login?redirect=/dorms/${id}`)
   }
 
-  // Get dorm details
   const { data: dorm } = await supabase
     .from('dorms')
     .select('*')
@@ -23,78 +22,72 @@ export default async function DormPage({ params }: { params: Promise<{ id: strin
     notFound()
   }
 
-  // Get dorm members
-  const { data: members } = await supabase
-    .from('users')
-    .select('id, display_name, university_email, profile_image_url, created_at')
-    .eq('dorm_id', id)
-    .order('display_name')
-
-  // Get user's current dorm
-  const { data: userProfile } = await supabase
-    .from('users')
-    .select('dorm_id')
-    .eq('id', user.id)
-    .single()
+  const [
+    { data: members },
+    { data: userProfile },
+    { data: poolLeaderboard },
+    { data: pingPongLeaderboard },
+  ] = await Promise.all([
+    supabase
+      .from('users')
+      .select('id, display_name, university_email, profile_image_url, created_at')
+      .eq('dorm_id', id)
+      .order('display_name'),
+    supabase.from('users').select('dorm_id').eq('id', user.id).single(),
+    supabase.rpc('get_leaderboard', { p_game_type: 'pool', p_limit: 10, p_offset: 0, p_dorm_id: id }),
+    supabase.rpc('get_leaderboard', { p_game_type: 'ping_pong', p_limit: 10, p_offset: 0, p_dorm_id: id }),
+  ])
 
   const isMember = userProfile?.dorm_id === id
+  const memberIds = members?.map((m) => m.id) || []
 
-  // Get dorm leaderboard for both game types
-  const { data: poolLeaderboard } = await supabase.rpc('get_leaderboard', {
-    p_game_type: 'pool',
-    p_limit: 10,
-    p_offset: 0,
-    p_dorm_id: id,
-  })
-
-  const { data: pingPongLeaderboard } = await supabase.rpc('get_leaderboard', {
-    p_game_type: 'ping_pong',
-    p_limit: 10,
-    p_offset: 0,
-    p_dorm_id: id,
-  })
-
-  // Get dorm statistics
-  const { data: poolStats } = await supabase
-    .from('elo_ratings')
-    .select('rating, wins, losses, matches_played')
-    .eq('game_type', 'pool')
-    .in('user_id', members?.map((m) => m.id) || [])
-
-  const { data: pingPongStats } = await supabase
-    .from('elo_ratings')
-    .select('rating, wins, losses, matches_played')
-    .eq('game_type', 'ping_pong')
-    .in('user_id', members?.map((m) => m.id) || [])
+  const [{ data: poolStats }, { data: pingPongStats }] = await Promise.all([
+    supabase
+      .from('elo_ratings')
+      .select('rating, wins, losses, matches_played')
+      .eq('game_type', 'pool')
+      .in('user_id', memberIds),
+    supabase
+      .from('elo_ratings')
+      .select('rating, wins, losses, matches_played')
+      .eq('game_type', 'ping_pong')
+      .in('user_id', memberIds),
+  ])
 
   const totalPoolMatches = poolStats?.reduce((sum, stat) => sum + stat.matches_played, 0) || 0
   const totalPingPongMatches = pingPongStats?.reduce((sum, stat) => sum + stat.matches_played, 0) || 0
-  const avgPoolRating = poolStats && poolStats.length > 0
-    ? Math.round(poolStats.reduce((sum, stat) => sum + stat.rating, 0) / poolStats.length)
-    : 0
-  const avgPingPongRating = pingPongStats && pingPongStats.length > 0
-    ? Math.round(pingPongStats.reduce((sum, stat) => sum + stat.rating, 0) / pingPongStats.length)
-    : 0
+  const rankedPool = (poolStats ?? []).filter((s) => s.matches_played > 0)
+  const rankedPong = (pingPongStats ?? []).filter((s) => s.matches_played > 0)
+  const avgPoolRating =
+    rankedPool.length > 0
+      ? Math.round(rankedPool.reduce((sum, stat) => sum + stat.rating, 0) / rankedPool.length)
+      : 0
+  const avgPingPongRating =
+    rankedPong.length > 0
+      ? Math.round(rankedPong.reduce((sum, stat) => sum + stat.rating, 0) / rankedPong.length)
+      : 0
+
+  // get_leaderboard doesn't return avatars; the members list has them
+  const avatarMap = Object.fromEntries((members ?? []).map((m) => [m.id, m.profile_image_url]))
+  const withAvatars = (rows: any[] | null) =>
+    (rows ?? []).map((r) => ({ ...r, profile_image_url: avatarMap[r.user_id] ?? null }))
 
   return (
-    <div className="min-h-screen bg-gray-900">
-      <NavBar />
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <DormDetails
-          dorm={dorm}
-          members={members || []}
-          isMember={isMember}
-          poolLeaderboard={poolLeaderboard || []}
-          pingPongLeaderboard={pingPongLeaderboard || []}
-          stats={{
-            totalMembers: members?.length || 0,
-            totalPoolMatches,
-            totalPingPongMatches,
-            avgPoolRating,
-            avgPingPongRating,
-          }}
-        />
-      </div>
-    </div>
+    <AppShell>
+      <DormDetails
+        dorm={dorm}
+        members={members || []}
+        isMember={isMember}
+        poolLeaderboard={withAvatars(poolLeaderboard)}
+        pingPongLeaderboard={withAvatars(pingPongLeaderboard)}
+        stats={{
+          totalMembers: members?.length || 0,
+          totalPoolMatches,
+          totalPingPongMatches,
+          avgPoolRating,
+          avgPingPongRating,
+        }}
+      />
+    </AppShell>
   )
 }

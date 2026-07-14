@@ -1,117 +1,80 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
-import { formatDateTime } from '@/lib/utils'
-import NavBar from '@/components/layout/NavBar'
+import AppShell from '@/components/layout/AppShell'
+import PageHeader from '@/components/ui/PageHeader'
+import EmptyState from '@/components/ui/EmptyState'
+import Button from '@/components/ui/Button'
+import MatchCard, { type MatchWithPlayers } from '@/components/match/MatchCard'
+
+const ACTIVE_STATUSES = ['pending_start', 'in_progress', 'pending_result']
 
 export default async function MatchesPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect('/login')
+    redirect('/login?redirect=/matches')
   }
 
-  // Get all matches for the user
   const { data: matches } = await supabase
     .from('matches')
     .select(`
       *,
-      player1:users!player1_id(id, display_name),
-      player2:users!player2_id(id, display_name)
+      player1:users!player1_id(id, display_name, profile_image_url),
+      player2:users!player2_id(id, display_name, profile_image_url)
     `)
     .or(`player1_id.eq.${user.id},player2_id.eq.${user.id}`)
     .order('created_at', { ascending: false })
     .limit(50)
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'pending_start':
-        return 'bg-yellow-900/30 text-yellow-200'
-      case 'in_progress':
-        return 'bg-blue-900/30 text-blue-200'
-      case 'pending_result':
-        return 'bg-purple-900/30 text-purple-200'
-      case 'completed':
-        return 'bg-green-900/30 text-green-200'
-      case 'disputed':
-        return 'bg-red-900/30 text-red-200'
-      case 'cancelled':
-      case 'challenge_expired':
-        return 'bg-gray-700 text-gray-400'
-      default:
-        return 'bg-gray-700 text-gray-200'
-    }
-  }
+  const all = (matches ?? []) as MatchWithPlayers[]
+  const active = all.filter((m) => ACTIVE_STATUSES.includes(m.status))
+  const past = all.filter((m) => !ACTIVE_STATUSES.includes(m.status))
 
   return (
-    <div className="min-h-screen bg-gray-900">
-      <NavBar />
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <h1 className="text-3xl font-bold text-white">Match History</h1>
-          <Link
-            href="/matches/new"
-            className="inline-flex min-h-[44px] items-center justify-center rounded-md bg-blue-600 px-4 py-3 text-white hover:bg-blue-700 sm:shrink-0"
-          >
-            New Match
-          </Link>
-        </div>
+    <AppShell width="4xl">
+      <PageHeader
+        title="Matches"
+        subtitle="Your challenges and results"
+        actions={<Button href="/matches/new">+ New Match</Button>}
+      />
 
-        {!matches || matches.length === 0 ? (
-          <div className="rounded-lg bg-gray-800 p-8 text-center shadow">
-            <p className="text-gray-400">No matches yet. Start your first match!</p>
-            <Link
-              href="/matches/new"
-              className="mt-4 inline-flex min-h-[44px] items-center rounded-md bg-blue-600 px-4 py-3 text-white hover:bg-blue-700"
-            >
-              Create Match
-            </Link>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {matches.map((match: any) => (
-              <Link
-                key={match.id}
-                href={`/matches/${match.id}`}
-                className="block rounded-lg bg-gray-800 p-6 shadow hover:shadow-md transition-shadow"
-              >
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-4">
-                      <span className={`rounded-full px-3 py-1 text-xs font-medium ${getStatusColor(match.status)}`}>
-                        {match.status === 'challenge_expired' ? 'Challenge expired' : match.status === 'cancelled' ? 'Cancelled' : match.status.replace('_', ' ').toUpperCase()}
-                      </span>
-                      <span className="text-sm text-gray-400 capitalize">{match.game_type}</span>
-                    </div>
-                    <h2 className="mt-2 text-lg font-semibold text-white">
-                      {match.player1.display_name} vs {match.player2.display_name}
-                    </h2>
-                    <p className="mt-1 text-sm text-gray-400">
-                      {formatDateTime(match.created_at)}
-                    </p>
-                    {match.winner_id && (
-                      <p className="mt-2 text-sm text-green-400">
-                        Winner: {match.winner_id === match.player1_id ? match.player1.display_name : match.player2.display_name}
-                      </p>
-                    )}
-                  </div>
-                  {(match.player1_elo_after && match.player2_elo_after) && (
-                    <div className="text-sm sm:text-right border-t border-gray-700 pt-4 sm:border-t-0 sm:pt-0">
-                      <p className="text-gray-300">
-                        {match.player1.display_name}: {match.player1_elo_before} → {match.player1_elo_after}
-                      </p>
-                      <p className="text-gray-300">
-                        {match.player2.display_name}: {match.player2_elo_before} → {match.player2_elo_after}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
+      {all.length === 0 ? (
+        <EmptyState
+          icon="🎱"
+          title="No matches yet"
+          description="Challenge a housemate to your first game — once you both confirm the result, your rating starts moving."
+          action={<Button href="/matches/new">Start your first match</Button>}
+        />
+      ) : (
+        <div className="space-y-8">
+          {active.length > 0 && (
+            <section>
+              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-500">
+                Active
+              </h2>
+              <div className="space-y-3">
+                {active.map((match) => (
+                  <MatchCard key={match.id} match={match} viewerId={user.id} />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {past.length > 0 && (
+            <section>
+              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-500">
+                History
+              </h2>
+              <div className="space-y-3">
+                {past.map((match) => (
+                  <MatchCard key={match.id} match={match} viewerId={user.id} />
+                ))}
+              </div>
+            </section>
+          )}
+        </div>
+      )}
+    </AppShell>
   )
 }

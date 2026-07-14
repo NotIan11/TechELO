@@ -1,9 +1,12 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { isValidUniversityEmail } from '@/lib/utils'
 import { useRouter, useSearchParams } from 'next/navigation'
+import AuthShell from './AuthShell'
+import Button from '@/components/ui/Button'
 
 export default function LoginForm() {
   const [email, setEmail] = useState('')
@@ -27,15 +30,16 @@ export default function LoginForm() {
       setError('Authentication failed. Please try again.')
     } else if (errorParam === 'no_email') {
       setError('User account has no email address. Please contact support.')
+    } else if (errorParam === 'invalid_domain') {
+      setError(`Please use your university email address (${universityDomain}).`)
     }
-  }, [searchParams])
+  }, [searchParams, universityDomain])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError('')
 
-    // Validate university email
     if (!isValidUniversityEmail(email, universityDomain)) {
       setError(`Please use your university email address (${universityDomain})`)
       setLoading(false)
@@ -50,7 +54,7 @@ export default function LoginForm() {
 
     try {
       const supabase = createClient()
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
@@ -74,19 +78,16 @@ export default function LoginForm() {
             setError(`Please confirm your email address. A new confirmation email has been sent to ${email}. Please check your email and click the confirmation link before trying to log in again.`)
           }
         } else if (error.message?.includes('Invalid login credentials')) {
-          setError('Incorrect password.')
+          setError('Incorrect email or password.')
         } else {
           throw error
         }
         return
       }
 
-      // After successful login, check if we need to redirect to setup-password
-      // This check happens in middleware or we can do it here
       router.push(redirect)
       router.refresh()
     } catch (error: any) {
-      // Handle any other errors
       setError(error.message || 'Invalid email or password')
     } finally {
       setLoading(false)
@@ -94,79 +95,66 @@ export default function LoginForm() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-4 bg-gray-900">
-      <div className="w-full max-w-md space-y-8 rounded-lg border border-gray-700 bg-gray-800 p-8 shadow-lg">
+    <AuthShell title="Welcome back" subtitle="Sign in to challenge, confirm, and climb">
+      <form onSubmit={handleLogin} className="space-y-5">
         <div>
-          <h1 className="text-3xl font-bold text-center text-white">Tech ELO</h1>
-          <p className="mt-2 text-center text-gray-400">Sign in to your account</p>
+          <label htmlFor="email" className="label">
+            University Email
+          </label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="input"
+            placeholder={`your.email${universityDomain}`}
+          />
+          <p className="mt-1.5 text-xs text-slate-500">Must be a {universityDomain} email address</p>
         </div>
 
-        <form onSubmit={handleLogin} className="mt-8 space-y-6">
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-300">
-              University Email
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 block w-full min-h-[44px] rounded-md border border-gray-600 bg-gray-700 text-white px-3 py-2 text-base shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
-              placeholder={`your.email${universityDomain}`}
-            />
-            <p className="mt-1 text-xs text-gray-400">
-              Must be a {universityDomain} email address
-            </p>
+        <div>
+          <label htmlFor="password" className="label">
+            Password
+          </label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="input"
+            placeholder="Enter your password"
+          />
+        </div>
+
+        {error && (
+          <div className="rounded-xl border border-red-500/25 bg-red-500/10 p-4">
+            <p className="text-sm text-red-300">{error}</p>
           </div>
+        )}
 
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-300">
-              Password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 block w-full min-h-[44px] rounded-md border border-gray-600 bg-gray-700 text-white px-3 py-2 text-base shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
-              placeholder="Enter your password"
-            />
-          </div>
+        <Button type="submit" full disabled={loading}>
+          {loading ? 'Signing in…' : 'Sign In'}
+        </Button>
 
-          {error && (
-            <div className="rounded-md bg-red-900/20 p-4">
-              <p className="text-sm text-red-200">{error}</p>
-            </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full min-h-[44px] rounded-md bg-blue-600 px-4 py-3 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
-          >
-            {loading ? 'Signing in...' : 'Sign In'}
-          </button>
-
-          <div className="text-center space-y-2">
-            <p className="text-sm text-gray-400">
-              Don't have an account?{' '}
-              <a href="/signup" className="text-blue-400 hover:text-blue-300">
-                Sign up
-              </a>
-            </p>
-            <p className="text-sm text-gray-400">
-              Need to set a password?{' '}
-              <a href="/setup-password" className="text-blue-400 hover:text-blue-300">
-                Set Password
-              </a>
-            </p>
-          </div>
-        </form>
-      </div>
-    </div>
+        <div className="space-y-1.5 text-center text-sm text-slate-400">
+          <p>
+            Don&apos;t have an account?{' '}
+            <Link href="/signup" className="font-medium text-orange-400 hover:text-orange-300">
+              Sign up
+            </Link>
+          </p>
+          <p>
+            Need to set a password?{' '}
+            <Link href="/setup-password" className="font-medium text-orange-400 hover:text-orange-300">
+              Set Password
+            </Link>
+          </p>
+        </div>
+      </form>
+    </AuthShell>
   )
 }

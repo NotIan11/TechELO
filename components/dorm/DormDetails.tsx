@@ -3,6 +3,23 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { cn, getHouseColor, formatDate } from '@/lib/utils'
+import Avatar from '@/components/ui/Avatar'
+import Badge from '@/components/ui/Badge'
+import Button from '@/components/ui/Button'
+import Card from '@/components/ui/Card'
+import GameIcon from '@/components/ui/GameIcon'
+
+interface LeaderboardRow {
+  rank: number
+  user_id: string
+  display_name: string
+  rating: number
+  matches_played: number
+  wins: number
+  losses: number
+  profile_image_url: string | null
+}
 
 interface DormDetailsProps {
   dorm: {
@@ -20,24 +37,8 @@ interface DormDetailsProps {
     created_at: string
   }>
   isMember: boolean
-  poolLeaderboard: Array<{
-    rank: number
-    user_id: string
-    display_name: string
-    rating: number
-    matches_played: number
-    wins: number
-    losses: number
-  }>
-  pingPongLeaderboard: Array<{
-    rank: number
-    user_id: string
-    display_name: string
-    rating: number
-    matches_played: number
-    wins: number
-    losses: number
-  }>
+  poolLeaderboard: LeaderboardRow[]
+  pingPongLeaderboard: LeaderboardRow[]
   stats: {
     totalMembers: number
     totalPoolMatches: number
@@ -59,6 +60,7 @@ export default function DormDetails({
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
   const router = useRouter()
+  const color = getHouseColor(dorm.name)
 
   const handleJoin = async () => {
     setLoading(true)
@@ -68,22 +70,17 @@ export default function DormDetails({
     try {
       const response = await fetch('/api/dorms/join', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ dorm_id: dorm.id }),
       })
-
       const data = await response.json()
-
       if (!response.ok) {
         throw new Error(data.error || 'Failed to join house')
       }
-
-      setMessage('Successfully joined house!')
+      setMessage(`Welcome to ${dorm.name}!`)
       setTimeout(() => {
         router.refresh()
-      }, 1000)
+      }, 800)
     } catch (err: any) {
       setError(err.message || 'An error occurred')
     } finally {
@@ -91,151 +88,138 @@ export default function DormDetails({
     }
   }
 
+  const miniBoard = (title: string, game: 'pool' | 'ping_pong', rows: LeaderboardRow[]) => (
+    <Card>
+      <h2 className="mb-4 flex items-center gap-2 font-display text-lg font-semibold text-white">
+        <GameIcon game={game} className={cn('h-5 w-5', game === 'pool' ? 'text-pool' : 'text-pong')} />
+        {title}
+      </h2>
+      {rows.length === 0 ? (
+        <p className="text-sm text-slate-500">No ranked players yet.</p>
+      ) : (
+        <ol className="space-y-1">
+          {rows.map((entry) => (
+            <li key={entry.user_id}>
+              <Link
+                href={`/profile/${entry.user_id}`}
+                className="flex items-center justify-between gap-3 rounded-lg p-2 transition hover:bg-white/[0.04]"
+              >
+                <span className="flex min-w-0 items-center gap-3">
+                  <span className="tabular w-5 shrink-0 text-right text-sm font-semibold text-slate-500">
+                    {entry.rank}
+                  </span>
+                  <Avatar src={entry.profile_image_url} name={entry.display_name} size="xs" />
+                  <span className="truncate text-sm font-medium text-white">{entry.display_name}</span>
+                </span>
+                <span
+                  className={cn(
+                    'tabular shrink-0 text-sm font-bold',
+                    game === 'pool' ? 'text-pool' : 'text-pong'
+                  )}
+                >
+                  {entry.rating}
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ol>
+      )}
+    </Card>
+  )
+
   return (
     <div className="space-y-6">
-      {/* Dorm Header */}
-      <div className="rounded-lg bg-white dark:bg-gray-800 p-6 shadow">
-        <div className="flex items-start justify-between">
+      {/* House header */}
+      <Card className="relative overflow-hidden">
+        <span aria-hidden="true" className="absolute inset-y-0 left-0 w-1.5" style={{ backgroundColor: color }} />
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 opacity-[0.08]"
+          style={{ background: `linear-gradient(120deg, ${color}, transparent 55%)` }}
+        />
+        <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{dorm.name}</h1>
-            {dorm.description && (
-              <p className="mt-2 text-gray-600 dark:text-gray-400">{dorm.description}</p>
-            )}
-            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-              Created {new Date(dorm.created_at).toLocaleDateString()}
-            </p>
+            <h1 className="font-display text-3xl font-bold text-white">{dorm.name}</h1>
+            {dorm.description && <p className="mt-2 text-slate-400">{dorm.description}</p>}
+            <p className="mt-2 text-xs text-slate-500">Founded {formatDate(dorm.created_at)}</p>
           </div>
-          {!isMember && (
-            <button
-              onClick={handleJoin}
-              disabled={loading}
-              className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 disabled:opacity-50"
-            >
-              {loading ? 'Joining...' : 'Join House'}
-            </button>
-          )}
-          {isMember && (
-            <span className="rounded-full bg-green-100 dark:bg-green-900/30 px-4 py-2 text-sm font-medium text-green-800 dark:text-green-200">
+          {isMember ? (
+            <Badge tone="green" dot className="sm:mt-1">
               Member
-            </span>
+            </Badge>
+          ) : (
+            <Button onClick={handleJoin} disabled={loading}>
+              {loading ? 'Joining…' : 'Join house'}
+            </Button>
           )}
         </div>
 
         {error && (
-          <div className="mt-4 rounded-md bg-red-50 dark:bg-red-900/20 p-4">
-            <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
+          <div className="relative z-10 mt-4 rounded-xl border border-red-500/25 bg-red-500/10 p-4">
+            <p className="text-sm text-red-300">{error}</p>
           </div>
         )}
-
         {message && (
-          <div className="mt-4 rounded-md bg-green-50 dark:bg-green-900/20 p-4">
-            <p className="text-sm text-green-800 dark:text-green-200">{message}</p>
+          <div className="relative z-10 mt-4 rounded-xl border border-emerald-500/25 bg-emerald-500/10 p-4">
+            <p className="text-sm text-emerald-300">{message}</p>
           </div>
         )}
-      </div>
+      </Card>
 
       {/* Statistics */}
-      <div className="grid gap-6 md:grid-cols-4">
-        <div className="rounded-lg bg-white dark:bg-gray-800 p-4 shadow">
-          <p className="text-sm text-gray-500 dark:text-gray-400">Total Members</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.totalMembers}</p>
-        </div>
-        <div className="rounded-lg bg-white dark:bg-gray-800 p-4 shadow">
-          <p className="text-sm text-gray-500 dark:text-gray-400">Pool Matches</p>
-          <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.totalPoolMatches}</p>
-        </div>
-        <div className="rounded-lg bg-white dark:bg-gray-800 p-4 shadow">
-          <p className="text-sm text-gray-500 dark:text-gray-400">Ping Pong Matches</p>
-          <p className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.totalPingPongMatches}</p>
-        </div>
-        <div className="rounded-lg bg-white dark:bg-gray-800 p-4 shadow">
-          <p className="text-sm text-gray-500 dark:text-gray-400">Avg Pool Rating</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats.avgPoolRating}</p>
-        </div>
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+        {[
+          { label: 'Members', value: stats.totalMembers, className: 'text-white' },
+          { label: 'Pool matches', value: stats.totalPoolMatches, className: 'text-pool' },
+          { label: 'Ping pong matches', value: stats.totalPingPongMatches, className: 'text-pong' },
+          {
+            label: 'Avg rating',
+            value:
+              stats.avgPoolRating || stats.avgPingPongRating
+                ? Math.round(
+                    (stats.avgPoolRating + stats.avgPingPongRating) /
+                      ((stats.avgPoolRating ? 1 : 0) + (stats.avgPingPongRating ? 1 : 0) || 1)
+                  )
+                : '—',
+            className: 'text-white',
+          },
+        ].map(({ label, value, className }) => (
+          <Card key={label} padding="sm">
+            <p className="text-xs uppercase tracking-wider text-slate-500">{label}</p>
+            <p className={cn('tabular mt-1 font-display text-2xl font-bold', className)}>{value}</p>
+          </Card>
+        ))}
       </div>
 
       {/* Leaderboards */}
       <div className="grid gap-6 md:grid-cols-2">
-        <div className="rounded-lg bg-white dark:bg-gray-800 p-6 shadow">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Pool Leaderboard</h2>
-          {poolLeaderboard.length === 0 ? (
-            <p className="text-gray-500 dark:text-gray-400">No pool players yet</p>
-          ) : (
-            <div className="space-y-2">
-              {poolLeaderboard.map((entry) => (
-                <Link
-                  key={entry.user_id}
-                  href={`/profile/${entry.user_id}`}
-                  className="flex items-center justify-between p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">#{entry.rank}</span>
-                    <span className="text-sm font-medium text-gray-900 dark:text-white">{entry.display_name}</span>
-                  </div>
-                  <span className="text-sm font-bold text-blue-600 dark:text-blue-400">{entry.rating}</span>
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="rounded-lg bg-white dark:bg-gray-800 p-6 shadow">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Ping Pong Leaderboard</h2>
-          {pingPongLeaderboard.length === 0 ? (
-            <p className="text-gray-500 dark:text-gray-400">No ping pong players yet</p>
-          ) : (
-            <div className="space-y-2">
-              {pingPongLeaderboard.map((entry) => (
-                <Link
-                  key={entry.user_id}
-                  href={`/profile/${entry.user_id}`}
-                  className="flex items-center justify-between p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">#{entry.rank}</span>
-                    <span className="text-sm font-medium text-gray-900 dark:text-white">{entry.display_name}</span>
-                  </div>
-                  <span className="text-sm font-bold text-green-600 dark:text-green-400">{entry.rating}</span>
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
+        {miniBoard('Pool', 'pool', poolLeaderboard)}
+        {miniBoard('Ping Pong', 'ping_pong', pingPongLeaderboard)}
       </div>
 
-      {/* Members List */}
-      <div className="rounded-lg bg-white dark:bg-gray-800 p-6 shadow">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Members</h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {members.map((member) => (
-            <Link
-              key={member.id}
-              href={`/profile/${member.id}`}
-              className="p-3 rounded border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-            >
-              <div className="flex items-center gap-3">
-                {member.profile_image_url ? (
-                  <img
-                    src={member.profile_image_url}
-                    alt={member.display_name}
-                    className="w-12 h-12 rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                    <span className="text-gray-500 dark:text-gray-400 text-lg font-semibold">
-                      {member.display_name.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-                )}
-                <div>
-                  <p className="font-medium text-gray-900 dark:text-white">{member.display_name}</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{member.university_email}</p>
+      {/* Members */}
+      <Card>
+        <h2 className="mb-4 font-display text-lg font-semibold text-white">Members</h2>
+        {members.length === 0 ? (
+          <p className="text-sm text-slate-500">No members yet.</p>
+        ) : (
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {members.map((member) => (
+              <Link
+                key={member.id}
+                href={`/profile/${member.id}`}
+                className="flex items-center gap-3 rounded-xl border border-white/[0.06] p-3 transition hover:border-white/[0.14] hover:bg-white/[0.03]"
+              >
+                <Avatar src={member.profile_image_url} name={member.display_name} size="md" />
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-white">{member.display_name}</p>
+                  <p className="truncate text-xs text-slate-500">{member.university_email}</p>
                 </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </Card>
     </div>
   )
 }

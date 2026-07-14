@@ -31,6 +31,18 @@ The application uses the following main tables:
 - **elo_ratings**: Separate ELO ratings for pool and ping pong
 - **match_disputes**: Dispute records for matches
 
+### Migrations
+
+Migrations in `supabase/migrations/` are applied by hand in the Supabase
+dashboard SQL editor, in order (001 through 012).
+
+**Important:** `012_security_hardening_and_rpcs.sql` locks down direct writes
+to `matches`/`elo_ratings` and moves all match state changes into validated
+database functions. The app works before and after it is applied (API routes
+fall back to the legacy path if the functions are missing), but until you run
+it any signed-in user can tamper with ratings and match results directly via
+the Supabase API.
+
 ## ELO Rating System
 
 - Initial rating: 1500

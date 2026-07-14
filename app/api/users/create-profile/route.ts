@@ -35,9 +35,6 @@ export async function POST(request: Request) {
       ? `${firstName.trim()} ${lastName.trim()}`.trim()
       : email.split('@')[0]
     
-    // Wait a moment to ensure auth.users transaction is fully committed
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
     // Use database function to create user profile (bypasses RLS)
     const { error: createError } = await supabase.rpc('create_user_profile', {
       p_user_id: user.id,

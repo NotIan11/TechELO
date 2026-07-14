@@ -2,6 +2,10 @@ import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 
 export async function GET() {
+  // Setup diagnostics only — leaks config/infra details, so keep out of production
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  }
   try {
     const supabase = await createClient()
     

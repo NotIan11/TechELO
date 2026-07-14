@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import Link from 'next/link'
+import Button from '@/components/ui/Button'
 
 export default function Error({
   error,
@@ -16,30 +16,22 @@ export default function Error({
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-4">
-      <div className="rounded-lg bg-white p-8 shadow-lg max-w-md w-full text-center">
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">Something went wrong!</h1>
-        <p className="text-gray-600 mb-6">
-          {error.message || 'An unexpected error occurred'}
+      <div className="card w-full max-w-md p-8 text-center">
+        <p className="mb-3 text-4xl" aria-hidden="true">
+          💥
         </p>
-        {error.digest && (
-          <p className="text-sm text-gray-500 mb-4 font-mono">Digest: {error.digest}</p>
-        )}
-        <p className="text-sm text-gray-500 mb-6">
-          If this happens on Vercel, add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in Project Settings → Environment Variables.
+        <h1 className="font-display text-2xl font-bold text-white">Something went wrong</h1>
+        <p className="mt-2 text-sm text-slate-400">{error.message || 'An unexpected error occurred'}</p>
+        {error.digest && <p className="mt-2 font-mono text-xs text-slate-600">Digest: {error.digest}</p>}
+        <p className="mt-3 text-xs text-slate-500">
+          If this happens on Vercel, add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY
+          in Project Settings → Environment Variables.
         </p>
-        <div className="flex gap-4 justify-center">
-          <button
-            onClick={reset}
-            className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-          >
-            Try Again
-          </button>
-          <Link
-            href="/"
-            className="rounded-md bg-gray-200 px-4 py-2 text-gray-700 hover:bg-gray-300"
-          >
-            Go Home
-          </Link>
+        <div className="mt-6 flex justify-center gap-3">
+          <Button onClick={reset}>Try again</Button>
+          <Button href="/" variant="secondary">
+            Go home
+          </Button>
         </div>
       </div>
     </div>

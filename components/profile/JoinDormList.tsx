@@ -2,7 +2,10 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { getHouseColor, getHouseTextColor } from '@/lib/utils'
+import { getHouseColor } from '@/lib/utils'
+import Badge from '@/components/ui/Badge'
+import Button from '@/components/ui/Button'
+import EmptyState from '@/components/ui/EmptyState'
 
 interface Dorm {
   id: string
@@ -29,75 +32,78 @@ export default function JoinDormList({ dorms, userDormId }: JoinDormListProps) {
     try {
       const response = await fetch('/api/dorms/join', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ dorm_id: dormId }),
       })
-
       const data = await response.json()
-
       if (!response.ok) {
         throw new Error(data.error || 'Failed to join house')
       }
-
       router.push('/profile')
       router.refresh()
     } catch (err: any) {
       setError(err.message || 'An error occurred')
-    } finally {
       setLoading(null)
     }
   }
 
   if (dorms.length === 0) {
     return (
-      <div className="rounded-lg bg-gray-800 p-8 text-center shadow">
-        <p className="text-gray-400 mb-4">No houses available yet.</p>
-      </div>
+      <EmptyState
+        icon="🏠"
+        title="No houses yet"
+        description="Be the founder — create the first house."
+        action={<Button href="/dorms/new">Create a house</Button>}
+      />
     )
   }
 
   return (
     <div className="space-y-4">
       {error && (
-        <div className="rounded-md bg-red-900/20 p-4">
-          <p className="text-sm text-red-200">{error}</p>
+        <div className="rounded-xl border border-red-500/25 bg-red-500/10 p-4">
+          <p className="text-sm text-red-300">{error}</p>
         </div>
       )}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {dorms.map((dorm) => {
-          const isDarkText = getHouseTextColor(dorm.name) === 'black'
+          const color = getHouseColor(dorm.name)
+          const isCurrent = userDormId === dorm.id
           return (
-            <div
-              key={dorm.id}
-              className={`block rounded-lg p-6 shadow hover:shadow-lg transition-shadow ${isDarkText ? 'text-gray-900' : 'text-white'}`}
-              style={{ backgroundColor: getHouseColor(dorm.name) }}
-            >
-              <div className="flex items-start justify-between mb-2">
-                <h2 className="text-xl font-semibold">{dorm.name}</h2>
-                {userDormId === dorm.id && (
-                  <span className={`rounded-full px-2 py-1 text-xs font-medium ${isDarkText ? 'bg-black/20' : 'bg-white/20'}`}>
-                    Current
+            <div key={dorm.id} className="card relative overflow-hidden p-5">
+              <span aria-hidden="true" className="absolute inset-y-0 left-0 w-1.5" style={{ backgroundColor: color }} />
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 opacity-[0.07]"
+                style={{ background: `linear-gradient(120deg, ${color}, transparent 55%)` }}
+              />
+              <div className="relative z-10">
+                <div className="mb-1 flex items-start justify-between gap-2">
+                  <h2 className="font-display text-lg font-semibold text-white">{dorm.name}</h2>
+                  {isCurrent && (
+                    <Badge tone="orange" dot>
+                      Current
+                    </Badge>
+                  )}
+                </div>
+                {dorm.description && (
+                  <p className="mb-3 line-clamp-2 text-sm text-slate-400">{dorm.description}</p>
+                )}
+                <div className="mt-3 flex items-center justify-between">
+                  <span className="text-xs text-slate-500">
+                    {dorm.total_members} member{dorm.total_members === 1 ? '' : 's'}
                   </span>
-                )}
-              </div>
-              {dorm.description && (
-                <p className={`text-sm mb-4 line-clamp-2 ${isDarkText ? 'text-gray-800' : 'text-white/90'}`}>{dorm.description}</p>
-              )}
-              <div className="flex items-center justify-between">
-                <span className={`text-sm ${isDarkText ? 'text-gray-800' : 'text-white/80'}`}>{dorm.total_members} members</span>
-                {userDormId === dorm.id ? (
-                  <span className={`text-sm ${isDarkText ? 'text-gray-700' : 'text-white/70'}`}>Already a member</span>
-                ) : (
-                  <button
-                    onClick={() => handleJoin(dorm.id)}
-                    disabled={loading === dorm.id}
-                    className={`rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50 ${isDarkText ? 'bg-black/25 hover:bg-black/35' : 'bg-white/25 hover:bg-white/35'}`}
-                  >
-                    {loading === dorm.id ? 'Joining...' : 'Join'}
-                  </button>
-                )}
+                  {!isCurrent && (
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => handleJoin(dorm.id)}
+                      disabled={loading === dorm.id}
+                    >
+                      {loading === dorm.id ? 'Joining…' : 'Join'}
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           )

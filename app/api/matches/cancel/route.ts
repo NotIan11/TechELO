@@ -1,0 +1,91 @@
+import { createClient } from '@/lib/supabase/server'
+import { NextResponse } from 'next/server'
+import { isMissingRpc, matchRpcErrorMessage } from '@/lib/utils'
+
+// Challenger withdraws their own pending challenge.
+export async function POST(request: Request) {
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const body = await request.json()
+    const { match_id } = body
+
+    if (!match_id) {
+      return NextResponse.json(
+        { error: 'Missing match_id' },
+        { status: 400 }
+      )
+    }
+
+    // Validated, race-safe path (migration 012)
+    const { data: rpcRows, error: rpcError } = await supabase.rpc('cancel_match', {
+      p_match_id: match_id,
+    })
+
+    if (!rpcError) {
+      const updatedMatch = Array.isArray(rpcRows) ? rpcRows[0] : rpcRows
+      return NextResponse.json({ match: updatedMatch }, { status: 200 })
+    }
+
+    if (!isMissingRpc(rpcError)) {
+      return NextResponse.json(
+        { error: matchRpcErrorMessage(rpcError.message) },
+        { status: 400 }
+      )
+    }
+
+    // Legacy fallback for databases without migration 012
+    const { data: match, error: matchError } = await supabase
+      .from('matches')
+      .select('*')
+      .eq('id', match_id)
+      .single()
+
+    if (matchError || !match) {
+      return NextResponse.json(
+        { error: 'Match not found' },
+        { status: 404 }
+      )
+    }
+
+    if (match.status !== 'pending_start') {
+      return NextResponse.json(
+        { error: 'Only pending challenges can be cancelled' },
+        { status: 400 }
+      )
+    }
+
+    if (match.player1_id !== user.id) {
+      return NextResponse.json(
+        { error: 'Only the challenger can cancel the challenge' },
+        { status: 403 }
+      )
+    }
+
+    const { data: updatedMatch, error: updateError } = await supabase
+      .from('matches')
+      .update({ status: 'cancelled' })
+      .eq('id', match_id)
+      .select()
+      .single()
+
+    if (updateError) {
+      return NextResponse.json(
+        { error: updateError.message },
+        { status: 500 }
+      )
+    }
+
+    return NextResponse.json({ match: updatedMatch }, { status: 200 })
+  } catch (error: any) {
+    return NextResponse.json(
+      { error: error.message || 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}

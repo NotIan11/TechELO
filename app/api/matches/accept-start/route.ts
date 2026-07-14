@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
-import { isChallengeExpired } from '@/lib/utils'
+import { isChallengeExpired, isMissingRpc, matchRpcErrorMessage } from '@/lib/utils'
 
 export async function POST(request: Request) {
   try {
@@ -21,7 +21,30 @@ export async function POST(request: Request) {
       )
     }
 
-    // Get match
+    // Validated, race-safe path (migration 012)
+    const { data: rpcRows, error: rpcError } = await supabase.rpc('accept_match_start', {
+      p_match_id: match_id,
+    })
+
+    if (!rpcError) {
+      const updatedMatch = Array.isArray(rpcRows) ? rpcRows[0] : rpcRows
+      if (updatedMatch?.status === 'challenge_expired') {
+        return NextResponse.json(
+          { error: 'This challenge has expired.' },
+          { status: 400 }
+        )
+      }
+      return NextResponse.json({ match: updatedMatch }, { status: 200 })
+    }
+
+    if (!isMissingRpc(rpcError)) {
+      return NextResponse.json(
+        { error: matchRpcErrorMessage(rpcError.message) },
+        { status: 400 }
+      )
+    }
+
+    // Legacy fallback for databases without migration 012
     const { data: match, error: matchError } = await supabase
       .from('matches')
       .select('*')
@@ -35,7 +58,6 @@ export async function POST(request: Request) {
       )
     }
 
-    // Verify user is part of the match
     if (match.player1_id !== user.id && match.player2_id !== user.id) {
       return NextResponse.json(
         { error: 'Not authorized to accept this match' },
@@ -43,7 +65,6 @@ export async function POST(request: Request) {
       )
     }
 
-    // Reject expired challenges and mark as challenge_expired
     if (match.status === 'pending_start' && isChallengeExpired(match.created_at)) {
       await supabase
         .from('matches')
@@ -55,17 +76,15 @@ export async function POST(request: Request) {
       )
     }
 
-    // Update acceptance status
     const isPlayer1 = match.player1_id === user.id
     const updateData: any = {}
-    
+
     if (isPlayer1) {
       updateData.player1_start_accepted = true
     } else {
       updateData.player2_start_accepted = true
     }
 
-    // Check if both players have accepted
     const player1Accepted = isPlayer1 ? true : match.player1_start_accepted
     const player2Accepted = !isPlayer1 ? true : match.player2_start_accepted
 

@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import MatchDetails from '@/components/match/MatchDetails'
-import NavBar from '@/components/layout/NavBar'
+import AppShell from '@/components/layout/AppShell'
 
 export default async function MatchPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -9,16 +9,15 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect('/login')
+    redirect(`/login?redirect=/matches/${id}`)
   }
 
-  // Get match with player details
   const { data: match, error } = await supabase
     .from('matches')
     .select(`
       *,
-      player1:users!player1_id(id, display_name),
-      player2:users!player2_id(id, display_name)
+      player1:users!player1_id(id, display_name, profile_image_url),
+      player2:users!player2_id(id, display_name, profile_image_url)
     `)
     .eq('id', id)
     .single()
@@ -27,17 +26,10 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
     notFound()
   }
 
-  // Verify user is part of the match
-  if (match.player1_id !== user.id && match.player2_id !== user.id) {
-    redirect('/matches')
-  }
-
+  // Spectators can view; only participants get action buttons (in MatchDetails)
   return (
-    <div className="min-h-screen bg-gray-900">
-      <NavBar />
-      <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
-        <MatchDetails match={match} currentUserId={user.id} />
-      </div>
-    </div>
+    <AppShell width="4xl">
+      <MatchDetails match={match} currentUserId={user.id} />
+    </AppShell>
   )
 }

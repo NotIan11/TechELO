@@ -1,8 +1,18 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
-import { formatDateTime } from '@/lib/utils'
 import Link from 'next/link'
-import NavBar from '@/components/layout/NavBar'
+import AppShell from '@/components/layout/AppShell'
+import Avatar from '@/components/ui/Avatar'
+import Button from '@/components/ui/Button'
+import Card from '@/components/ui/Card'
+import EmptyState from '@/components/ui/EmptyState'
+import GameIcon, { gameLabel } from '@/components/ui/GameIcon'
+import HouseChip from '@/components/ui/HouseChip'
+import Sparkline from '@/components/ui/Sparkline'
+import WinLossDots from '@/components/ui/WinLossDots'
+import MatchCard, { type MatchWithPlayers } from '@/components/match/MatchCard'
+import { formatDate, cn } from '@/lib/utils'
+import { ratingHistory, recentForm, currentStreak } from '@/lib/stats'
 
 export default async function ProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -10,202 +20,182 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
   const { data: { user } } = await supabase.auth.getUser()
   const isOwnProfile = user?.id === id
 
-  // Get user profile
-  const { data: profile } = await supabase
-    .from('users')
-    .select(`
-      *,
-      dorms (
-        id,
-        name,
-        description
-      )
-    `)
-    .eq('id', id)
-    .single()
+  const [{ data: profile }, { data: eloRatings }, { data: matches }] = await Promise.all([
+    supabase
+      .from('users')
+      .select('*, dorms (id, name)')
+      .eq('id', id)
+      .single(),
+    supabase.from('elo_ratings').select('*').eq('user_id', id),
+    supabase
+      .from('matches')
+      .select(`
+        *,
+        player1:users!player1_id(id, display_name, profile_image_url),
+        player2:users!player2_id(id, display_name, profile_image_url)
+      `)
+      .or(`player1_id.eq.${id},player2_id.eq.${id}`)
+      .eq('status', 'completed')
+      .order('completed_at', { ascending: false })
+      .limit(100),
+  ])
 
   if (!profile) {
     notFound()
   }
 
-  // Get ELO ratings
-  const { data: eloRatings } = await supabase
-    .from('elo_ratings')
-    .select('*')
-    .eq('user_id', id)
-    .order('game_type')
+  const completedMatches = (matches ?? []) as MatchWithPlayers[]
 
-  // Get match history
-  const { data: matches } = await supabase
-    .from('matches')
-    .select(`
-      *,
-      player1:users!player1_id(id, display_name),
-      player2:users!player2_id(id, display_name)
-    `)
-    .or(`player1_id.eq.${id},player2_id.eq.${id}`)
-    .eq('status', 'completed')
-    .order('completed_at', { ascending: false })
-    .limit(20)
-
-  const poolRating = eloRatings?.find((r) => r.game_type === 'pool')
-  const pingPongRating = eloRatings?.find((r) => r.game_type === 'ping_pong')
-
-  // Calculate win rates
-  const poolWinRate = poolRating && poolRating.matches_played > 0
-    ? ((poolRating.wins / poolRating.matches_played) * 100).toFixed(1)
-    : '0.0'
-  const pingPongWinRate = pingPongRating && pingPongRating.matches_played > 0
-    ? ((pingPongRating.wins / pingPongRating.matches_played) * 100).toFixed(1)
-    : '0.0'
+  const games = (['pool', 'ping_pong'] as const).map((game) => {
+    const rating = eloRatings?.find((r) => r.game_type === game)
+    const history = ratingHistory(completedMatches as any, id, game)
+    const form = recentForm(completedMatches as any, id, game)
+    const streak = currentStreak(form)
+    const played = rating?.matches_played ?? 0
+    return {
+      game,
+      rating: rating?.rating ?? 1500,
+      wins: rating?.wins ?? 0,
+      losses: rating?.losses ?? 0,
+      played,
+      winRate: played > 0 ? Math.round(((rating?.wins ?? 0) / played) * 100) : 0,
+      history,
+      form,
+      streak,
+    }
+  })
 
   return (
-    <div className="min-h-screen bg-gray-900">
-      <NavBar />
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        {/* Profile Header */}
-        <div className="rounded-lg bg-gray-800 p-6 shadow mb-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="flex items-center gap-4">
-                <h1 className="text-3xl font-bold text-white">{profile.display_name}</h1>
-                {isOwnProfile && (
-                  <Link
-                    href="/profile/edit"
-                    className="rounded-md bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700"
-                  >
-                    Edit Profile
+    <AppShell>
+      {/* Header */}
+      <Card className="mb-6">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-5">
+            <Avatar src={profile.profile_image_url} name={profile.display_name} size="xl" />
+            <div className="min-w-0">
+              <h1 className="font-display text-2xl font-bold text-white sm:text-3xl">
+                {profile.display_name}
+              </h1>
+              <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-400">
+                {profile.dorms ? (
+                  <Link href={`/dorms/${profile.dorms.id}`} className="transition hover:opacity-80">
+                    <HouseChip name={profile.dorms.name} />
                   </Link>
+                ) : (
+                  <span className="text-xs text-slate-500">No house yet</span>
                 )}
+                <span className="text-xs text-slate-500">
+                  Member since {formatDate(profile.created_at)}
+                </span>
               </div>
-              <p className="mt-1 text-gray-400">{profile.university_email}</p>
-              {profile.dorms && (
-                <Link
-                  href={`/dorms/${profile.dorms.id}`}
-                  className="mt-2 inline-block text-blue-400 hover:text-blue-300"
-                >
-                  {profile.dorms.name}
-                </Link>
+              {isOwnProfile && (
+                <p className="mt-1 truncate text-xs text-slate-600">{profile.university_email}</p>
               )}
             </div>
-            <div className="text-right">
-              <p className="text-sm text-gray-400">Member since</p>
-              <p className="text-sm font-medium text-white">{new Date(profile.created_at).toLocaleDateString()}</p>
-            </div>
+          </div>
+          <div className="flex flex-wrap gap-3 sm:shrink-0">
+            {isOwnProfile ? (
+              <>
+                <Button href="/profile/edit" variant="secondary">
+                  Edit profile
+                </Button>
+                {!profile.dorms && <Button href="/profile/join-dorm">Join a house</Button>}
+              </>
+            ) : (
+              user && <Button href={`/matches/new?opponent=${id}`}>Challenge</Button>
+            )}
           </div>
         </div>
+      </Card>
 
-        {/* ELO Ratings */}
-        <div className="grid gap-6 md:grid-cols-2 mb-6">
-          <div className="rounded-lg bg-gray-800 p-6 shadow">
-            <h2 className="text-xl font-semibold text-white mb-4">Pool Statistics</h2>
-            <div className="space-y-3">
+      {/* Per-game stats */}
+      <div className="mb-6 grid gap-6 md:grid-cols-2">
+        {games.map(({ game, rating, wins, losses, played, winRate, history, form, streak }) => (
+          <Card key={game}>
+            <div className="flex items-center justify-between">
+              <h2 className="flex items-center gap-2 font-display text-lg font-semibold text-white">
+                <GameIcon
+                  game={game}
+                  className={cn('h-5 w-5', game === 'pool' ? 'text-pool' : 'text-pong')}
+                />
+                {gameLabel(game)}
+              </h2>
+              {streak && streak.count >= 2 && (
+                <span
+                  className={cn(
+                    'inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold',
+                    streak.type === 'W'
+                      ? 'bg-emerald-500/15 text-emerald-300'
+                      : 'bg-red-500/15 text-red-300'
+                  )}
+                >
+                  {streak.type === 'W' ? '🔥' : '🧊'} {streak.count} {streak.type === 'W' ? 'win' : 'loss'} streak
+                </span>
+              )}
+            </div>
+
+            <div className="mt-4 flex items-end justify-between gap-4">
               <div>
-                <p className="text-sm text-gray-400">Current Rating</p>
-                <p className="text-3xl font-bold text-blue-400">
-                  {poolRating?.rating || 1500}
+                <p className="tabular font-display text-4xl font-bold text-white">{rating}</p>
+                <p className="mt-1 text-xs text-slate-500">
+                  {played > 0 ? `${played} matches played` : 'Unranked — play a match!'}
                 </p>
               </div>
-              <div className="grid grid-cols-3 gap-4 pt-3 border-t border-gray-700">
-                <div>
-                  <p className="text-sm text-gray-400">Matches</p>
-                  <p className="text-lg font-semibold text-white">{poolRating?.matches_played || 0}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-400">Wins</p>
-                  <p className="text-lg font-semibold text-green-400">{poolRating?.wins || 0}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-400">Losses</p>
-                  <p className="text-lg font-semibold text-red-400">{poolRating?.losses || 0}</p>
-                </div>
+              <Sparkline
+                values={history}
+                className={game === 'pool' ? 'text-pool' : 'text-pong'}
+              />
+            </div>
+
+            <div className="mt-5 grid grid-cols-3 gap-3 border-t border-white/[0.06] pt-4 text-center">
+              <div>
+                <p className="tabular text-lg font-semibold text-emerald-400">{wins}</p>
+                <p className="text-xs text-slate-500">Wins</p>
               </div>
               <div>
-                <p className="text-sm text-gray-400">Win Rate</p>
-                <p className="text-lg font-semibold text-white">{poolWinRate}%</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-lg bg-gray-800 p-6 shadow">
-            <h2 className="text-xl font-semibold text-white mb-4">Ping Pong Statistics</h2>
-            <div className="space-y-3">
-              <div>
-                <p className="text-sm text-gray-400">Current Rating</p>
-                <p className="text-3xl font-bold text-green-400">
-                  {pingPongRating?.rating || 1500}
-                </p>
-              </div>
-              <div className="grid grid-cols-3 gap-4 pt-3 border-t border-gray-700">
-                <div>
-                  <p className="text-sm text-gray-400">Matches</p>
-                  <p className="text-lg font-semibold text-white">{pingPongRating?.matches_played || 0}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-400">Wins</p>
-                  <p className="text-lg font-semibold text-green-400">{pingPongRating?.wins || 0}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-400">Losses</p>
-                  <p className="text-lg font-semibold text-red-400">{pingPongRating?.losses || 0}</p>
-                </div>
+                <p className="tabular text-lg font-semibold text-red-400">{losses}</p>
+                <p className="text-xs text-slate-500">Losses</p>
               </div>
               <div>
-                <p className="text-sm text-gray-400">Win Rate</p>
-                <p className="text-lg font-semibold text-white">{pingPongWinRate}%</p>
+                <p className="tabular text-lg font-semibold text-white">{winRate}%</p>
+                <p className="text-xs text-slate-500">Win rate</p>
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Match History */}
-        <div className="rounded-lg bg-gray-800 p-6 shadow">
-          <h2 className="text-xl font-semibold text-white mb-4">Recent Match History</h2>
-          {!matches || matches.length === 0 ? (
-            <p className="text-gray-400">No completed matches yet.</p>
-          ) : (
-            <div className="space-y-4">
-              {matches.map((match: any) => {
-                const isPlayer1 = match.player1_id === id
-                const opponent = isPlayer1 ? match.player2 : match.player1
-                const won = match.winner_id === id
-                const eloChange = isPlayer1
-                  ? (match.player1_elo_after || 0) - (match.player1_elo_before || 0)
-                  : (match.player2_elo_after || 0) - (match.player2_elo_before || 0)
-
-                return (
-                  <Link
-                    key={match.id}
-                    href={`/matches/${match.id}`}
-                    className="block rounded-md border border-gray-700 p-4 hover:bg-gray-700 transition-colors"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-white capitalize">{match.game_type}</span>
-                          <span className="text-gray-500">•</span>
-                          <span className="text-sm text-gray-400">vs {opponent.display_name}</span>
-                        </div>
-                        <p className="mt-1 text-xs text-gray-400">
-                          {formatDateTime(match.completed_at || match.created_at)}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <span className={`text-sm font-semibold ${won ? 'text-green-400' : 'text-red-400'}`}>
-                          {won ? 'W' : 'L'}
-                        </span>
-                        <p className={`text-xs ${eloChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                          {eloChange >= 0 ? '+' : ''}{eloChange}
-                        </p>
-                      </div>
-                    </div>
-                  </Link>
-                )
-              })}
-            </div>
-          )}
-        </div>
+            {form.length > 0 && (
+              <div className="mt-4 flex items-center justify-between">
+                <span className="text-xs text-slate-500">Recent form</span>
+                <WinLossDots form={form} />
+              </div>
+            )}
+          </Card>
+        ))}
       </div>
-    </div>
+
+      {/* Match history */}
+      <section>
+        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-500">
+          Match history
+        </h2>
+        {completedMatches.length === 0 ? (
+          <EmptyState
+            icon="🏓"
+            title="No completed matches yet"
+            description={
+              isOwnProfile
+                ? 'Once you play and confirm a match, it shows up here with your rating change.'
+                : `${profile.display_name} hasn't completed any matches yet.`
+            }
+            action={isOwnProfile ? <Button href="/matches/new">Start a match</Button> : undefined}
+          />
+        ) : (
+          <div className="space-y-3">
+            {completedMatches.slice(0, 15).map((match) => (
+              <MatchCard key={match.id} match={match} viewerId={id} />
+            ))}
+          </div>
+        )}
+      </section>
+    </AppShell>
   )
 }
