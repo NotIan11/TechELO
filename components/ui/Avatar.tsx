@@ -1,4 +1,4 @@
-import { cn, getInitials, hueFromString } from '@/lib/utils'
+import { cn, getInitials } from '@/lib/utils'
 
 interface AvatarProps {
   src?: string | null
@@ -16,11 +16,7 @@ const sizes = {
 }
 
 export default function Avatar({ src, name, size = 'md', className }: AvatarProps) {
-  const base = cn(
-    'shrink-0 rounded-full ring-1 ring-line select-none',
-    sizes[size],
-    className
-  )
+  const base = cn('shrink-0 rounded-full ring-1 ring-line select-none', sizes[size], className)
 
   if (src) {
     return (
@@ -29,13 +25,9 @@ export default function Avatar({ src, name, size = 'md', className }: AvatarProp
     )
   }
 
-  const hue = hueFromString(name || '?')
   return (
     <span
-      className={cn(base, 'inline-flex items-center justify-center font-semibold text-white')}
-      style={{
-        background: `linear-gradient(135deg, hsl(${hue} 45% 38%), hsl(${(hue + 40) % 360} 50% 28%))`,
-      }}
+      className={cn(base, 'inline-flex items-center justify-center bg-ink-700 font-semibold text-zinc-300')}
       aria-hidden="true"
     >
       {getInitials(name)}

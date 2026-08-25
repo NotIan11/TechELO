@@ -176,7 +176,7 @@ export default function SponsorLibrary({ sponsors }: SponsorLibraryProps) {
 
       {sponsors.length === 0 ? (
         <EmptyState
-          icon="🤝"
+          icon="gift"
           title="No sponsors yet"
           description="Add the companies backing the term tournament — their logos show on the event page and hub card."
         />

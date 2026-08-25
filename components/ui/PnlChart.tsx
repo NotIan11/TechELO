@@ -7,14 +7,14 @@ interface PnlChartProps {
   width?: number
   height?: number
   className?: string
-  /** Stretch to the container width (keeps the viewBox aspect for strokes) */
+  /** Stretch to the container width */
   fluid?: boolean
 }
 
 /**
- * Cumulative PnL line with a dashed zero baseline; area is tinted green above
- * zero and red below. Line color comes from currentColor. Renders nothing
- * with fewer than 2 points.
+ * Cumulative PnL line with a dashed zero baseline; the area is tinted win above
+ * zero and loss below. Line color comes from currentColor. Renders nothing with
+ * fewer than 2 points.
  */
 export default function PnlChart({ values, width = 320, height = 96, className, fluid = true }: PnlChartProps) {
   const id = useId().replace(/:/g, '')
@@ -52,8 +52,8 @@ export default function PnlChart({ values, width = 320, height = 96, className, 
           <rect x="0" y={zeroY} width={width} height={Math.max(height - zeroY, 0)} />
         </clipPath>
       </defs>
-      <path d={area} fill="#34d399" opacity="0.16" clipPath={`url(#${id}-above)`} />
-      <path d={area} fill="#f87171" opacity="0.16" clipPath={`url(#${id}-below)`} />
+      <path d={area} className="fill-win" opacity="0.15" clipPath={`url(#${id}-above)`} />
+      <path d={area} className="fill-loss" opacity="0.15" clipPath={`url(#${id}-below)`} />
       <line
         x1={pad}
         x2={width - pad}
@@ -74,7 +74,7 @@ export default function PnlChart({ values, width = 320, height = 96, className, 
         strokeLinecap="round"
         vectorEffect="non-scaling-stroke"
       />
-      <circle cx={lastX} cy={lastY} r="3" fill={last >= 0 ? '#34d399' : '#f87171'} />
+      <circle cx={lastX} cy={lastY} r="3" className={last >= 0 ? 'fill-win' : 'fill-loss'} />
     </svg>
   )
 }

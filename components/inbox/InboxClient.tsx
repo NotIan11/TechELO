@@ -117,7 +117,7 @@ export default function InboxClient({ items: initialItems, currentUserId }: Inbo
 
       {items.length === 0 ? (
         <EmptyState
-          icon="📭"
+          icon="inbox"
           title="You're all caught up"
           description="No challenges, results or ledgers waiting on you."
           action={<Button href="/matches/new">Challenge someone</Button>}

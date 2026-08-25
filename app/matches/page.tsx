@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import AppShell from '@/components/layout/AppShell'
 import PageHeader from '@/components/ui/PageHeader'
 import EmptyState from '@/components/ui/EmptyState'
+import GameIcon from '@/components/ui/GameIcon'
 import Button from '@/components/ui/Button'
 import MatchCard, { type MatchWithPlayers } from '@/components/match/MatchCard'
 
@@ -41,7 +42,7 @@ export default async function MatchesPage() {
 
       {all.length === 0 ? (
         <EmptyState
-          icon="🎱"
+          icon={<GameIcon game="pool" />}
           title="No matches yet"
           description="Challenge a housemate to your first game — once you both confirm the result, your rating starts moving."
           action={<Button href="/matches/new">Start your first match</Button>}

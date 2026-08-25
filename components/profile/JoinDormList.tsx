@@ -50,7 +50,7 @@ export default function JoinDormList({ dorms, userDormId }: JoinDormListProps) {
   if (dorms.length === 0) {
     return (
       <EmptyState
-        icon="🏠"
+        icon="house"
         title="No houses yet"
         description="Be the founder — create the first house."
         action={<Button href="/dorms/new">Create a house</Button>}

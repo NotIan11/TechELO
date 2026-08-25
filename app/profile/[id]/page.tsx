@@ -205,7 +205,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
         </h2>
         {completedMatches.length === 0 ? (
           <EmptyState
-            icon="🏓"
+            icon={<GameIcon game="ping_pong" />}
             title="No completed matches yet"
             description={
               isOwnProfile

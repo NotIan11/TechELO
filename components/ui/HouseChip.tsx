@@ -1,13 +1,7 @@
 import { cn, getHouseColor } from '@/lib/utils'
 
-/** Small colored chip identifying a house */
-export default function HouseChip({
-  name,
-  className,
-}: {
-  name: string | null | undefined
-  className?: string
-}) {
+/** Neutral chip identifying a house by its color dot */
+export default function HouseChip({ name, className }: { name: string | null | undefined; className?: string }) {
   if (!name) {
     return <span className={cn('text-sm text-zinc-600', className)}>—</span>
   }
@@ -18,10 +12,7 @@ export default function HouseChip({
         className
       )}
     >
-      <span
-        className="h-2 w-2 shrink-0 rounded-full ring-1 ring-line-strong"
-        style={{ backgroundColor: getHouseColor(name) }}
-      />
+      <span className="h-1.5 w-1.5 shrink-0 rounded-full ring-1 ring-white/20" style={{ backgroundColor: getHouseColor(name) }} />
       {name}
     </span>
   )

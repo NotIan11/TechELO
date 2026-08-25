@@ -82,7 +82,7 @@ export default async function DormsPage() {
 
       {standings.length === 0 ? (
         <EmptyState
-          icon="🏠"
+          icon="house"
           title="No houses yet"
           description="Create the first house and start recruiting."
           action={<Button href="/dorms/new">Create a house</Button>}

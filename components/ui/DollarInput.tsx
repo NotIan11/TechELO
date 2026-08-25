@@ -81,7 +81,7 @@ export default function DollarInput({
         className={cn(
           'input pl-7 text-right',
           size === 'sm' && 'min-h-[38px] px-2.5 py-1.5 text-sm',
-          (invalid || bad) && 'border-loss/60 focus:border-loss/60 focus:ring-loss/20'
+          (invalid || bad) && 'border-loss/60 focus:border-loss/60 focus:ring-loss/30'
         )}
         onFocus={(e) => {
           focused.current = true
