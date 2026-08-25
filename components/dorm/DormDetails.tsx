@@ -223,7 +223,7 @@ export default function DormDetails({
               <Link
                 key={member.id}
                 href={`/profile/${member.id}`}
-                className="flex items-center gap-3 rounded-xl border border-white/[0.06] p-3 transition hover:border-white/[0.14] hover:bg-ink-700"
+                className="flex items-center gap-3 rounded-xl border border-line p-3 transition hover:border-line-strong hover:bg-ink-700"
               >
                 <Avatar src={member.profile_image_url} name={member.display_name} size="md" />
                 <div className="min-w-0">

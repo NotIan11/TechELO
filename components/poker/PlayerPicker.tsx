@@ -51,7 +51,7 @@ export default function PlayerPicker({ players, recent, selectedIds, onAdd, disa
                 type="button"
                 disabled={disabled}
                 onClick={() => onAdd(p)}
-                className="inline-flex min-h-[36px] items-center gap-2 rounded-full border border-line bg-ink-700 pl-1.5 pr-3 text-sm text-zinc-200 transition hover:bg-white/[0.1] hover:text-white disabled:opacity-50"
+                className="inline-flex min-h-[36px] items-center gap-2 rounded-full border border-line bg-ink-700 pl-1.5 pr-3 text-sm text-zinc-200 transition hover:bg-ink-600 hover:text-white disabled:opacity-50"
               >
                 <Avatar src={p.profile_image_url} name={p.display_name} size="xs" />
                 <span className="text-orange-400">+</span> {p.display_name}

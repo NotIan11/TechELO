@@ -28,7 +28,7 @@ export default function SessionCard({ session, viewerId }: { session: SessionLis
     <Link
       href={`/poker/sessions/${session.id}`}
       className={cn(
-        'card group flex items-center gap-4 p-4 transition hover:-translate-y-px hover:border-white/[0.14] sm:p-5',
+        'card group flex items-center gap-4 p-4 transition hover:-translate-y-px hover:border-line-strong sm:p-5',
         session.status === 'live' && 'border-loss/20'
       )}
     >
@@ -66,7 +66,7 @@ export default function SessionCard({ session, viewerId }: { session: SessionLis
             <Avatar key={e.user_id} src={e.user?.profile_image_url} name={e.user?.display_name ?? '?'} size="xs" className="ring-2 ring-ink-800" />
           ))}
           {session.entries.length > 5 && (
-            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/[0.08] text-[10px] font-semibold text-zinc-300 ring-2 ring-ink-800">
+            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-ink-600 text-[10px] font-semibold text-zinc-300 ring-2 ring-ink-800">
               +{session.entries.length - 5}
             </span>
           )}

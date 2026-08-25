@@ -99,7 +99,7 @@ export default function CreateMatchForm({
                   'card flex flex-col items-center gap-2 p-5 transition',
                   active
                     ? 'border-orange-500 bg-orange-500/10 ring-1 ring-orange-500/40'
-                    : 'hover:border-white/[0.14]'
+                    : 'hover:border-line-strong'
                 )}
               >
                 <GameIcon

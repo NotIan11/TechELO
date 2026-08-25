@@ -151,7 +151,7 @@ export default function PokerLeaderboardClient({
                       </td>
                       <td className="whitespace-nowrap px-4 py-3.5 text-right sm:px-5">
                         <div className="flex items-center justify-end gap-3">
-                          <span className="hidden h-1.5 w-16 overflow-hidden rounded-full bg-white/[0.06] lg:block" aria-hidden="true">
+                          <span className="hidden h-1.5 w-16 overflow-hidden rounded-full bg-ink-600 lg:block" aria-hidden="true">
                             <span
                               className={cn('block h-full rounded-full', net >= 0 ? 'bg-win/70' : 'bg-loss/70')}
                               style={{ width: `${Math.max(6, Math.round((Math.abs(net) / maxAbs) * 100))}%` }}

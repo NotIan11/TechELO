@@ -52,7 +52,7 @@ export default function SessionsListClient({ live, sessions, kind, mine, current
             onClick={() => updateParams({ mine: mine ? null : '1', page: null })}
             className={cn(
               'inline-flex min-h-[38px] items-center rounded-xl border px-4 text-sm font-medium transition',
-              mine ? 'border-orange-500 bg-orange-500/10 text-orange-400' : 'border-line bg-ink-700 text-zinc-300 hover:bg-white/[0.08]'
+              mine ? 'border-orange-500 bg-orange-500/10 text-orange-400' : 'border-line bg-ink-700 text-zinc-300 hover:bg-ink-600'
             )}
           >
             Sessions I played

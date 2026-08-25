@@ -252,7 +252,7 @@ export default function EventPage({ session, currentUserId, isHost, sponsors }: 
                           onClick={() => setSponsorIds((ids) => (active ? ids.filter((id) => id !== s.id) : [...ids, s.id]))}
                           className={cn(
                             'inline-flex min-h-[36px] items-center gap-2 rounded-full border px-3 text-sm font-medium transition',
-                            active ? 'border-violet-400/50 bg-violet-400/10 text-violet-200' : 'border-line bg-ink-700 text-zinc-300 hover:bg-white/[0.08]'
+                            active ? 'border-violet-400/50 bg-violet-400/10 text-violet-200' : 'border-line bg-ink-700 text-zinc-300 hover:bg-ink-600'
                           )}
                         >
                           {s.name}

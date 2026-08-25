@@ -50,7 +50,7 @@ export default function MatchCard({
   return (
     <Link
       href={`/matches/${match.id}`}
-      className="card group flex items-center gap-4 p-4 transition hover:-translate-y-px hover:border-white/[0.14] sm:p-5"
+      className="card group flex items-center gap-4 p-4 transition hover:-translate-y-px hover:border-line-strong sm:p-5"
     >
       <span
         className={cn(

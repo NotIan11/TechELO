@@ -163,7 +163,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
               />
             </div>
 
-            <div className="mt-5 grid grid-cols-3 gap-3 border-t border-white/[0.06] pt-4 text-center">
+            <div className="mt-5 grid grid-cols-3 gap-3 border-t border-line pt-4 text-center">
               <div>
                 <p className="tabular text-lg font-semibold text-win">{wins}</p>
                 <p className="text-xs text-zinc-500">Wins</p>

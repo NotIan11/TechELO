@@ -3,7 +3,6 @@
 import { cn } from '@/lib/utils'
 import Button from '@/components/ui/Button'
 import Icon from '@/components/ui/Icon'
-import Icon from '@/components/ui/Icon'
 import DollarInput, { focusNextMoneyInput } from '@/components/ui/DollarInput'
 import MoneyDelta from '@/components/ui/MoneyDelta'
 import Stepper from '@/components/ui/Stepper'
@@ -69,7 +68,7 @@ export default function LedgerRowEditor({
           onClick={onRemove}
           disabled={disabled}
           aria-label={`Remove ${row.user.display_name}`}
-          className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-zinc-500 transition hover:bg-white/[0.06] hover:text-loss sm:hidden"
+          className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-zinc-500 transition hover:bg-ink-600 hover:text-loss sm:hidden"
         >
           <Icon name="close" className="h-4 w-4" />
         </button>
@@ -180,7 +179,7 @@ export default function LedgerRowEditor({
         onClick={onRemove}
         disabled={disabled}
         aria-label={`Remove ${row.user.display_name}`}
-        className="hidden h-8 w-8 items-center justify-center rounded-lg text-zinc-500 transition hover:bg-white/[0.06] hover:text-loss sm:inline-flex"
+        className="hidden h-8 w-8 items-center justify-center rounded-lg text-zinc-500 transition hover:bg-ink-600 hover:text-loss sm:inline-flex"
       >
         <Icon name="close" className="h-4 w-4" />
       </button>

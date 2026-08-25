@@ -115,7 +115,7 @@ export default function StartSessionForm({ isOfficer, sponsors, houseNames, init
                 aria-pressed={active}
                 className={cn(
                   'card flex flex-col items-center gap-2 p-5 transition',
-                  active ? 'border-violet-400/50 bg-violet-400/[0.06] ring-1 ring-violet-400/40' : 'hover:border-white/[0.14]'
+                  active ? 'border-violet-400/50 bg-violet-400/[0.06] ring-1 ring-violet-400/40' : 'hover:border-line-strong'
                 )}
               >
                 <GameIcon game="poker" className="h-8 w-8 text-poker" />
@@ -216,7 +216,7 @@ export default function StartSessionForm({ isOfficer, sponsors, houseNames, init
                           'inline-flex min-h-[36px] items-center gap-2 rounded-full border px-3 text-sm font-medium transition',
                           active
                             ? 'border-violet-400/50 bg-violet-400/10 text-violet-200'
-                            : 'border-line bg-ink-700 text-zinc-300 hover:bg-white/[0.08]'
+                            : 'border-line bg-ink-700 text-zinc-300 hover:bg-ink-600'
                         )}
                       >
                         {s.logo_url && (
