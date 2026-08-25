@@ -2,6 +2,8 @@
 
 import { cn } from '@/lib/utils'
 import Button from '@/components/ui/Button'
+import Icon from '@/components/ui/Icon'
+import Icon from '@/components/ui/Icon'
 import DollarInput, { focusNextMoneyInput } from '@/components/ui/DollarInput'
 import MoneyDelta from '@/components/ui/MoneyDelta'
 import Stepper from '@/components/ui/Stepper'
@@ -69,14 +71,14 @@ export default function LedgerRowEditor({
           aria-label={`Remove ${row.user.display_name}`}
           className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-zinc-500 transition hover:bg-white/[0.06] hover:text-loss sm:hidden"
         >
-          ×
+          <Icon name="close" className="h-4 w-4" />
         </button>
       </div>
 
       {/* Buy-in */}
       <div className="grid grid-cols-2 gap-2 sm:contents">
         <div>
-          <p className="mb-1 eyebrow sm:hidden">
+          <p className="eyebrow mb-1 sm:hidden">
             {isTourney ? 'Buy-in' : 'Buy-in (total)'}
           </p>
           <DollarInput
@@ -120,7 +122,7 @@ export default function LedgerRowEditor({
         {/* Place (tournament) */}
         {isTourney && (
           <div>
-            <p className="mb-1 eyebrow sm:hidden">Place</p>
+            <p className="eyebrow mb-1 sm:hidden">Place</p>
             <div className="flex items-center gap-1.5">
               <select
                 className="input min-h-[38px] px-2 py-1 text-sm"
@@ -147,7 +149,7 @@ export default function LedgerRowEditor({
 
         {/* Cash-out / payout */}
         <div>
-          <p className="mb-1 eyebrow sm:hidden">
+          <p className="eyebrow mb-1 sm:hidden">
             {isTourney ? 'Payout' : 'Cash-out'}
           </p>
           <DollarInput
@@ -180,7 +182,7 @@ export default function LedgerRowEditor({
         aria-label={`Remove ${row.user.display_name}`}
         className="hidden h-8 w-8 items-center justify-center rounded-lg text-zinc-500 transition hover:bg-white/[0.06] hover:text-loss sm:inline-flex"
       >
-        ×
+        <Icon name="close" className="h-4 w-4" />
       </button>
     </div>
   )
