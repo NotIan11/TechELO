@@ -60,7 +60,7 @@ export default async function PokerSessionsPage({
   const totalPages = Math.max(1, Math.ceil((count ?? 0) / PAGE_SIZE))
 
   return (
-    <AppShell width="4xl">
+    <AppShell promo="tables" width="4xl">
       <PageHeader
         title="Sessions"
         subtitle="Every logged night, newest first"

@@ -22,7 +22,7 @@ export default async function PokerSessionPage({ params }: { params: Promise<{ i
       loadRecentTablemates(supabase, user!.id),
     ])
     return (
-      <AppShell width="4xl">
+      <AppShell promo="tables" width="4xl">
         <LiveLedgerEditor session={session} currentUserId={user!.id} players={players} recent={recent} mode="live" />
       </AppShell>
     )
@@ -30,7 +30,7 @@ export default async function PokerSessionPage({ params }: { params: Promise<{ i
 
   if (session.status === 'live') {
     return (
-      <AppShell width="4xl">
+      <AppShell promo="tables" width="4xl">
         <LiveSessionView session={session} currentUserId={user?.id ?? null} />
       </AppShell>
     )
@@ -42,7 +42,7 @@ export default async function PokerSessionPage({ params }: { params: Promise<{ i
       isHost ? loadSponsors(supabase) : Promise.resolve([]),
     ])
     return (
-      <AppShell width="4xl">
+      <AppShell promo="tables" width="4xl">
         <EventPage
           session={session}
           currentUserId={user?.id ?? null}
@@ -55,7 +55,7 @@ export default async function PokerSessionPage({ params }: { params: Promise<{ i
   }
 
   return (
-    <AppShell width="4xl">
+    <AppShell promo="tables" width="4xl">
       <SessionDetails session={session} currentUserId={user?.id ?? null} />
     </AppShell>
   )

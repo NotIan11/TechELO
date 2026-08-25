@@ -19,7 +19,7 @@ export default async function PokerSponsorsPage() {
   const sponsors = await loadSponsors(supabase)
 
   return (
-    <AppShell width="4xl">
+    <AppShell promo="tables" width="4xl">
       <PageHeader
         title="Sponsors"
         subtitle="Logos reused across every official tournament"

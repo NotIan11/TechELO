@@ -151,7 +151,7 @@ export default async function PokerHubPage({
   const plabel = periodLabel(period)
 
   return (
-    <AppShell>
+    <AppShell promo="tables">
       {/* Hero */}
       <section className="pb-8 pt-4 text-center sm:pt-8">
         <p className="mb-3 inline-flex items-center gap-2 rounded-full border border-violet-400/25 bg-violet-400/10 px-3 py-1 text-xs font-medium text-violet-300">

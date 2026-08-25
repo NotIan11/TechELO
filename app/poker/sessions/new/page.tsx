@@ -29,7 +29,7 @@ export default async function NewPokerSessionPage({
   ])
 
   return (
-    <AppShell width="2xl">
+    <AppShell promo="tables" width="2xl">
       <PageHeader
         title="Start a session"
         subtitle="Set the table up, then add players and buy-ins as the night goes."
