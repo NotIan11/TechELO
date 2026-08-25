@@ -178,7 +178,7 @@ export default function StartSessionForm({ isOfficer, sponsors, houseNames, init
             )}
             <div>
               <label htmlFor="title" className="label">
-                Title <span className="font-normal text-zinc-500">(optional — defaults to the term title)</span>
+                Title <span className="font-normal text-zinc-500">(optional; defaults to the term title)</span>
               </label>
               <input
                 id="title"
@@ -194,7 +194,7 @@ export default function StartSessionForm({ isOfficer, sponsors, houseNames, init
               <p className="label">Sponsors</p>
               {sponsors.length === 0 ? (
                 <p className="text-sm text-zinc-500">
-                  No sponsors in the library yet —{' '}
+                  No sponsors in the library yet.{' '}
                   <a href="/poker/sponsors" className="link">
                     add some
                   </a>
@@ -317,7 +317,7 @@ export default function StartSessionForm({ isOfficer, sponsors, houseNames, init
                 checked={backdate}
                 onChange={(e) => setBackdate(e.target.checked)}
               />
-              This already happened — log a past session
+              This already happened. Log a past session
             </label>
             {backdate && (
               <input
@@ -349,7 +349,7 @@ export default function StartSessionForm({ isOfficer, sponsors, houseNames, init
       </Button>
       {!backdate && !isOfficial && (
         <p className="text-center text-xs text-zinc-500">
-          The session is saved as soon as you start — closing the tab or refreshing won’t lose anything.
+          The session is saved as soon as you start. Closing the tab or refreshing loses nothing.
         </p>
       )}
     </form>

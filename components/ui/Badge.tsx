@@ -1,18 +1,6 @@
 import { cn } from '@/lib/utils'
 
 export type BadgeTone = 'neutral' | 'orange' | 'win' | 'loss' | 'warn' | 'live'
-/** @deprecated legacy tone names — mapped onto the new set; removed in the cleanup phase */
-export type LegacyBadgeTone = 'gray' | 'green' | 'red' | 'yellow' | 'blue' | 'purple' | 'poker'
-
-const ALIAS: Record<LegacyBadgeTone, BadgeTone> = {
-  gray: 'neutral',
-  green: 'win',
-  red: 'loss',
-  yellow: 'warn',
-  blue: 'orange',
-  purple: 'orange',
-  poker: 'orange',
-}
 
 const tones: Record<BadgeTone, string> = {
   neutral: 'border-line bg-ink-700 text-zinc-300',
@@ -33,14 +21,14 @@ const dots: Record<BadgeTone, string> = {
 }
 
 interface BadgeProps {
-  tone?: BadgeTone | LegacyBadgeTone
+  tone?: BadgeTone
   dot?: boolean
   className?: string
   children: React.ReactNode
 }
 
 export default function Badge({ tone = 'neutral', dot, className, children }: BadgeProps) {
-  const t: BadgeTone = tone in ALIAS ? ALIAS[tone as LegacyBadgeTone] : (tone as BadgeTone)
+  const t = tone
   const showDot = dot || t === 'live'
   return (
     <span

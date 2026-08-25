@@ -188,11 +188,11 @@ export default async function PokerHubPage({
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             <StatTile label={`Your net · ${plabel}`} value={<MoneyDelta cents={mySummary.netCents} size="lg" compact />} />
             <StatTile label="Sessions" value={mySummary.sessions} sub={`${Math.round(mySummary.winningPct ?? 0)}% winning`} />
-            <StatTile label="ROI" value={formatRoi(mySummary.roiPct)} tone={mySummary.roiPct == null ? 'muted' : mySummary.roiPct >= 0 ? 'positive' : 'negative'} sub={`${formatCents(mySummary.stakedCents, { compact: true })} staked`} />
+            <StatTile label="ROI" value={formatRoi(mySummary.roiPct)} tone={mySummary.roiPct == null ? 'muted' : mySummary.roiPct >= 0 ? 'win' : 'loss'} sub={`${formatCents(mySummary.stakedCents, { compact: true })} staked`} />
             <StatTile
               label="Streak"
               value={mySummary.currentStreak ? `${mySummary.currentStreak.count}${mySummary.currentStreak.type}` : '—'}
-              tone={mySummary.currentStreak?.type === 'W' ? 'positive' : mySummary.currentStreak?.type === 'L' ? 'negative' : 'muted'}
+              tone={mySummary.currentStreak?.type === 'W' ? 'win' : mySummary.currentStreak?.type === 'L' ? 'loss' : 'muted'}
               sub={mySummary.currentStreak ? (mySummary.currentStreak.type === 'W' ? 'winning sessions in a row' : 'losing sessions in a row') : 'no active streak'}
             />
           </div>

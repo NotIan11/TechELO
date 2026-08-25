@@ -63,10 +63,10 @@ export default async function PokerSessionsPage({
     <AppShell promo="tables" width="4xl">
       <PageHeader
         title="Sessions"
-        subtitle="Every logged night, newest first"
+        subtitle="Every logged session, newest first"
         actions={
           user ? (
-            <Button href="/poker/sessions/new">{myLive ? 'Resume live session' : '+ Start a session'}</Button>
+            <Button href="/poker/sessions/new">{myLive ? 'Resume live session' : 'Start a session'}</Button>
           ) : (
             <Button href="/login?redirect=/poker/sessions/new" variant="secondary">
               Sign in to log a session

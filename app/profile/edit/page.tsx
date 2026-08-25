@@ -24,7 +24,7 @@ export default async function ProfileEditPage() {
 
   return (
     <AppShell width="2xl">
-      <PageHeader title="Edit Profile" subtitle="Your name and picture, as the leaderboard sees them" />
+      <PageHeader title="Edit profile" subtitle="Your name and picture, as the boards show them" />
       <ProfileEditForm profile={profile} />
     </AppShell>
   )

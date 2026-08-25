@@ -107,7 +107,7 @@ export default function SetupPasswordPage() {
         {error && <Banner tone="error">{error}</Banner>}
 
         <Button type="submit" full disabled={loading}>
-          {loading ? 'Setting password…' : 'Set Password'}
+          {loading ? 'Setting password…' : 'Set password'}
         </Button>
       </form>
     </AuthShell>

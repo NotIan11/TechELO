@@ -199,7 +199,7 @@ export default function SessionDetails({ session, currentUserId }: SessionDetail
                 <span
                   key={e.id}
                   className={cn('inline-flex rounded-full ring-2 ring-ink-800', e.disputed_at ? 'ring-loss' : e.acknowledged_at ? '' : 'opacity-40')}
-                  title={`${e.user?.display_name ?? '?'} — ${e.disputed_at ? 'disputed' : e.acknowledged_at ? 'confirmed' : 'not yet'}`}
+                  title={`${e.user?.display_name ?? '?'} · ${e.disputed_at ? 'disputed' : e.acknowledged_at ? 'confirmed' : 'not yet'}`}
                 >
                   <Avatar src={e.user?.profile_image_url} name={e.user?.display_name ?? '?'} size="xs" />
                 </span>
@@ -270,7 +270,7 @@ export default function SessionDetails({ session, currentUserId }: SessionDetail
             <>
               <p className="font-medium text-white">Does this ledger look right?</p>
               <p className="mt-1 text-sm text-zinc-400">
-                Your line: in {formatCents(myEntry.buy_in_cents, { compact: true })}, out {formatCents(myEntry.cash_out_cents ?? 0, { compact: true })} —{' '}
+                Your line: in {formatCents(myEntry.buy_in_cents, { compact: true })}, out {formatCents(myEntry.cash_out_cents ?? 0, { compact: true })}, net{' '}
                 <MoneyDelta cents={myEntry.net_cents} chip compact />
               </p>
               {confirming === 'dispute' ? (

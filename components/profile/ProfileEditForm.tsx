@@ -99,7 +99,7 @@ export default function ProfileEditForm({ profile }: ProfileEditFormProps) {
         throw new Error(updateError.message)
       }
 
-      setMessage('Profile updated!')
+      setMessage('Profile saved.')
       setTimeout(() => {
         router.push(`/profile/${profile.id}`)
         router.refresh()

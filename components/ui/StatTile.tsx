@@ -2,17 +2,6 @@ import Card from './Card'
 import { cn } from '@/lib/utils'
 
 export type StatTone = 'default' | 'win' | 'loss' | 'orange' | 'muted'
-/** @deprecated legacy tone names — removed in the cleanup phase */
-type LegacyStatTone = 'positive' | 'negative' | 'pool' | 'pong' | 'poker'
-
-const ALIAS: Record<LegacyStatTone, StatTone> = {
-  positive: 'win',
-  negative: 'loss',
-  pool: 'default',
-  pong: 'default',
-  poker: 'orange',
-}
-
 const valueTones: Record<StatTone, string> = {
   default: 'text-white',
   win: 'text-win',
@@ -27,7 +16,7 @@ interface StatTileProps {
   label: string
   value: React.ReactNode
   sub?: React.ReactNode
-  tone?: StatTone | LegacyStatTone
+  tone?: StatTone
   size?: 'sm' | 'md' | 'lg'
   /** No card surface — for mini stats inside another card */
   bare?: boolean
@@ -36,7 +25,7 @@ interface StatTileProps {
 
 /** Label-over-value tile used in stat grids */
 export default function StatTile({ label, value, sub, tone = 'default', size = 'md', bare, className }: StatTileProps) {
-  const t: StatTone = tone in ALIAS ? ALIAS[tone as LegacyStatTone] : (tone as StatTone)
+  const t = tone
   const body = (
     <>
       <p className="eyebrow truncate">{label}</p>
