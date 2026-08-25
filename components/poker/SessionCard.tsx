@@ -1,7 +1,8 @@
-import Link from 'next/link'
 import Avatar from '@/components/ui/Avatar'
 import Badge from '@/components/ui/Badge'
 import GameIcon from '@/components/ui/GameIcon'
+import IconTile from '@/components/ui/IconTile'
+import ListRow from '@/components/ui/ListRow'
 import MoneyDelta from '@/components/ui/MoneyDelta'
 import PokerStatusBadge from '@/components/ui/PokerStatusBadge'
 import TimeAgo from '@/components/ui/TimeAgo'
@@ -9,7 +10,6 @@ import { formatCents } from '@/lib/poker/money'
 import { formatPokerDateTime } from '@/lib/poker/periods'
 import { binkOfTheNight, sessionTitle } from '@/lib/poker/stats'
 import type { PlayerRef, PokerSessionRow } from '@/lib/poker/types'
-import { cn } from '@/lib/utils'
 
 export interface SessionListItem extends PokerSessionRow {
   host: PlayerRef | null
@@ -25,56 +25,51 @@ export default function SessionCard({ session, viewerId }: { session: SessionLis
   const isTourney = session.kind === 'tournament'
 
   return (
-    <Link
+    <ListRow
       href={`/poker/sessions/${session.id}`}
-      className={cn(
-        'card group flex items-center gap-4 p-4 transition hover:-translate-y-px hover:border-line-strong sm:p-5',
-        session.status === 'live' && 'border-loss/20'
-      )}
-    >
-      <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-violet-400/10 text-poker">
-        <GameIcon game="poker" className="h-6 w-6" />
-      </span>
-
-      <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-2">
-          <p className="truncate text-sm font-semibold text-white group-hover:text-orange-400">{sessionTitle(session)}</p>
-          <Badge tone={isTourney ? 'purple' : 'poker'}>{isTourney ? (session.is_official ? 'Official' : 'Tournament') : 'Cash'}</Badge>
+      tone={session.status === 'live' ? 'live' : 'default'}
+      leading={<IconTile icon={<GameIcon game="poker" />} size="lg" />}
+      title={sessionTitle(session)}
+      badges={
+        <>
+          <Badge tone="orange">{isTourney ? (session.is_official ? 'Official' : 'Tournament') : 'Cash'}</Badge>
           <PokerStatusBadge status={session.status} acked={session.ack_count} total={session.player_count} />
-        </div>
-        <p className="mt-1 flex flex-wrap items-center gap-x-2 text-xs text-zinc-500">
-          {session.status === 'scheduled' && session.scheduled_for ? (
-            <span>{formatPokerDateTime(session.scheduled_for)}</span>
-          ) : (
-            <TimeAgo date={session.played_at} />
-          )}
-          <span>· {session.player_count} player{session.player_count === 1 ? '' : 's'}</span>
+        </>
+      }
+      meta={
+        <>
+          {session.status === 'scheduled' && session.scheduled_for ? <span>{formatPokerDateTime(session.scheduled_for)}</span> : <TimeAgo date={session.played_at} />}
+          <span>
+            · {session.player_count} player{session.player_count === 1 ? '' : 's'}
+          </span>
           {session.total_buy_in_cents > 0 && <span>· {formatCents(session.total_buy_in_cents, { compact: true })} in play</span>}
           {bink?.user && (
             <span className="hidden sm:inline">
               · <span className="text-win">{bink.user.display_name}</span> +{formatCents(bink.net_cents, { compact: true })}
             </span>
           )}
-          {session.status === 'scheduled' && <span>· {session.rsvp_count} RSVP{session.rsvp_count === 1 ? '' : 's'}</span>}
-        </p>
-      </div>
-
-      <div className="flex shrink-0 items-center gap-3">
-        {mine && counts && <MoneyDelta cents={mine.net_cents} chip compact />}
-        <span className="hidden items-center -space-x-1.5 sm:flex">
-          {avatars.map((e) => (
-            <Avatar key={e.user_id} src={e.user?.profile_image_url} name={e.user?.display_name ?? '?'} size="xs" className="ring-2 ring-ink-800" />
-          ))}
-          {session.entries.length > 5 && (
-            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-ink-600 text-[10px] font-semibold text-zinc-300 ring-2 ring-ink-800">
-              +{session.entries.length - 5}
+          {session.status === 'scheduled' && (
+            <span>
+              · {session.rsvp_count} RSVP{session.rsvp_count === 1 ? '' : 's'}
             </span>
           )}
-        </span>
-        <svg className="h-4 w-4 text-zinc-600 transition group-hover:translate-x-0.5 group-hover:text-zinc-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
-        </svg>
-      </div>
-    </Link>
+        </>
+      }
+      trailing={
+        <>
+          {mine && counts && <MoneyDelta cents={mine.net_cents} chip compact />}
+          <span className="hidden items-center -space-x-1.5 sm:flex">
+            {avatars.map((e) => (
+              <Avatar key={e.user_id} src={e.user?.profile_image_url} name={e.user?.display_name ?? '?'} size="xs" className="ring-2 ring-ink-800" />
+            ))}
+            {session.entries.length > 5 && (
+              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-ink-600 text-[10px] font-semibold text-zinc-300 ring-2 ring-ink-800">
+                +{session.entries.length - 5}
+              </span>
+            )}
+          </span>
+        </>
+      }
+    />
   )
 }

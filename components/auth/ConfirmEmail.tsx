@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import AuthShell from './AuthShell'
+import Banner from '@/components/ui/Banner'
 import Button from '@/components/ui/Button'
 
 interface ConfirmEmailProps {
@@ -43,31 +44,26 @@ export default function ConfirmEmail({ tokenHash, type }: ConfirmEmailProps) {
         subtitle="This confirmation link is invalid or has expired. Sign in to request a new confirmation email."
       >
         <Button href="/login?error=link_expired" full>
-          Go to Sign in
+          Go to sign in
         </Button>
       </AuthShell>
     )
   }
 
   return (
-    <AuthShell title="Confirm your email" subtitle="One click and you're on the board.">
+    <AuthShell title="Confirm your email" subtitle="One click and you are on the board.">
       <div className="space-y-4">
         <Button type="button" onClick={handleConfirm} disabled={loading} full>
           {loading ? 'Confirming…' : 'Confirm my email'}
         </Button>
         {error && (
-          <div className="rounded-xl border border-loss/20 bg-loss/10 p-4 text-left">
-            <p className="text-sm text-loss">{error}</p>
-            <p className="mt-2 text-sm text-zinc-400">
-              You can sign in to request a new confirmation email.
-            </p>
-            <Link
-              href="/login?error=link_expired"
-              className="mt-2 inline-block text-sm font-medium text-orange-400 hover:text-orange-400"
-            >
-              Go to Sign in
+          <Banner tone="error" className="text-left">
+            <p>{error}</p>
+            <p className="mt-1 text-zinc-400">You can sign in to request a new confirmation email.</p>
+            <Link href="/login?error=link_expired" className="link mt-2 inline-block text-sm">
+              Go to sign in
             </Link>
-          </div>
+          </Banner>
         )}
       </div>
     </AuthShell>

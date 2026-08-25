@@ -4,17 +4,17 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Avatar from '@/components/ui/Avatar'
 import Button from '@/components/ui/Button'
-import Card from '@/components/ui/Card'
+import { MiniBar, Table, Td, Th, Tr } from '@/components/ui/DataTable'
 import EmptyState from '@/components/ui/EmptyState'
 import GameIcon from '@/components/ui/GameIcon'
 import HouseChip from '@/components/ui/HouseChip'
 import MoneyDelta from '@/components/ui/MoneyDelta'
+import Pagination from '@/components/ui/Pagination'
 import Segmented from '@/components/ui/Segmented'
 import WinLossDots from '@/components/ui/WinLossDots'
 import { KIND_OPTIONS, PERIOD_OPTIONS, SORT_OPTIONS } from '@/lib/poker/constants'
 import { formatCents, formatRoi } from '@/lib/poker/money'
 import type { PokerKindFilter, PokerLeaderboardRow, PokerPeriod, PokerSort } from '@/lib/poker/types'
-import { cn } from '@/lib/utils'
 
 interface PokerLeaderboardClientProps {
   rows: PokerLeaderboardRow[]
@@ -65,24 +65,14 @@ export default function PokerLeaderboardClient({
           onChange={(v) => updateParams({ kind: v === 'all' ? null : v, page: null })}
           options={KIND_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
         />
-        <select
-          value={period}
-          onChange={(e) => updateParams({ period: e.target.value === 'term' ? null : e.target.value, page: null })}
-          aria-label="Time period"
-          className="input w-auto cursor-pointer"
-        >
+        <select value={period} onChange={(e) => updateParams({ period: e.target.value === 'term' ? null : e.target.value, page: null })} aria-label="Time period" className="input w-auto cursor-pointer">
           {PERIOD_OPTIONS.map((o) => (
             <option key={o.value} value={o.value}>
               {o.label}
             </option>
           ))}
         </select>
-        <select
-          value={selectedDormId || ''}
-          onChange={(e) => updateParams({ dorm_id: e.target.value || null, page: null })}
-          aria-label="Filter by house"
-          className="input w-auto cursor-pointer"
-        >
+        <select value={selectedDormId || ''} onChange={(e) => updateParams({ dorm_id: e.target.value || null, page: null })} aria-label="Filter by house" className="input w-auto cursor-pointer">
           <option value="">All Houses</option>
           {dorms.map((d) => (
             <option key={d.id} value={d.id}>
@@ -90,111 +80,91 @@ export default function PokerLeaderboardClient({
             </option>
           ))}
         </select>
-        <select
-          value={sort}
-          onChange={(e) => updateParams({ sort: e.target.value === 'net' ? null : e.target.value, page: null })}
-          aria-label="Sort by"
-          className="input w-auto cursor-pointer"
-        >
+        <select value={sort} onChange={(e) => updateParams({ sort: e.target.value === 'net' ? null : e.target.value, page: null })} aria-label="Sort by" className="input w-auto cursor-pointer">
           {SORT_OPTIONS.map((o) => (
             <option key={o.value} value={o.value}>
               By {o.label.toLowerCase()}
             </option>
           ))}
         </select>
-        {sort === 'roi' && <span className="text-xs text-zinc-500">ROI ranking needs 5+ sessions</span>}
+        {sort === 'roi' && <span className="text-xs text-zinc-500">ROI needs 5 sessions</span>}
       </div>
 
       {rows.length === 0 ? (
         <EmptyState
-          icon={<GameIcon game="poker" className="h-10 w-10 text-zinc-500" />}
-          title="Nobody on the board yet"
-          description="Players appear once a session has been logged in this period. Be the first to bink."
+          icon={<GameIcon game="poker" />}
+          title="Nobody on the ledger yet"
+          description="Players appear once a session in this period is logged."
           action={<Button href="/poker/sessions/new">Start a session</Button>}
         />
       ) : (
-        <Card padding="none" className="overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-line">
-              <thead>
-                <tr className="text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
-                  <th className="px-4 py-3 sm:px-5">#</th>
-                  <th className="px-4 py-3 sm:px-5">Player</th>
-                  <th className="px-4 py-3 text-right sm:px-5">Net</th>
-                  <th className="hidden px-4 py-3 text-right sm:table-cell sm:px-5">Staked</th>
-                  <th className="hidden px-4 py-3 text-right sm:table-cell sm:px-5">ROI</th>
-                  <th className="px-4 py-3 text-right sm:px-5">Sessions</th>
-                  <th className="hidden px-4 py-3 text-right md:table-cell md:px-5">Win %</th>
-                  <th className="hidden px-4 py-3 lg:table-cell lg:px-5">Form</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-line">
-                {rows.map((r) => {
-                  const isMe = r.user_id === currentUserId
-                  const net = Number(r.net_cents)
-                  return (
-                    <tr key={r.user_id} className={cn('transition hover:bg-ink-700', isMe && 'bg-orange-500/10')}>
-                      <td className="tabular whitespace-nowrap px-4 py-3.5 text-sm font-semibold text-zinc-500 sm:px-5">{r.rank}</td>
-                      <td className="whitespace-nowrap px-4 py-3.5 sm:px-5">
-                        <Link href={`/profile/${r.user_id}`} className="group inline-flex items-center gap-3">
-                          <Avatar src={r.profile_image_url} name={r.display_name} size="sm" />
-                          <span>
-                            <span className="block text-sm font-medium text-white group-hover:text-orange-400">
-                              {r.display_name}
-                              {isMe && <span className="ml-2 text-xs text-orange-400">you</span>}
-                            </span>
-                            <span className="mt-0.5 hidden md:block">
-                              <HouseChip name={r.dorm_name} />
-                            </span>
-                          </span>
-                        </Link>
-                      </td>
-                      <td className="whitespace-nowrap px-4 py-3.5 text-right sm:px-5">
-                        <div className="flex items-center justify-end gap-3">
-                          <span className="hidden h-1.5 w-16 overflow-hidden rounded-full bg-ink-600 lg:block" aria-hidden="true">
-                            <span
-                              className={cn('block h-full rounded-full', net >= 0 ? 'bg-win/70' : 'bg-loss/70')}
-                              style={{ width: `${Math.max(6, Math.round((Math.abs(net) / maxAbs) * 100))}%` }}
-                            />
-                          </span>
-                          <MoneyDelta cents={net} chip compact />
-                        </div>
-                      </td>
-                      <td className="tabular hidden whitespace-nowrap px-4 py-3.5 text-right text-sm text-zinc-300 sm:table-cell sm:px-5">
-                        {formatCents(Number(r.staked_cents), { compact: true })}
-                      </td>
-                      <td className="tabular hidden whitespace-nowrap px-4 py-3.5 text-right text-sm text-zinc-300 sm:table-cell sm:px-5">
-                        {formatRoi(r.roi_pct == null ? null : Number(r.roi_pct))}
-                      </td>
-                      <td className="tabular whitespace-nowrap px-4 py-3.5 text-right text-sm text-zinc-300 sm:px-5">{r.sessions_played}</td>
-                      <td className="tabular hidden whitespace-nowrap px-4 py-3.5 text-right text-sm text-zinc-400 md:table-cell md:px-5">
-                        {winPct(r)}%
-                      </td>
-                      <td className="hidden whitespace-nowrap px-4 py-3.5 lg:table-cell lg:px-5">
-                        <WinLossDots form={(formByUser[r.user_id] ?? []).slice(0, 5)} />
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-        </Card>
+        <Table>
+          <thead>
+            <tr>
+              <Th>#</Th>
+              <Th>Player</Th>
+              <Th align="right">Net</Th>
+              <Th align="right" hide="sm">
+                Staked
+              </Th>
+              <Th align="right" hide="sm">
+                ROI
+              </Th>
+              <Th align="right">Sessions</Th>
+              <Th align="right" hide="md">
+                Win %
+              </Th>
+              <Th hide="lg">Form</Th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-line">
+            {rows.map((r) => {
+              const isMe = r.user_id === currentUserId
+              const net = Number(r.net_cents)
+              return (
+                <Tr key={r.user_id} me={isMe}>
+                  <Td className="tabular font-semibold text-zinc-500">{r.rank}</Td>
+                  <Td>
+                    <Link href={`/profile/${r.user_id}`} className="group inline-flex items-center gap-3">
+                      <Avatar src={r.profile_image_url} name={r.display_name} size="sm" />
+                      <span>
+                        <span className="block text-sm font-medium text-white group-hover:text-orange-400">
+                          {r.display_name}
+                          {isMe && <span className="ml-2 text-xs text-orange-400">you</span>}
+                        </span>
+                        <span className="mt-0.5 hidden md:block">
+                          <HouseChip name={r.dorm_name} />
+                        </span>
+                      </span>
+                    </Link>
+                  </Td>
+                  <Td align="right">
+                    <div className="flex items-center justify-end gap-3">
+                      <MiniBar value={net} max={maxAbs} tone="sign" className="hidden lg:block" />
+                      <MoneyDelta cents={net} chip compact />
+                    </div>
+                  </Td>
+                  <Td numeric hide="sm">
+                    {formatCents(Number(r.staked_cents), { compact: true })}
+                  </Td>
+                  <Td numeric hide="sm">
+                    {formatRoi(r.roi_pct == null ? null : Number(r.roi_pct))}
+                  </Td>
+                  <Td numeric>{r.sessions_played}</Td>
+                  <Td numeric hide="md" className="text-zinc-400">
+                    {winPct(r)}%
+                  </Td>
+                  <Td hide="lg">
+                    <WinLossDots form={(formByUser[r.user_id] ?? []).slice(0, 5)} />
+                  </Td>
+                </Tr>
+              )
+            })}
+          </tbody>
+        </Table>
       )}
 
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <Button variant="secondary" size="sm" disabled={currentPage === 1} onClick={() => updateParams({ page: String(currentPage - 1) })}>
-            ← Previous
-          </Button>
-          <p className="tabular text-sm text-zinc-400">
-            Page {currentPage} of {totalPages}
-          </p>
-          <Button variant="secondary" size="sm" disabled={currentPage === totalPages} onClick={() => updateParams({ page: String(currentPage + 1) })}>
-            Next →
-          </Button>
-        </div>
-      )}
+      <Pagination page={currentPage} totalPages={totalPages} onPage={(p) => updateParams({ page: String(p) })} />
     </div>
   )
 }

@@ -6,7 +6,9 @@ import { createClient } from '@/lib/supabase/client'
 import Banner from '@/components/ui/Banner'
 import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
+import ConfirmStrip from '@/components/ui/ConfirmStrip'
 import EmptyState from '@/components/ui/EmptyState'
+import Icon from '@/components/ui/Icon'
 import type { PokerSponsorRow } from '@/lib/poker/types'
 
 interface SponsorLibraryProps {
@@ -127,7 +129,7 @@ export default function SponsorLibrary({ sponsors }: SponsorLibraryProps) {
         <Card className="space-y-5">
           <p className="font-display text-lg font-semibold text-white">{draft.id ? 'Edit sponsor' : 'New sponsor'}</p>
           <div className="flex items-center gap-5">
-            <span className="inline-flex h-20 w-20 items-center justify-center overflow-hidden rounded-xl border border-line bg-ink-700">
+            <span className="inline-flex h-20 w-20 items-center justify-center overflow-hidden rounded-lg border border-line bg-ink-700">
               {preview ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={preview} alt="" className="h-full w-full object-contain p-1" />
@@ -169,7 +171,7 @@ export default function SponsorLibrary({ sponsors }: SponsorLibraryProps) {
       ) : (
         <div className="flex justify-end">
           <Button onClick={() => startEdit()} type="button">
-            + Add sponsor
+            <Icon name="plus" className="h-4 w-4" strokeWidth={2} /> Add sponsor
           </Button>
         </div>
       )}
@@ -178,7 +180,7 @@ export default function SponsorLibrary({ sponsors }: SponsorLibraryProps) {
         <EmptyState
           icon="gift"
           title="No sponsors yet"
-          description="Add the companies backing the term tournament — their logos show on the event page and hub card."
+          description="Add the companies backing the term tournament. Their logos show on the event page and hub card."
         />
       ) : (
         <Card padding="none" className="overflow-hidden">
@@ -204,15 +206,7 @@ export default function SponsorLibrary({ sponsors }: SponsorLibraryProps) {
                   </div>
                 </div>
                 {confirmDelete === s.id ? (
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-zinc-400">Remove {s.name}?</span>
-                    <Button size="sm" variant="danger" onClick={() => remove(s.id)} disabled={busy} type="button">
-                      {busy ? '…' : 'Confirm'}
-                    </Button>
-                    <Button size="sm" variant="ghost" onClick={() => setConfirmDelete(null)} disabled={busy} type="button">
-                      Back
-                    </Button>
-                  </div>
+                  <ConfirmStrip inline tone="danger" text={`Remove ${s.name}?`} busy={busy} onConfirm={() => remove(s.id)} onBack={() => setConfirmDelete(null)} className="mt-0" />
                 ) : (
                   <div className="flex gap-2">
                     <Button size="sm" variant="secondary" onClick={() => startEdit(s)} disabled={busy} type="button">

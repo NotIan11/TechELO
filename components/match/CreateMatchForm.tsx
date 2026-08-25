@@ -9,6 +9,7 @@ import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
 import GameIcon, { gameLabel } from '@/components/ui/GameIcon'
 import HouseChip from '@/components/ui/HouseChip'
+import Icon from '@/components/ui/Icon'
 
 type GameType = 'pool' | 'ping_pong'
 
@@ -97,15 +98,10 @@ export default function CreateMatchForm({
                 aria-pressed={active}
                 className={cn(
                   'card flex flex-col items-center gap-2 p-5 transition',
-                  active
-                    ? 'border-orange-500 bg-orange-500/10 ring-1 ring-orange-500/40'
-                    : 'hover:border-line-strong'
+                  active ? 'border-orange-500 bg-orange-500/10' : 'hover:border-line-strong'
                 )}
               >
-                <GameIcon
-                  game={game}
-                  className={cn('h-8 w-8', game === 'pool' ? 'text-pool' : 'text-pong')}
-                />
+                <GameIcon game={game} size="xl" className="text-orange-400" />
                 <span className="text-sm font-semibold text-white">{gameLabel(game)}</span>
                 <span className="tabular text-xs text-zinc-500">
                   Your rating: {myRatings[game] ?? 1500}
@@ -171,9 +167,7 @@ export default function CreateMatchForm({
                             : 'border-line-strong text-transparent'
                         )}
                       >
-                        <svg className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
-                        </svg>
+                        <Icon name="check" className="h-3 w-3" strokeWidth={3} />
                       </span>
                     </button>
                   </li>

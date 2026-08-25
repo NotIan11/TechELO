@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { isValidUniversityEmail } from '@/lib/utils'
 import { useRouter, useSearchParams } from 'next/navigation'
 import AuthShell from './AuthShell'
+import Banner from '@/components/ui/Banner'
 import Button from '@/components/ui/Button'
 
 export default function SignupForm() {
@@ -55,7 +56,7 @@ export default function SignupForm() {
 
         if (updateError) throw updateError
 
-        setMessage('Profile updated! Redirecting…')
+        setMessage('Profile saved. Redirecting.')
         setTimeout(() => {
           router.push('/profile')
         }, 1000)
@@ -102,7 +103,7 @@ export default function SignupForm() {
 
       if (error) throw error
 
-      setMessage('Account created! Check your email to confirm your account.')
+      setMessage('Account created. Check your email to confirm it.')
     } catch (error: any) {
       setError(error.message || 'An error occurred')
     } finally {
@@ -112,15 +113,15 @@ export default function SignupForm() {
 
   return (
     <AuthShell
-      title={isCompletingProfile ? 'Complete your profile' : 'Create your account'}
+      title={isCompletingProfile ? 'Complete your profile' : 'Join Tech ELO'}
       subtitle={
         isCompletingProfile
           ? 'Add your name so opponents know who beat them'
-          : 'Join the rankings — all you need is your university email'
+          : 'Pool, ping pong and poker for the Houses. All you need is a university email.'
       }
     >
       <form onSubmit={handleSignup} className="space-y-5">
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid gap-3 sm:grid-cols-2">
           <div>
             <label htmlFor="firstName" className="label">
               First Name
@@ -208,17 +209,9 @@ export default function SignupForm() {
           </>
         )}
 
-        {error && (
-          <div className="rounded-xl border border-loss/20 bg-loss/10 p-4">
-            <p className="text-sm text-loss">{error}</p>
-          </div>
-        )}
+        {error && <Banner tone="error">{error}</Banner>}
 
-        {message && (
-          <div className="rounded-xl border border-win/20 bg-win/10 p-4">
-            <p className="text-sm text-win">{message}</p>
-          </div>
-        )}
+        {message && <Banner tone="success">{message}</Banner>}
 
         <Button type="submit" full disabled={loading}>
           {loading
@@ -226,14 +219,14 @@ export default function SignupForm() {
               ? 'Updating…'
               : 'Creating…'
             : isCompletingProfile
-              ? 'Update Profile'
-              : 'Create Account'}
+              ? 'Save profile'
+              : 'Create account'}
         </Button>
 
         {!isCompletingProfile && (
           <p className="text-center text-sm text-zinc-400">
             Already have an account?{' '}
-            <Link href="/login" className="font-medium text-orange-400 hover:text-orange-400">
+            <Link href="/login" className="link">
               Sign in
             </Link>
           </p>

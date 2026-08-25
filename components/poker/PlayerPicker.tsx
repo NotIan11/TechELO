@@ -4,7 +4,10 @@ import { useMemo, useState } from 'react'
 import { cn } from '@/lib/utils'
 import Avatar from '@/components/ui/Avatar'
 import Card from '@/components/ui/Card'
+import { chipClass } from '@/components/ui/ChipSelect'
 import HouseChip from '@/components/ui/HouseChip'
+import Icon from '@/components/ui/Icon'
+import TextLink from '@/components/ui/TextLink'
 import type { PlayerRefWithHouse } from '@/lib/poker/types'
 
 interface PlayerPickerProps {
@@ -51,10 +54,10 @@ export default function PlayerPicker({ players, recent, selectedIds, onAdd, disa
                 type="button"
                 disabled={disabled}
                 onClick={() => onAdd(p)}
-                className="inline-flex min-h-[36px] items-center gap-2 rounded-full border border-line bg-ink-700 pl-1.5 pr-3 text-sm text-zinc-200 transition hover:bg-ink-600 hover:text-white disabled:opacity-50"
+                className={cn(chipClass(false), 'pl-1.5 disabled:opacity-50')}
               >
                 <Avatar src={p.profile_image_url} name={p.display_name} size="xs" />
-                <span className="text-orange-400">+</span> {p.display_name}
+                <Icon name="plus" className="h-3.5 w-3.5 text-orange-400" strokeWidth={2} /> {p.display_name}
               </button>
             ))}
           </div>
@@ -117,10 +120,10 @@ export default function PlayerPicker({ players, recent, selectedIds, onAdd, disa
       </div>
       <p className="text-xs text-zinc-500">
         Someone not on the site yet?{' '}
-        <button type="button" onClick={copySignup} className="text-orange-400 underline-offset-2 hover:underline">
+        <TextLink onClick={copySignup} className="text-xs">
           {copied ? 'Signup link copied' : 'Copy the signup link'}
-        </button>{' '}
-        — add them once they’ve registered.
+        </TextLink>{' '}
+        Add them once they have registered.
       </p>
     </div>
   )
