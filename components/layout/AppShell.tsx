@@ -22,7 +22,7 @@ export default function AppShell({ children, width = '7xl' }: AppShellProps) {
       </main>
       <footer className="border-t border-white/[0.04] py-6">
         <p className="text-center text-xs text-slate-600">
-          Tech ELO — pool &amp; ping pong rankings for the Houses
+          Tech ELO — pool, ping pong &amp; poker rankings for the Houses
         </p>
       </footer>
     </div>

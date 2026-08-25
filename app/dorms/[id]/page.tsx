@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import DormDetails from '@/components/dorm/DormDetails'
 import AppShell from '@/components/layout/AppShell'
+import { periodBounds } from '@/lib/poker/periods'
 
 export default async function DormPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -22,11 +23,13 @@ export default async function DormPage({ params }: { params: Promise<{ id: strin
     notFound()
   }
 
+  const { since: termSince } = periodBounds('term')
   const [
     { data: members },
     { data: userProfile },
     { data: poolLeaderboard },
     { data: pingPongLeaderboard },
+    { data: pokerLeaderboard },
   ] = await Promise.all([
     supabase
       .from('users')
@@ -36,6 +39,17 @@ export default async function DormPage({ params }: { params: Promise<{ id: strin
     supabase.from('users').select('dorm_id').eq('id', user.id).single(),
     supabase.rpc('get_leaderboard', { p_game_type: 'pool', p_limit: 10, p_offset: 0, p_dorm_id: id }),
     supabase.rpc('get_leaderboard', { p_game_type: 'ping_pong', p_limit: 10, p_offset: 0, p_dorm_id: id }),
+    // Tolerates a DB without migration 013 (data is null on error)
+    supabase.rpc('get_poker_leaderboard', {
+      p_kind: null,
+      p_dorm_id: id,
+      p_since: termSince,
+      p_until: null,
+      p_sort: 'net',
+      p_min_sessions: 1,
+      p_limit: 10,
+      p_offset: 0,
+    }),
   ])
 
   const isMember = userProfile?.dorm_id === id
@@ -80,6 +94,14 @@ export default async function DormPage({ params }: { params: Promise<{ id: strin
         isMember={isMember}
         poolLeaderboard={withAvatars(poolLeaderboard)}
         pingPongLeaderboard={withAvatars(pingPongLeaderboard)}
+        pokerLeaderboard={((pokerLeaderboard ?? []) as any[]).map((r) => ({
+          rank: Number(r.rank),
+          user_id: r.user_id,
+          display_name: r.display_name,
+          profile_image_url: r.profile_image_url ?? avatarMap[r.user_id] ?? null,
+          net_cents: Number(r.net_cents),
+          sessions_played: Number(r.sessions_played),
+        }))}
         stats={{
           totalMembers: members?.length || 0,
           totalPoolMatches,

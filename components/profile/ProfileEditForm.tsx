@@ -4,6 +4,7 @@ import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Avatar from '@/components/ui/Avatar'
+import Banner from '@/components/ui/Banner'
 import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
 
@@ -150,17 +151,8 @@ export default function ProfileEditForm({ profile }: ProfileEditFormProps) {
           />
         </div>
 
-        {error && (
-          <div className="rounded-xl border border-red-500/25 bg-red-500/10 p-4">
-            <p className="text-sm text-red-300">{error}</p>
-          </div>
-        )}
-
-        {message && (
-          <div className="rounded-xl border border-emerald-500/25 bg-emerald-500/10 p-4">
-            <p className="text-sm text-emerald-300">{message}</p>
-          </div>
-        )}
+        {error && <Banner tone="error">{error}</Banner>}
+        {message && <Banner tone="success">{message}</Banner>}
 
         <div className="flex gap-3">
           <Button type="submit" disabled={loading} className="flex-1">

@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import Avatar from '@/components/ui/Avatar'
+import Banner from '@/components/ui/Banner'
 import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
 import GameIcon, { gameLabel } from '@/components/ui/GameIcon'
@@ -183,11 +184,7 @@ export default function CreateMatchForm({
         </Card>
       </div>
 
-      {error && (
-        <div className="rounded-xl border border-red-500/25 bg-red-500/10 p-4">
-          <p className="text-sm text-red-300">{error}</p>
-        </div>
-      )}
+      {error && <Banner tone="error">{error}</Banner>}
 
       <Button type="submit" size="lg" full disabled={loading || !opponentId}>
         {loading

@@ -6,9 +6,12 @@ import Link from 'next/link'
 import { cn, getHouseColor, formatDate } from '@/lib/utils'
 import Avatar from '@/components/ui/Avatar'
 import Badge from '@/components/ui/Badge'
+import Banner from '@/components/ui/Banner'
 import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
 import GameIcon from '@/components/ui/GameIcon'
+import MoneyDelta from '@/components/ui/MoneyDelta'
+import StatTile from '@/components/ui/StatTile'
 
 interface LeaderboardRow {
   rank: number
@@ -19,6 +22,15 @@ interface LeaderboardRow {
   wins: number
   losses: number
   profile_image_url: string | null
+}
+
+interface PokerRow {
+  rank: number
+  user_id: string
+  display_name: string
+  profile_image_url: string | null
+  net_cents: number
+  sessions_played: number
 }
 
 interface DormDetailsProps {
@@ -39,6 +51,7 @@ interface DormDetailsProps {
   isMember: boolean
   poolLeaderboard: LeaderboardRow[]
   pingPongLeaderboard: LeaderboardRow[]
+  pokerLeaderboard: PokerRow[]
   stats: {
     totalMembers: number
     totalPoolMatches: number
@@ -54,6 +67,7 @@ export default function DormDetails({
   isMember,
   poolLeaderboard,
   pingPongLeaderboard,
+  pokerLeaderboard,
   stats,
 }: DormDetailsProps) {
   const [loading, setLoading] = useState(false)
@@ -88,6 +102,19 @@ export default function DormDetails({
     }
   }
 
+  const boardRow = (userId: string, rank: number, avatar: string | null, name: string, value: React.ReactNode) => (
+    <li key={userId}>
+      <Link href={`/profile/${userId}`} className="flex items-center justify-between gap-3 rounded-lg p-2 transition hover:bg-white/[0.04]">
+        <span className="flex min-w-0 items-center gap-3">
+          <span className="tabular w-5 shrink-0 text-right text-sm font-semibold text-slate-500">{rank}</span>
+          <Avatar src={avatar} name={name} size="xs" />
+          <span className="truncate text-sm font-medium text-white">{name}</span>
+        </span>
+        {value}
+      </Link>
+    </li>
+  )
+
   const miniBoard = (title: string, game: 'pool' | 'ping_pong', rows: LeaderboardRow[]) => (
     <Card>
       <h2 className="mb-4 flex items-center gap-2 font-display text-lg font-semibold text-white">
@@ -98,34 +125,27 @@ export default function DormDetails({
         <p className="text-sm text-slate-500">No ranked players yet.</p>
       ) : (
         <ol className="space-y-1">
-          {rows.map((entry) => (
-            <li key={entry.user_id}>
-              <Link
-                href={`/profile/${entry.user_id}`}
-                className="flex items-center justify-between gap-3 rounded-lg p-2 transition hover:bg-white/[0.04]"
-              >
-                <span className="flex min-w-0 items-center gap-3">
-                  <span className="tabular w-5 shrink-0 text-right text-sm font-semibold text-slate-500">
-                    {entry.rank}
-                  </span>
-                  <Avatar src={entry.profile_image_url} name={entry.display_name} size="xs" />
-                  <span className="truncate text-sm font-medium text-white">{entry.display_name}</span>
-                </span>
-                <span
-                  className={cn(
-                    'tabular shrink-0 text-sm font-bold',
-                    game === 'pool' ? 'text-pool' : 'text-pong'
-                  )}
-                >
-                  {entry.rating}
-                </span>
-              </Link>
-            </li>
-          ))}
+          {rows.map((entry) =>
+            boardRow(
+              entry.user_id,
+              entry.rank,
+              entry.profile_image_url,
+              entry.display_name,
+              <span className={cn('tabular shrink-0 text-sm font-bold', game === 'pool' ? 'text-pool' : 'text-pong')}>{entry.rating}</span>
+            )
+          )}
         </ol>
       )}
     </Card>
   )
+
+  const avgRating =
+    stats.avgPoolRating || stats.avgPingPongRating
+      ? Math.round(
+          (stats.avgPoolRating + stats.avgPingPongRating) /
+            ((stats.avgPoolRating ? 1 : 0) + (stats.avgPingPongRating ? 1 : 0) || 1)
+        )
+      : '—'
 
   return (
     <div className="space-y-6">
@@ -154,47 +174,42 @@ export default function DormDetails({
           )}
         </div>
 
-        {error && (
-          <div className="relative z-10 mt-4 rounded-xl border border-red-500/25 bg-red-500/10 p-4">
-            <p className="text-sm text-red-300">{error}</p>
-          </div>
-        )}
-        {message && (
-          <div className="relative z-10 mt-4 rounded-xl border border-emerald-500/25 bg-emerald-500/10 p-4">
-            <p className="text-sm text-emerald-300">{message}</p>
-          </div>
-        )}
+        {error && <Banner tone="error" className="relative z-10 mt-4">{error}</Banner>}
+        {message && <Banner tone="success" className="relative z-10 mt-4">{message}</Banner>}
       </Card>
 
       {/* Statistics */}
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        {[
-          { label: 'Members', value: stats.totalMembers, className: 'text-white' },
-          { label: 'Pool matches', value: stats.totalPoolMatches, className: 'text-pool' },
-          { label: 'Ping pong matches', value: stats.totalPingPongMatches, className: 'text-pong' },
-          {
-            label: 'Avg rating',
-            value:
-              stats.avgPoolRating || stats.avgPingPongRating
-                ? Math.round(
-                    (stats.avgPoolRating + stats.avgPingPongRating) /
-                      ((stats.avgPoolRating ? 1 : 0) + (stats.avgPingPongRating ? 1 : 0) || 1)
-                  )
-                : '—',
-            className: 'text-white',
-          },
-        ].map(({ label, value, className }) => (
-          <Card key={label} padding="sm">
-            <p className="text-xs uppercase tracking-wider text-slate-500">{label}</p>
-            <p className={cn('tabular mt-1 font-display text-2xl font-bold', className)}>{value}</p>
-          </Card>
-        ))}
+        <StatTile label="Members" value={stats.totalMembers} />
+        <StatTile label="Pool matches" value={stats.totalPoolMatches} tone="pool" />
+        <StatTile label="Ping pong matches" value={stats.totalPingPongMatches} tone="pong" />
+        <StatTile label="Avg rating" value={avgRating} />
       </div>
 
       {/* Leaderboards */}
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {miniBoard('Pool', 'pool', poolLeaderboard)}
         {miniBoard('Ping Pong', 'ping_pong', pingPongLeaderboard)}
+        <Card>
+          <h2 className="mb-4 flex items-center gap-2 font-display text-lg font-semibold text-white">
+            <GameIcon game="poker" className="h-5 w-5 text-poker" />
+            Poker <span className="text-xs font-normal text-slate-500">this term</span>
+          </h2>
+          {pokerLeaderboard.length === 0 ? (
+            <p className="text-sm text-slate-500">
+              No sessions logged yet.{' '}
+              <Link href="/poker" className="text-orange-300 underline-offset-2 hover:underline">
+                Start one
+              </Link>
+            </p>
+          ) : (
+            <ol className="space-y-1">
+              {pokerLeaderboard.map((entry) =>
+                boardRow(entry.user_id, entry.rank, entry.profile_image_url, entry.display_name, <MoneyDelta cents={entry.net_cents} chip compact />)
+              )}
+            </ol>
+          )}
+        </Card>
       </div>
 
       {/* Members */}
