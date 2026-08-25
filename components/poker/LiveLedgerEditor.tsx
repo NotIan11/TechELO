@@ -8,9 +8,15 @@ import Banner from '@/components/ui/Banner'
 import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
 import ChipSelect from '@/components/ui/ChipSelect'
+import ConfirmStrip from '@/components/ui/ConfirmStrip'
 import DollarInput from '@/components/ui/DollarInput'
 import GameIcon from '@/components/ui/GameIcon'
+import Icon from '@/components/ui/Icon'
+import IconTile from '@/components/ui/IconTile'
+import PageHeader from '@/components/ui/PageHeader'
 import PokerStatusBadge from '@/components/ui/PokerStatusBadge'
+import SectionHeader from '@/components/ui/SectionHeader'
+import TextLink from '@/components/ui/TextLink'
 import LedgerFooter from './LedgerFooter'
 import LedgerRowEditor, { type RowState } from './LedgerRowEditor'
 import PlayerPicker from './PlayerPicker'
@@ -106,23 +112,23 @@ function ledgerProblems(kind: PokerSessionKind, s: EditorState): { hard: string[
     const missing = rows.filter((r) => r.cashOutCents == null)
     if (missing.length > 0) {
       hard.push(
-        `${missing.length === 1 ? `${missing[0].user.display_name} needs` : `${missing.length} players need`} a cash-out — enter 0 for anyone who busted.`
+        `${missing.length === 1 ? `${missing[0].user.display_name} needs` : `${missing.length} players need`} a cash-out. Enter 0 for anyone who busted.`
       )
     }
     if (rows.length > 0 && rows.every((r) => r.buyInCents === 0)) hard.push('Enter at least one buy-in.')
   } else {
     const places = rows.map((r) => r.place).filter((p): p is number => p != null)
     const dup = places.find((p, i) => places.indexOf(p) !== i)
-    if (dup != null) hard.push(`Two players can’t both finish ${dup}${dup === 1 ? 'st' : dup === 2 ? 'nd' : dup === 3 ? 'rd' : 'th'}.`)
+    if (dup != null) hard.push(`Two players cannot both finish ${dup}${dup === 1 ? 'st' : dup === 2 ? 'nd' : dup === 3 ? 'rd' : 'th'}.`)
     if (places.some((p) => p > rows.length)) hard.push('A finishing place is higher than the number of players.')
     for (const r of rows) {
       if ((r.cashOutCents ?? 0) > 0 && r.place == null) hard.push(`${r.user.display_name} has a payout but no finishing place.`)
     }
-    if (rows.length > 0 && rows.length < 4) soft.push('Tournaments usually have more than 3 players — did you mean a cash game?')
+    if (rows.length > 0 && rows.length < 4) soft.push('Tournaments usually have more than 3 players. Did you mean a cash game?')
   }
   const played = fromDateTimeLocalValue(s.playedAt)
   if (!played) hard.push('Enter a valid session date.')
-  else if (new Date(played).getTime() > Date.now() + 60 * 60 * 1000) hard.push('The session date can’t be in the future.')
+  else if (new Date(played).getTime() > Date.now() + 60 * 60 * 1000) hard.push('The session date cannot be in the future.')
 
   const totals = computeTotals(
     rows.map((r) => ({ buy_in_cents: r.buyInCents, cash_out_cents: r.cashOutCents })),
@@ -133,14 +139,14 @@ function ledgerProblems(kind: PokerSessionKind, s: EditorState): { hard: string[
     if (kind === 'cash') {
       soft.push(
         totals.discrepancy > 0
-          ? `Cash-outs exceed buy-ins by ${amt} — the table can’t create money. Double-check a stack. You can still log it; the discrepancy is recorded.`
-          : `Cash-outs are ${amt} short of buy-ins — someone’s cash-out may be missing. You can still log it; the discrepancy is recorded.`
+          ? `Cash-outs exceed buy-ins by ${amt}. The table cannot create money; double-check a stack. You can still log it and the discrepancy is recorded.`
+          : `Cash-outs are ${amt} short of buy-ins. Someone’s cash-out may be missing. You can still log it and the discrepancy is recorded.`
       )
     } else {
       soft.push(
         totals.discrepancy > 0
           ? `Payouts exceed the ${s.prizePool != null ? 'prize pool' : 'total entries'} by ${amt} (added money?). You can still log it.`
-          : `${amt} of the ${s.prizePool != null ? 'prize pool' : 'entries'} isn’t paid out yet. You can still log it.`
+          : `${amt} of the ${s.prizePool != null ? 'prize pool' : 'entries'} is not paid out yet. You can still log it.`
       )
     }
   }
@@ -198,7 +204,7 @@ export default function LiveLedgerEditor({ session, currentUserId, players, rece
       const data = await res.json().catch(() => ({}))
       if (!res.ok) {
         if (res.status === 409 && /another device|reload/i.test(data.error ?? '')) {
-          setNotice('This session was updated from another device — reloading the latest ledger.')
+          setNotice('This session was updated from another device. Reloading the latest ledger.')
           router.refresh()
           setSaveStatus('idle')
           return
@@ -211,8 +217,7 @@ export default function LiveLedgerEditor({ session, currentUserId, players, rece
       setError('')
     } catch (err: any) {
       setSaveStatus('error')
-      setError(err?.message?.includes('fetch') ? 'Offline — will retry.' : err?.message || 'Save failed')
-      // retry shortly
+      setError(err?.message?.includes('fetch') ? 'Offline. Will retry.' : err?.message || 'Save failed')
       timerRef.current = setTimeout(() => void saveNow(), 4000)
     } finally {
       inFlightRef.current = false
@@ -240,7 +245,6 @@ export default function LiveLedgerEditor({ session, currentUserId, players, rece
     [scheduleSave]
   )
 
-  // Warn before leaving while a save is pending
   useEffect(() => {
     const handler = (e: BeforeUnloadEvent) => {
       if (mode === 'live' ? dirtyRef.current || inFlightRef.current : dirtyRef.current) {
@@ -251,7 +255,6 @@ export default function LiveLedgerEditor({ session, currentUserId, players, rece
     return () => window.removeEventListener('beforeunload', handler)
   }, [mode])
 
-  // Pick up edits made on another device (live mode)
   useEffect(() => {
     if (mode !== 'live') return
     const supabase = createClient()
@@ -278,7 +281,6 @@ export default function LiveLedgerEditor({ session, currentUserId, players, rece
     }
   }, [mode, session.id, router])
 
-  // When the server sends a newer version (after router.refresh), adopt it if we have no local edits
   useEffect(() => {
     if (session.version > versionRef.current && !dirtyRef.current && !inFlightRef.current) {
       setState(stateFromSession(session))
@@ -315,9 +317,7 @@ export default function LiveLedgerEditor({ session, currentUserId, players, rece
   const quickBuyIn = (key: string) =>
     update((prev) => ({
       rows: prev.rows.map((r) =>
-        r.key === key
-          ? { ...r, buyInCents: r.buyInCents + (prev.standardBuyIn ?? 0), rebuys: r.rebuys + 1, buyInTouched: true }
-          : r
+        r.key === key ? { ...r, buyInCents: r.buyInCents + (prev.standardBuyIn ?? 0), rebuys: r.rebuys + 1, buyInTouched: true } : r
       ),
     }))
 
@@ -334,7 +334,6 @@ export default function LiveLedgerEditor({ session, currentUserId, players, rece
       return { rows: prev.rows.map((r) => (r.key === key ? { ...r, place } : r)) }
     })
 
-  // Tournament: rebuys drive the buy-in until it's hand-edited
   const setRebuys = (key: string, n: number) =>
     update((prev) => ({
       rows: prev.rows.map((r) => {
@@ -344,19 +343,14 @@ export default function LiveLedgerEditor({ session, currentUserId, players, rece
       }),
     }))
 
-  const numberByOrder = () =>
-    update((prev) => ({ rows: prev.rows.map((r, i) => ({ ...r, place: i + 1 })) }))
-  const sortByPlace = () =>
-    update((prev) => ({
-      rows: [...prev.rows].sort((a, b) => (a.place ?? 999) - (b.place ?? 999)),
-    }))
+  const numberByOrder = () => update((prev) => ({ rows: prev.rows.map((r, i) => ({ ...r, place: i + 1 })) }))
+  const sortByPlace = () => update((prev) => ({ rows: [...prev.rows].sort((a, b) => (a.place ?? 999) - (b.place ?? 999)) }))
 
   // ---- primary actions ------------------------------------------------------
   const callApi = async (endpoint: string, body: unknown, onOk: (data: any) => void) => {
     setBusy(true)
     setError('')
     try {
-      // Flush any pending autosave first so the server has the latest version
       if (mode === 'live' && timerRef.current) {
         clearTimeout(timerRef.current)
         timerRef.current = null
@@ -399,89 +393,93 @@ export default function LiveLedgerEditor({ session, currentUserId, players, rece
       router.refresh()
     })
 
-  // Edit mode: mark dirty on any change (no autosave)
   useEffect(() => {
     if (mode === 'edit') dirtyRef.current = true
   }, [state, mode])
 
   const isTourney = kind === 'tournament'
   const title = sessionTitle({ ...session, title: state.title || null, stakes: state.stakes, variant: state.variant })
+  const columns = isTourney
+    ? 'sm:grid-cols-[minmax(0,1fr)_7rem_6.5rem_6rem_7rem_5rem_2rem]'
+    : 'sm:grid-cols-[minmax(0,1fr)_7rem_7.5rem_7rem_5rem_2rem]'
+
+  const saveLabel =
+    saveStatus === 'saved' ? (
+      <span className="inline-flex items-center gap-1 text-win">
+        <Icon name="check" className="h-3 w-3" strokeWidth={2.5} /> Saved
+      </span>
+    ) : saveStatus === 'saving' ? (
+      <span className="text-zinc-400">Saving…</span>
+    ) : saveStatus === 'error' ? (
+      <span className="text-warn">Not saved. Retrying</span>
+    ) : (
+      <span className="text-zinc-500">Autosaves as you go</span>
+    )
 
   return (
     <div className="space-y-5 pb-4">
-      {/* Header */}
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-3">
-          <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-400/10 text-poker">
-            <GameIcon game="poker" className="h-5 w-5" />
-          </span>
-          <div className="min-w-0">
-            <h1 className="truncate font-display text-xl font-bold text-white">{title}</h1>
-            <p className="text-xs text-zinc-500">
-              {isTourney ? 'Tournament' : 'Cash game'}
-              {session.started_at && mode === 'live' && <> · started {new Date(session.started_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</>}
-              {mode === 'live' && (
-                <>
-                  {' · '}
-                  <span
-                    className={cn(
-                      saveStatus === 'saved' && 'text-win',
-                      saveStatus === 'saving' && 'text-zinc-400',
-                      saveStatus === 'error' && 'text-warn'
-                    )}
-                  >
-                    {saveStatus === 'saved' ? 'Saved ✓' : saveStatus === 'saving' ? 'Saving…' : saveStatus === 'error' ? 'Not saved — retrying' : 'Autosaves as you go'}
-                  </span>
-                </>
-              )}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <PokerStatusBadge status={mode === 'live' ? 'live' : session.status} acked={session.ack_count} total={session.player_count} />
-          {mode === 'live' && confirming !== 'void' && (
-            <Button size="sm" variant="ghost" onClick={() => setConfirming('void')} disabled={busy} type="button">
-              Void
-            </Button>
-          )}
-        </div>
-      </div>
+      <PageHeader
+        size="md"
+        leading={<IconTile icon={<GameIcon game="poker" />} />}
+        title={title}
+        meta={
+          <>
+            <TextLink href="/poker" muted className="text-xs">
+              Poker
+            </TextLink>
+            <span>· {isTourney ? 'Tournament' : 'Cash game'}</span>
+            {session.started_at && mode === 'live' && (
+              <span>· started {new Date(session.started_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</span>
+            )}
+            {mode === 'live' && <span>· {saveLabel}</span>}
+          </>
+        }
+        actions={
+          <>
+            <PokerStatusBadge status={mode === 'live' ? 'live' : session.status} acked={session.ack_count} total={session.player_count} />
+            {mode === 'live' && confirming !== 'void' && (
+              <Button size="sm" variant="ghost" onClick={() => setConfirming('void')} disabled={busy} type="button">
+                Void
+              </Button>
+            )}
+          </>
+        }
+      />
 
-      {mode === 'edit' && (
-        <Banner tone="warning">
-          Saving changes resets everyone’s confirmations and re-sends the ledger to their inbox.
+      {mode === 'edit' && <Banner tone="warning">Saving changes resets everyone’s confirmations and re-sends the ledger to their inbox.</Banner>}
+      {notice && (
+        <Banner
+          tone="info"
+          action={
+            <button type="button" className="text-xs underline" onClick={() => setNotice('')}>
+              Dismiss
+            </button>
+          }
+        >
+          {notice}
         </Banner>
       )}
-      {notice && <Banner tone="info" action={<button type="button" className="text-xs underline" onClick={() => setNotice('')}>Dismiss</button>}>{notice}</Banner>}
       {error && <Banner tone="error">{error}</Banner>}
 
       {confirming === 'void' && (
-        <Card padding="sm" className="border-loss/20 bg-loss/5">
-          <p className="text-sm text-loss">Void this session? It won’t count anywhere and can’t be reopened.</p>
-          <div className="mt-3 flex gap-2">
-            <Button size="sm" variant="danger" onClick={voidSession} disabled={busy} type="button">
-              {busy ? 'Voiding…' : 'Void session'}
-            </Button>
-            <Button size="sm" variant="ghost" onClick={() => setConfirming(null)} disabled={busy} type="button">
-              Back
-            </Button>
-          </div>
-        </Card>
+        <ConfirmStrip
+          text="Void this session? It will not count anywhere and cannot be reopened."
+          tone="danger"
+          busy={busy}
+          busyLabel="Voiding…"
+          confirmLabel="Void session"
+          onConfirm={voidSession}
+          onBack={() => setConfirming(null)}
+          className="mt-0"
+        />
       )}
 
-      {/* Details (collapsible in live mode) */}
       <Card padding="sm">
-        <button
-          type="button"
-          className="flex w-full items-center justify-between text-left"
-          onClick={() => setDetailsOpen((o) => !o)}
-          aria-expanded={detailsOpen}
-        >
+        <button type="button" className="flex w-full items-center justify-between gap-3 text-left" onClick={() => setDetailsOpen((o) => !o)} aria-expanded={detailsOpen}>
           <span className="text-sm font-semibold text-white">Table details</span>
-          <span className="text-xs text-zinc-500">
-            {[state.stakes, state.variant, state.location.trim() || null].filter(Boolean).join(' · ') || 'Add stakes, variant, location'}
-            {' '}
-            {detailsOpen ? '▴' : '▾'}
+          <span className="flex items-center gap-2 text-xs text-zinc-500">
+            <span className="truncate">{[state.stakes, state.variant, state.location.trim() || null].filter(Boolean).join(' · ') || 'Add stakes, variant, location'}</span>
+            <Icon name="chevron-down" className={cn('h-4 w-4 transition', detailsOpen && 'rotate-180')} />
           </span>
         </button>
         {detailsOpen && (
@@ -503,25 +501,12 @@ export default function LiveLedgerEditor({ session, currentUserId, players, rece
             {!isTourney && (
               <div className="sm:col-span-2">
                 <p className="label">Stakes</p>
-                <ChipSelect
-                  options={STAKES_PRESETS.map((s) => ({ value: s, label: s }))}
-                  value={state.stakes}
-                  onChange={(v) => update({ stakes: v })}
-                  allowCustom
-                  size="sm"
-                  aria-label="Stakes"
-                />
+                <ChipSelect options={STAKES_PRESETS.map((s) => ({ value: s, label: s }))} value={state.stakes} onChange={(v) => update({ stakes: v })} allowCustom size="sm" aria-label="Stakes" />
               </div>
             )}
             <div className="sm:col-span-2">
               <p className="label">Variant</p>
-              <ChipSelect
-                options={VARIANT_OPTIONS.map((v) => ({ value: v, label: v }))}
-                value={state.variant}
-                onChange={(v) => update({ variant: v })}
-                size="sm"
-                aria-label="Variant"
-              />
+              <ChipSelect options={VARIANT_OPTIONS.map((v) => ({ value: v, label: v }))} value={state.variant} onChange={(v) => update({ variant: v })} size="sm" aria-label="Variant" />
             </div>
             <div>
               <label className="label" htmlFor="std-buy-in">
@@ -533,9 +518,7 @@ export default function LiveLedgerEditor({ session, currentUserId, players, rece
                 onChange={(c) =>
                   update((prev) => ({
                     standardBuyIn: c,
-                    rows: isTourney
-                      ? prev.rows.map((r) => (r.buyInTouched || c == null ? r : { ...r, buyInCents: c * (1 + r.rebuys) }))
-                      : prev.rows,
+                    rows: isTourney ? prev.rows.map((r) => (r.buyInTouched || c == null ? r : { ...r, buyInCents: c * (1 + r.rebuys) })) : prev.rows,
                   }))
                 }
                 size="sm"
@@ -548,41 +531,20 @@ export default function LiveLedgerEditor({ session, currentUserId, players, rece
                 <label className="label" htmlFor="prize-pool">
                   Prize pool <span className="font-normal text-zinc-500">(if not just the entries)</span>
                 </label>
-                <DollarInput
-                  id="prize-pool"
-                  valueCents={state.prizePool}
-                  onChange={(c) => update({ prizePool: c })}
-                  size="sm"
-                  chain={false}
-                  placeholder="= entries"
-                />
+                <DollarInput id="prize-pool" valueCents={state.prizePool} onChange={(c) => update({ prizePool: c })} size="sm" chain={false} placeholder="= entries" />
               </div>
             )}
             <div>
               <label htmlFor="location" className="label">
                 Location
               </label>
-              <input
-                id="location"
-                type="text"
-                className="input"
-                value={state.location}
-                maxLength={80}
-                onChange={(e) => update({ location: e.target.value })}
-              />
+              <input id="location" type="text" className="input" value={state.location} maxLength={80} onChange={(e) => update({ location: e.target.value })} />
             </div>
             <div>
               <label htmlFor="played-at" className="label">
                 Played
               </label>
-              <input
-                id="played-at"
-                type="datetime-local"
-                className="input"
-                value={state.playedAt}
-                max={toDateTimeLocalValue(new Date())}
-                onChange={(e) => update({ playedAt: e.target.value })}
-              />
+              <input id="played-at" type="datetime-local" className="input" value={state.playedAt} max={toDateTimeLocalValue(new Date())} onChange={(e) => update({ playedAt: e.target.value })} />
             </div>
             {mode === 'edit' && (
               <div>
@@ -600,55 +562,42 @@ export default function LiveLedgerEditor({ session, currentUserId, players, rece
               <label htmlFor="notes" className="label">
                 Notes
               </label>
-              <textarea
-                id="notes"
-                className="input min-h-[72px]"
-                value={state.notes}
-                maxLength={1000}
-                onChange={(e) => update({ notes: e.target.value })}
-              />
+              <textarea id="notes" className="input min-h-[72px]" value={state.notes} maxLength={1000} onChange={(e) => update({ notes: e.target.value })} />
             </div>
           </div>
         )}
       </Card>
 
-      {/* Players */}
       <div>
-        <h2 className="mb-3 eyebrow">Players</h2>
+        <SectionHeader title="Players" />
         <PlayerPicker players={players} recent={recent} selectedIds={selectedIds} onAdd={addPlayer} disabled={busy} />
       </div>
 
-      {/* Ledger */}
       <div>
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-          <h2 className="eyebrow">Ledger</h2>
-          {isTourney && state.rows.length > 1 && (
-            <div className="flex gap-2">
-              <Button size="sm" variant="secondary" onClick={numberByOrder} type="button" disabled={busy}>
-                Number by row order
-              </Button>
-              <Button size="sm" variant="secondary" onClick={sortByPlace} type="button" disabled={busy}>
-                Sort by place
-              </Button>
-            </div>
-          )}
-        </div>
+        <SectionHeader
+          title="Ledger"
+          aside={
+            isTourney && state.rows.length > 1 ? (
+              <div className="flex gap-2">
+                <Button size="sm" variant="secondary" onClick={numberByOrder} type="button" disabled={busy}>
+                  Number by row order
+                </Button>
+                <Button size="sm" variant="secondary" onClick={sortByPlace} type="button" disabled={busy}>
+                  Sort by place
+                </Button>
+              </div>
+            ) : undefined
+          }
+        />
         <Card padding="none" className="overflow-hidden">
           {state.rows.length === 0 ? (
             <p className="p-6 text-center text-sm text-zinc-500">Add players above to start the ledger.</p>
           ) : (
             <>
-              <div
-                className={cn(
-                  'hidden px-4 py-2 eyebrow sm:grid',
-                  isTourney
-                    ? 'sm:grid-cols-[minmax(0,1fr)_7rem_6.5rem_6rem_7rem_5rem_2rem]'
-                    : 'sm:grid-cols-[minmax(0,1fr)_7rem_7.5rem_7rem_5rem_2rem]'
-                )}
-              >
+              <div className={cn('eyebrow hidden px-4 py-2 sm:grid', columns)}>
                 <span>Player</span>
                 <span>{isTourney ? 'Buy-in' : 'Buy-in (total)'}</span>
-                <span>{isTourney ? 'Rebuys' : 'Rebuys'}</span>
+                <span>Rebuys</span>
                 {isTourney && <span>Place</span>}
                 <span>{isTourney ? 'Payout' : 'Cash-out'}</span>
                 <span className="text-right">Net</span>
@@ -697,8 +646,8 @@ export default function LiveLedgerEditor({ session, currentUserId, players, rece
         confirmText={
           mode === 'live' ? (
             <>
-              Log this session with <strong>{state.rows.length}</strong> players, {formatCents(totals.buyIn, { compact: true })} in and{' '}
-              {formatCents(totals.cashOut, { compact: true })} out? Everyone will be asked to confirm their line.
+              Log this session with <strong>{state.rows.length}</strong> players, {formatCents(totals.buyIn, { compact: true })} in and {formatCents(totals.cashOut, { compact: true })} out?
+              Everyone will be asked to confirm their line.
             </>
           ) : (
             <>Save these changes? All confirmations will be reset and players re-notified.</>
@@ -707,9 +656,7 @@ export default function LiveLedgerEditor({ session, currentUserId, players, rece
         confirmExtra={
           mode === 'live' ? (
             <div>
-              <p className="mb-1.5 eyebrow">
-                Duration {session.started_at && '(auto from start time if left blank)'}
-              </p>
+              <p className="eyebrow mb-1.5">Duration {session.started_at && '(auto from start time if left blank)'}</p>
               <ChipSelect
                 options={DURATION_PRESETS_MINUTES.map((m) => ({ value: String(m), label: formatDuration(m) }))}
                 value={finalDuration != null ? String(finalDuration) : null}

@@ -8,9 +8,13 @@ import Badge from '@/components/ui/Badge'
 import Banner from '@/components/ui/Banner'
 import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
+import ConfirmStrip from '@/components/ui/ConfirmStrip'
 import GameIcon from '@/components/ui/GameIcon'
+import IconTile from '@/components/ui/IconTile'
 import MoneyDelta from '@/components/ui/MoneyDelta'
+import PageHeader from '@/components/ui/PageHeader'
 import PokerStatusBadge from '@/components/ui/PokerStatusBadge'
+import TextLink from '@/components/ui/TextLink'
 import LedgerTable from './LedgerTable'
 import PlayerName from './PlayerName'
 import ShareButton from './ShareButton'
@@ -40,11 +44,7 @@ export default function SessionDetails({ session, currentUserId }: SessionDetail
     const supabase = createClient()
     const channel = supabase
       .channel(`poker-session:${session.id}`)
-      .on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'poker_sessions', filter: `id=eq.${session.id}` },
-        () => router.refresh()
-      )
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'poker_sessions', filter: `id=eq.${session.id}` }, () => router.refresh())
       .subscribe()
     return () => {
       supabase.removeChannel(channel)
@@ -83,50 +83,52 @@ export default function SessionDetails({ session, currentUserId }: SessionDetail
     }
   }
 
-  const strip = (text: string, onConfirm: () => void, variant: 'danger' | 'success' | 'secondary' = 'danger', extra?: React.ReactNode) => (
-    <div className="mt-3 rounded-xl border border-line bg-ink-700 p-3">
-      <p className="text-sm text-zinc-200">{text}</p>
-      {extra}
-      <div className="mt-3 flex gap-2">
-        <Button size="sm" variant={variant} onClick={onConfirm} disabled={busy} type="button">
-          {busy ? 'Working…' : 'Confirm'}
-        </Button>
-        <Button size="sm" variant="ghost" onClick={() => setConfirming(null)} disabled={busy} type="button">
-          Back
-        </Button>
-      </div>
-    </div>
+  const disputeBox = (
+    <textarea
+      className="input min-h-[72px]"
+      placeholder="e.g. I cashed out $60, not $40"
+      value={reason}
+      maxLength={500}
+      onChange={(e) => setReason(e.target.value)}
+    />
   )
+
+  const nudge = myEntry
+    ? myEntry.net_cents < 0
+      ? { text: 'Ping pong is free. Put a rating on the line instead.', label: 'Challenge someone', href: '/matches/new' }
+      : myEntry.net_cents > 0
+        ? { text: `Up ${formatCents(myEntry.net_cents, { sign: true, compact: true })}. Defend something that is not money.`, label: 'Challenge someone at pool', href: '/matches/new?game_type=pool' }
+        : null
+    : { text: 'Not at this table? The pool and ping pong rankings are open all term.', label: 'See the rankings', href: '/leaderboard' }
 
   return (
     <div className="space-y-5">
-      {/* Header */}
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-3">
-          <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-400/10 text-poker">
-            <GameIcon game="poker" className="h-5 w-5" />
-          </span>
-          <div className="min-w-0">
-            <h1 className="font-display text-xl font-bold text-white">{title}</h1>
-            <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-zinc-500">
-              <Badge tone={isTourney ? 'purple' : 'poker'}>{isTourney ? (session.is_official ? 'Official tournament' : 'Tournament') : 'Cash game'}</Badge>
-              {isTourney
-                ? session.standard_buy_in_cents != null && (
-                    <span>{session.standard_buy_in_cents === 0 ? 'Free entry' : `${formatCents(session.standard_buy_in_cents, { compact: true })} entry`}</span>
-                  )
-                : session.stakes && <span>{session.stakes}</span>}
-              {session.variant && <span>· {session.variant}</span>}
-              <span>· {formatPokerDateTime(session.played_at)}</span>
-              {session.duration_minutes && <span>· {formatDuration(session.duration_minutes)}</span>}
-              {session.location && <span>· {session.location}</span>}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <PokerStatusBadge status={session.status} acked={acks.acked} total={acks.total} />
-          <ShareButton path={`/poker/sessions/${session.id}`} title={title} />
-        </div>
-      </div>
+      <PageHeader
+        size="md"
+        leading={<IconTile icon={<GameIcon game="poker" />} />}
+        title={title}
+        meta={
+          <>
+            <TextLink href="/poker" muted className="text-xs">
+              Poker
+            </TextLink>
+            <Badge tone="orange">{isTourney ? (session.is_official ? 'Official tournament' : 'Tournament') : 'Cash game'}</Badge>
+            {isTourney
+              ? session.standard_buy_in_cents != null && <span>{session.standard_buy_in_cents === 0 ? 'Free entry' : `${formatCents(session.standard_buy_in_cents, { compact: true })} entry`}</span>
+              : session.stakes && <span>{session.stakes}</span>}
+            {session.variant && <span>· {session.variant}</span>}
+            <span>· {formatPokerDateTime(session.played_at)}</span>
+            {session.duration_minutes && <span>· {formatDuration(session.duration_minutes)}</span>}
+            {session.location && <span>· {session.location}</span>}
+          </>
+        }
+        actions={
+          <>
+            <PokerStatusBadge status={session.status} acked={acks.acked} total={acks.total} />
+            <ShareButton path={`/poker/sessions/${session.id}`} title={title} />
+          </>
+        }
+      />
 
       {session.is_official && session.sponsors.length > 0 && (
         <Card padding="sm">
@@ -137,9 +139,7 @@ export default function SessionDetails({ session, currentUserId }: SessionDetail
       {notice && <Banner tone="success">{notice}</Banner>}
       {error && <Banner tone="error">{error}</Banner>}
 
-      {session.status === 'voided' && (
-        <Banner tone="info">This session was voided by the host and doesn’t count toward anything.</Banner>
-      )}
+      {session.status === 'voided' && <Banner tone="info">This session was voided by the host and does not count toward anything.</Banner>}
       {session.status === 'disputed' && (
         <Banner tone="error">
           <p className="font-medium">Disputed</p>
@@ -151,26 +151,25 @@ export default function SessionDetails({ session, currentUserId }: SessionDetail
             ))}
           </ul>
           <p className="mt-2 text-xs opacity-80">
-            The session still counts. {isHost ? 'Edit the session to resolve it — saving asks everyone to confirm again.' : 'The host has been notified.'}
+            The session still counts. {isHost ? 'Edit the session to resolve it. Saving asks everyone to confirm again.' : 'The host has been notified.'}
           </p>
         </Banner>
       )}
       {counts && totals.discrepancy !== 0 && (
         <Banner tone="warning">
           {isTourney
-            ? `Payouts (${formatCents(totals.cashOut, { compact: true })}) don’t match the ${session.prize_pool_cents != null ? 'prize pool' : 'entries'} (${formatCents(session.prize_pool_cents ?? totals.buyIn, { compact: true })}) — off by ${formatCents(Math.abs(totals.discrepancy), { compact: true })}.`
-            : `Buy-ins ${formatCents(totals.buyIn, { compact: true })} vs cash-outs ${formatCents(totals.cashOut, { compact: true })} — the table is off by ${formatCents(Math.abs(totals.discrepancy), { compact: true })}.`}
+            ? `Payouts (${formatCents(totals.cashOut, { compact: true })}) do not match the ${session.prize_pool_cents != null ? 'prize pool' : 'entries'} (${formatCents(session.prize_pool_cents ?? totals.buyIn, { compact: true })}). Off by ${formatCents(Math.abs(totals.discrepancy), { compact: true })}.`
+            : `Buy-ins ${formatCents(totals.buyIn, { compact: true })} vs cash-outs ${formatCents(totals.cashOut, { compact: true })}. The table is off by ${formatCents(Math.abs(totals.discrepancy), { compact: true })}.`}
         </Banner>
       )}
 
-      {/* Bink of the night */}
       {bink && bink.user && (
         <Card className="border-win/20 bg-win/5">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <Avatar src={bink.user.profile_image_url} name={bink.user.display_name} size="md" />
               <div>
-                <p className="text-xs uppercase tracking-wider text-win/80">Bink of the night</p>
+                <p className="eyebrow text-win/80">Bink of the night</p>
                 <p className="font-display font-semibold text-white">
                   {bink.user.display_name}
                   {bink.user_id === currentUserId && <span className="ml-1.5 text-xs font-normal text-orange-400">you</span>}
@@ -182,7 +181,6 @@ export default function SessionDetails({ session, currentUserId }: SessionDetail
         </Card>
       )}
 
-      {/* Ledger */}
       <LedgerTable
         kind={session.kind}
         entries={session.entries}
@@ -193,7 +191,6 @@ export default function SessionDetails({ session, currentUserId }: SessionDetail
         showAcks={counts}
       />
 
-      {/* Confirmations */}
       {counts && (
         <Card padding="sm">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -201,10 +198,7 @@ export default function SessionDetails({ session, currentUserId }: SessionDetail
               {session.entries.map((e) => (
                 <span
                   key={e.id}
-                  className={cn(
-                    'inline-flex rounded-full ring-2 ring-ink-800',
-                    e.disputed_at ? 'ring-loss' : e.acknowledged_at ? '' : 'opacity-40'
-                  )}
+                  className={cn('inline-flex rounded-full ring-2 ring-ink-800', e.disputed_at ? 'ring-loss' : e.acknowledged_at ? '' : 'opacity-40')}
                   title={`${e.user?.display_name ?? '?'} — ${e.disputed_at ? 'disputed' : e.acknowledged_at ? 'confirmed' : 'not yet'}`}
                 >
                   <Avatar src={e.user?.profile_image_url} name={e.user?.display_name ?? '?'} size="xs" />
@@ -225,7 +219,6 @@ export default function SessionDetails({ session, currentUserId }: SessionDetail
         </Card>
       )}
 
-      {/* My response */}
       {counts && myEntry && !isHost && (
         <Card>
           {myEntry.disputed_at ? (
@@ -233,10 +226,17 @@ export default function SessionDetails({ session, currentUserId }: SessionDetail
               <p className="font-medium text-white">You disputed this ledger.</p>
               <p className="mt-1 text-sm text-zinc-400">“{myEntry.dispute_reason}”</p>
               {confirming === 'withdraw' ? (
-                strip('Withdraw your dispute?', () => callApi('/api/poker/entries/withdraw-dispute', { entry_id: myEntry.id }, 'Dispute withdrawn.'), 'secondary')
+                <ConfirmStrip
+                  text="Withdraw your dispute?"
+                  tone="neutral"
+                  busy={busy}
+                  onBack={() => setConfirming(null)}
+                  onConfirm={() => callApi('/api/poker/entries/withdraw-dispute', { entry_id: myEntry.id }, 'Dispute withdrawn.')}
+                  inline
+                />
               ) : (
                 <div className="mt-4 flex flex-wrap gap-3">
-                  <Button variant="success" onClick={() => callApi('/api/poker/entries/acknowledge', { entry_id: myEntry.id }, 'Ledger confirmed.')} disabled={busy} type="button">
+                  <Button onClick={() => callApi('/api/poker/entries/acknowledge', { entry_id: myEntry.id }, 'Ledger confirmed.')} disabled={busy} type="button">
                     Actually, looks right
                   </Button>
                   <Button variant="secondary" onClick={() => setConfirming('withdraw')} disabled={busy} type="button">
@@ -251,16 +251,19 @@ export default function SessionDetails({ session, currentUserId }: SessionDetail
                 You confirmed this ledger. Your line: <MoneyDelta cents={myEntry.net_cents} chip compact />
               </p>
               {confirming === 'dispute' ? (
-                strip(
-                  'Something wrong? Tell the host what’s off.',
-                  () => callApi('/api/poker/entries/dispute', { entry_id: myEntry.id, reason }, 'Dispute sent — the host has been notified.'),
-                  'danger',
-                  <textarea className="input mt-3 min-h-[72px]" placeholder="e.g. I cashed out $60, not $40" value={reason} maxLength={500} onChange={(e) => setReason(e.target.value)} />
-                )
+                <ConfirmStrip
+                  text="Something wrong? Tell the host what is off."
+                  tone="danger"
+                  busy={busy}
+                  onBack={() => setConfirming(null)}
+                  onConfirm={() => callApi('/api/poker/entries/dispute', { entry_id: myEntry.id, reason }, 'Dispute sent. The host has been notified.')}
+                >
+                  {disputeBox}
+                </ConfirmStrip>
               ) : (
-                <button type="button" className="mt-2 text-xs text-zinc-500 underline-offset-2 hover:text-zinc-300 hover:underline" onClick={() => setConfirming('dispute')}>
+                <TextLink muted onClick={() => setConfirming('dispute')} className="mt-2 text-xs">
                   Something wrong? Dispute it
-                </button>
+                </TextLink>
               )}
             </>
           ) : (
@@ -271,15 +274,18 @@ export default function SessionDetails({ session, currentUserId }: SessionDetail
                 <MoneyDelta cents={myEntry.net_cents} chip compact />
               </p>
               {confirming === 'dispute' ? (
-                strip(
-                  'What’s off? The host will see your note.',
-                  () => callApi('/api/poker/entries/dispute', { entry_id: myEntry.id, reason }, 'Dispute sent — the host has been notified.'),
-                  'danger',
-                  <textarea className="input mt-3 min-h-[72px]" placeholder="e.g. I cashed out $60, not $40" value={reason} maxLength={500} onChange={(e) => setReason(e.target.value)} />
-                )
+                <ConfirmStrip
+                  text="What is off? The host will see your note."
+                  tone="danger"
+                  busy={busy}
+                  onBack={() => setConfirming(null)}
+                  onConfirm={() => callApi('/api/poker/entries/dispute', { entry_id: myEntry.id, reason }, 'Dispute sent. The host has been notified.')}
+                >
+                  {disputeBox}
+                </ConfirmStrip>
               ) : (
                 <div className="mt-4 flex flex-wrap gap-3">
-                  <Button variant="success" onClick={() => callApi('/api/poker/entries/acknowledge', { entry_id: myEntry.id }, 'Ledger confirmed.')} disabled={busy} type="button">
+                  <Button onClick={() => callApi('/api/poker/entries/acknowledge', { entry_id: myEntry.id }, 'Ledger confirmed.')} disabled={busy} type="button">
                     Looks right
                   </Button>
                   <Button variant="danger" onClick={() => setConfirming('dispute')} disabled={busy} type="button">
@@ -287,19 +293,34 @@ export default function SessionDetails({ session, currentUserId }: SessionDetail
                   </Button>
                 </div>
               )}
-              <p className="mt-3 text-xs text-zinc-500">The session already counts — confirming just marks it verified.</p>
+              <p className="mt-3 text-xs text-zinc-500">The session already counts. Confirming marks it verified.</p>
             </>
           )}
         </Card>
       )}
 
-      {/* Host actions */}
+      {counts && nudge && (
+        <p className="text-[13px] text-zinc-400">
+          {nudge.text}{' '}
+          <TextLink href={nudge.href} arrow="right" className="text-[13px]">
+            {nudge.label}
+          </TextLink>
+        </p>
+      )}
+
       {isHost && counts && (
         <Card>
           <p className="font-medium text-white">You logged this session.</p>
-          <p className="mt-1 text-sm text-zinc-400">Editing resets everyone’s confirmations; voiding removes it from every stat.</p>
+          <p className="mt-1 text-sm text-zinc-400">Editing resets everyone’s confirmations. Voiding removes it from every stat.</p>
           {confirming === 'void' ? (
-            strip('Void this session? It’ll be excluded from every stat. This can’t be undone.', () => callApi('/api/poker/sessions/void', { session_id: session.id }, 'Session voided.'))
+            <ConfirmStrip
+              text="Void this session? It will be excluded from every stat. This cannot be undone."
+              tone="danger"
+              busy={busy}
+              onBack={() => setConfirming(null)}
+              onConfirm={() => callApi('/api/poker/sessions/void', { session_id: session.id }, 'Session voided.')}
+              inline
+            />
           ) : (
             <div className="mt-4 flex flex-wrap gap-3">
               <Button variant="secondary" href={`/poker/sessions/${session.id}/edit`}>
@@ -320,7 +341,6 @@ export default function SessionDetails({ session, currentUserId }: SessionDetail
         </Card>
       )}
 
-      {/* Timeline */}
       <Card padding="sm">
         <dl className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
           <div>
