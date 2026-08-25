@@ -18,6 +18,7 @@ const config: Config = {
         // Game accents
         pool: '#38bdf8',
         pong: '#34d399',
+        poker: '#a78bfa',
       },
       fontFamily: {
         sans: ['var(--font-body)', 'system-ui', '-apple-system', 'sans-serif'],

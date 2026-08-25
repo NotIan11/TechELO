@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
-import { isChallengeExpired } from '@/lib/utils'
+import { getInboxCount } from '@/lib/inbox'
 
 export async function GET() {
   try {
@@ -11,26 +11,7 @@ export async function GET() {
       return NextResponse.json({ count: 0 }, { status: 200 })
     }
 
-    const { data: matches } = await supabase
-      .from('matches')
-      .select('id, status, player1_id, player2_id, player1_result_accepted, player2_result_accepted, player2_start_accepted, created_at')
-      .or(`player1_id.eq.${user.id},player2_id.eq.${user.id}`)
-      .in('status', ['pending_start', 'in_progress', 'pending_result'])
-
-    let count = 0
-    for (const match of matches ?? []) {
-      const isPlayer1 = match.player1_id === user.id
-      const isPlayer2 = match.player2_id === user.id
-      if (match.status === 'pending_start' && isPlayer2 && !match.player2_start_accepted && !isChallengeExpired(match.created_at)) {
-        count += 1
-      } else if (
-        (match.status === 'in_progress' || match.status === 'pending_result') &&
-        ((isPlayer1 && !match.player1_result_accepted) || (isPlayer2 && !match.player2_result_accepted))
-      ) {
-        count += 1
-      }
-    }
-
+    const count = await getInboxCount(supabase, user.id)
     return NextResponse.json({ count }, { status: 200 })
   } catch (error: any) {
     return NextResponse.json(
