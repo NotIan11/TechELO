@@ -157,7 +157,7 @@ export default async function PokerHubPage({
       <PageHeader
         eyebrow="Poker"
         title="The ledger"
-        subtitle={` · cash games and tournaments, confirmed by everyone at the table`}
+        subtitle={`${plabel} · cash games and tournaments, confirmed by everyone at the table`}
         actions={
           user ? (
             myLive ? (
