@@ -11,6 +11,7 @@ import InboxButton from '@/components/layout/InboxButton'
 const navLinks = [
   { href: '/', label: 'Leaderboard' },
   { href: '/matches', label: 'Matches' },
+  { href: '/poker', label: 'Poker' },
   { href: '/dorms', label: 'Houses' },
 ]
 

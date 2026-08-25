@@ -1,5 +1,14 @@
+import type {
+  PokerCountedEntry,
+  PokerEntryRow,
+  PokerRsvpRow,
+  PokerSessionRow,
+  PokerSponsorRow,
+} from '@/lib/poker/types'
+
 export type GameType = 'pool' | 'ping_pong'
 export type MatchStatus = 'pending_start' | 'in_progress' | 'pending_result' | 'completed' | 'disputed' | 'cancelled' | 'challenge_expired'
+export type { PokerSessionKind, PokerSessionStatus } from '@/lib/poker/types'
 
 export interface Database {
   public: {
@@ -9,29 +18,65 @@ export interface Database {
           id: string
           university_email: string
           display_name: string
+          first_name: string | null
+          last_name: string | null
           dorm_id: string | null
           created_at: string
           profile_image_url: string | null
           phone_number: string | null
+          poker_officer: boolean
         }
         Insert: {
           id: string
           university_email: string
           display_name: string
+          first_name?: string | null
+          last_name?: string | null
           dorm_id?: string | null
           created_at?: string
           profile_image_url?: string | null
           phone_number?: string | null
+          poker_officer?: boolean
         }
         Update: {
           id?: string
           university_email?: string
           display_name?: string
+          first_name?: string | null
+          last_name?: string | null
           dorm_id?: string | null
           created_at?: string
           profile_image_url?: string | null
           phone_number?: string | null
+          poker_officer?: boolean
         }
+      }
+      // Poker tables are written only through the migration-013 RPCs, so Insert/Update
+      // are partial shapes for completeness rather than something the app uses directly.
+      poker_sessions: {
+        Row: PokerSessionRow
+        Insert: Partial<PokerSessionRow>
+        Update: Partial<PokerSessionRow>
+      }
+      poker_entries: {
+        Row: PokerEntryRow
+        Insert: Partial<PokerEntryRow>
+        Update: Partial<PokerEntryRow>
+      }
+      poker_sponsors: {
+        Row: PokerSponsorRow
+        Insert: Partial<PokerSponsorRow>
+        Update: Partial<PokerSponsorRow>
+      }
+      poker_session_sponsors: {
+        Row: { session_id: string; sponsor_id: string; position: number }
+        Insert: { session_id: string; sponsor_id: string; position?: number }
+        Update: Partial<{ session_id: string; sponsor_id: string; position: number }>
+      }
+      poker_rsvps: {
+        Row: PokerRsvpRow
+        Insert: Partial<PokerRsvpRow>
+        Update: Partial<PokerRsvpRow>
       }
       dorms: {
         Row: {
@@ -172,6 +217,11 @@ export interface Database {
           resolved?: boolean
           created_at?: string
         }
+      }
+    }
+    Views: {
+      poker_counted_entries: {
+        Row: PokerCountedEntry
       }
     }
   }

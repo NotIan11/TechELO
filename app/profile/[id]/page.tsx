@@ -11,8 +11,10 @@ import HouseChip from '@/components/ui/HouseChip'
 import Sparkline from '@/components/ui/Sparkline'
 import WinLossDots from '@/components/ui/WinLossDots'
 import MatchCard, { type MatchWithPlayers } from '@/components/match/MatchCard'
+import PokerProfileSection from '@/components/poker/PokerProfileSection'
 import { formatDate, cn } from '@/lib/utils'
 import { ratingHistory, recentForm, currentStreak } from '@/lib/stats'
+import type { PlayerRef, PokerCountedEntry } from '@/lib/poker/types'
 
 export default async function ProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -20,7 +22,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
   const { data: { user } } = await supabase.auth.getUser()
   const isOwnProfile = user?.id === id
 
-  const [{ data: profile }, { data: eloRatings }, { data: matches }] = await Promise.all([
+  const [{ data: profile }, { data: eloRatings }, { data: matches }, { data: pokerRows }] = await Promise.all([
     supabase
       .from('users')
       .select('*, dorms (id, name)')
@@ -38,10 +40,24 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
       .eq('status', 'completed')
       .order('completed_at', { ascending: false })
       .limit(100),
+    supabase.from('poker_counted_entries').select('*').eq('user_id', id).order('played_at', { ascending: false }).limit(1000),
   ])
 
   if (!profile) {
     notFound()
+  }
+
+  // Poker: everyone at the same tables (for tablemates) + their display info
+  const pokerEntries = (pokerRows ?? []) as PokerCountedEntry[]
+  let tableEntries: PokerCountedEntry[] = []
+  const pokerPlayers: Record<string, PlayerRef> = {}
+  if (pokerEntries.length > 0) {
+    const sessionIds = Array.from(new Set(pokerEntries.map((e) => e.session_id)))
+    const { data: tableRows } = await supabase.from('poker_counted_entries').select('*').in('session_id', sessionIds).limit(5000)
+    tableEntries = (tableRows ?? []) as PokerCountedEntry[]
+    const ids = Array.from(new Set(tableEntries.map((e) => e.user_id)))
+    const { data: users } = await supabase.from('users').select('id, display_name, profile_image_url').in('id', ids)
+    for (const u of users ?? []) pokerPlayers[u.id] = { id: u.id, display_name: u.display_name, profile_image_url: u.profile_image_url }
   }
 
   const completedMatches = (matches ?? []) as MatchWithPlayers[]
@@ -171,6 +187,16 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
           </Card>
         ))}
       </div>
+
+      {/* Poker */}
+      <PokerProfileSection
+        userId={id}
+        displayName={profile.display_name}
+        isOwnProfile={isOwnProfile}
+        entries={pokerEntries}
+        tableEntries={tableEntries}
+        players={pokerPlayers}
+      />
 
       {/* Match history */}
       <section>

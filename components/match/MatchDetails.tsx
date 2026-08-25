@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { cn, formatDateTime, isChallengeExpired } from '@/lib/utils'
 import Avatar from '@/components/ui/Avatar'
+import Banner from '@/components/ui/Banner'
 import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
 import EloDelta from '@/components/ui/EloDelta'
@@ -189,11 +190,7 @@ export default function MatchDetails({ match: initialMatch, currentUserId }: Mat
         </div>
       </Card>
 
-      {error && (
-        <div className="rounded-xl border border-red-500/25 bg-red-500/10 p-4">
-          <p className="text-sm text-red-300">{error}</p>
-        </div>
-      )}
+      {error && <Banner tone="error">{error}</Banner>}
 
       {/* State banners + actions */}
       {match.status === 'pending_start' && !expired && (

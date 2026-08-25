@@ -1,9 +1,13 @@
+import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import LeaderboardClient from '@/components/leaderboard/LeaderboardClient'
 import AppShell from '@/components/layout/AppShell'
 import Button from '@/components/ui/Button'
+import GameIcon from '@/components/ui/GameIcon'
 import { isMissingRpc } from '@/lib/utils'
+import { formatCents } from '@/lib/poker/money'
+import { periodBounds, termFor } from '@/lib/poker/periods'
 
 export default async function Home({
   searchParams,
@@ -70,6 +74,17 @@ export default async function Home({
 
   const totalPages = Math.max(1, Math.ceil(count / limit))
 
+  // Poker teaser: money that changed hands this term (tolerates a DB without migration 013)
+  const { since: termSince } = periodBounds('term')
+  const { data: pokerSessions, error: pokerError } = await supabase
+    .from('poker_sessions')
+    .select('total_buy_in_cents')
+    .in('status', ['final', 'disputed'])
+    .gte('played_at', termSince ?? '1970-01-01')
+  const pokerAvailable = !pokerError
+  const pokerStaked = (pokerSessions ?? []).reduce((s, r) => s + Number(r.total_buy_in_cents), 0)
+  const pokerSessionCount = pokerSessions?.length ?? 0
+
   return (
     <AppShell>
       {/* Hero */}
@@ -91,13 +106,39 @@ export default async function Home({
           <Button href={user ? '/matches/new' : '/signup'} size="lg">
             {user ? 'Challenge someone' : 'Join Tech ELO'}
           </Button>
-          {!user && (
+          {user ? (
+            <Button href="/poker" variant="secondary" size="lg">
+              Poker ledger
+            </Button>
+          ) : (
             <Button href="/login" variant="secondary" size="lg">
               Sign in
             </Button>
           )}
         </div>
       </section>
+
+      {pokerAvailable && (
+        <Link
+          href="/poker"
+          className="group mb-8 flex items-center justify-between gap-4 rounded-2xl border border-violet-400/20 bg-gradient-to-r from-violet-500/10 to-transparent p-4 transition hover:border-violet-400/40 sm:p-5"
+        >
+          <span className="flex min-w-0 items-center gap-3">
+            <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-400/10 text-poker">
+              <GameIcon game="poker" className="h-5 w-5" />
+            </span>
+            <span className="min-w-0">
+              <span className="block font-display font-semibold text-white group-hover:text-violet-200">Poker</span>
+              <span className="block truncate text-sm text-slate-400">
+                {pokerSessionCount > 0
+                  ? `${formatCents(pokerStaked, { compact: true })} changed hands across ${pokerSessionCount} session${pokerSessionCount === 1 ? '' : 's'} in ${termFor().label}`
+                  : 'Cash games, tournaments, and who’s really up this term'}
+              </span>
+            </span>
+          </span>
+          <span className="shrink-0 text-sm font-semibold text-violet-200">Who’s up? →</span>
+        </Link>
+      )}
 
       <LeaderboardClient
         leaderboard={entries}

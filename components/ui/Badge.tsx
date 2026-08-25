@@ -8,6 +8,7 @@ export type BadgeTone =
   | 'blue'
   | 'purple'
   | 'orange'
+  | 'poker'
 
 const tones: Record<BadgeTone, string> = {
   gray: 'bg-slate-500/15 text-slate-300 border-slate-400/20',
@@ -17,6 +18,7 @@ const tones: Record<BadgeTone, string> = {
   blue: 'bg-sky-500/15 text-sky-300 border-sky-400/20',
   purple: 'bg-purple-500/15 text-purple-300 border-purple-400/20',
   orange: 'bg-orange-500/15 text-orange-300 border-orange-400/20',
+  poker: 'bg-violet-500/15 text-violet-300 border-violet-400/20',
 }
 
 const dots: Record<BadgeTone, string> = {
@@ -27,6 +29,7 @@ const dots: Record<BadgeTone, string> = {
   blue: 'bg-sky-400',
   purple: 'bg-purple-400',
   orange: 'bg-orange-400',
+  poker: 'bg-violet-400',
 }
 
 interface BadgeProps {
