@@ -5,6 +5,8 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import AuthShell from '@/components/auth/AuthShell'
 import Button from '@/components/ui/Button'
+import Banner from '@/components/ui/Banner'
+import { PageSpinner } from '@/components/ui/Spinner'
 
 export default function SetupPasswordPage() {
   const [password, setPassword] = useState('')
@@ -61,11 +63,7 @@ export default function SetupPasswordPage() {
   }
 
   if (checking) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center p-4">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-line border-t-orange-400" />
-      </div>
-    )
+    return <PageSpinner />
   }
 
   return (
@@ -106,11 +104,7 @@ export default function SetupPasswordPage() {
           />
         </div>
 
-        {error && (
-          <div className="rounded-xl border border-loss/20 bg-loss/10 p-4">
-            <p className="text-sm text-loss">{error}</p>
-          </div>
-        )}
+        {error && <Banner tone="error">{error}</Banner>}
 
         <Button type="submit" full disabled={loading}>
           {loading ? 'Setting password…' : 'Set Password'}
