@@ -3,15 +3,20 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { cn, getHouseColor, formatDate } from '@/lib/utils'
+import { getHouseColor, formatDate } from '@/lib/utils'
+import { formatCents } from '@/lib/poker/money'
+import { ordinal } from '@/lib/poker/money'
 import Avatar from '@/components/ui/Avatar'
 import Badge from '@/components/ui/Badge'
 import Banner from '@/components/ui/Banner'
 import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
 import GameIcon from '@/components/ui/GameIcon'
+import ListRow from '@/components/ui/ListRow'
 import MoneyDelta from '@/components/ui/MoneyDelta'
+import PageHeader from '@/components/ui/PageHeader'
 import StatTile from '@/components/ui/StatTile'
+import TextLink from '@/components/ui/TextLink'
 
 interface LeaderboardRow {
   rank: number
@@ -49,6 +54,7 @@ interface DormDetailsProps {
     created_at: string
   }>
   isMember: boolean
+  canJoin: boolean
   poolLeaderboard: LeaderboardRow[]
   pingPongLeaderboard: LeaderboardRow[]
   pokerLeaderboard: PokerRow[]
@@ -59,17 +65,15 @@ interface DormDetailsProps {
     avgPoolRating: number
     avgPingPongRating: number
   }
+  pulse: {
+    /** House poker net this term (null when the ledger isn't available) */
+    pokerNetCents: number | null
+    /** House Cup position (1-based) or null when unranked */
+    cupRank: number | null
+  }
 }
 
-export default function DormDetails({
-  dorm,
-  members,
-  isMember,
-  poolLeaderboard,
-  pingPongLeaderboard,
-  pokerLeaderboard,
-  stats,
-}: DormDetailsProps) {
+export default function DormDetails({ dorm, members, isMember, canJoin, poolLeaderboard, pingPongLeaderboard, pokerLeaderboard, stats, pulse }: DormDetailsProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
@@ -80,7 +84,6 @@ export default function DormDetails({
     setLoading(true)
     setError('')
     setMessage('')
-
     try {
       const response = await fetch('/api/dorms/join', {
         method: 'POST',
@@ -91,7 +94,7 @@ export default function DormDetails({
       if (!response.ok) {
         throw new Error(data.error || 'Failed to join house')
       }
-      setMessage(`Welcome to ${dorm.name}!`)
+      setMessage(`You are in ${dorm.name}.`)
       setTimeout(() => {
         router.refresh()
       }, 800)
@@ -104,9 +107,9 @@ export default function DormDetails({
 
   const boardRow = (userId: string, rank: number, avatar: string | null, name: string, value: React.ReactNode) => (
     <li key={userId}>
-      <Link href={`/profile/${userId}`} className="flex items-center justify-between gap-3 rounded-lg p-2 transition hover:bg-white/[0.04]">
+      <Link href={`/profile/${userId}`} className="flex items-center justify-between gap-3 rounded-lg p-2 transition hover:bg-ink-700">
         <span className="flex min-w-0 items-center gap-3">
-          <span className="tabular w-5 shrink-0 text-right text-sm font-semibold text-slate-500">{rank}</span>
+          <span className="tabular w-5 shrink-0 text-right text-sm font-semibold text-zinc-500">{rank}</span>
           <Avatar src={avatar} name={name} size="xs" />
           <span className="truncate text-sm font-medium text-white">{name}</span>
         </span>
@@ -117,22 +120,16 @@ export default function DormDetails({
 
   const miniBoard = (title: string, game: 'pool' | 'ping_pong', rows: LeaderboardRow[]) => (
     <Card>
-      <h2 className="mb-4 flex items-center gap-2 font-display text-lg font-semibold text-white">
-        <GameIcon game={game} className={cn('h-5 w-5', game === 'pool' ? 'text-pool' : 'text-pong')} />
+      <Link href={`/leaderboard?game_type=${game}&dorm_id=${dorm.id}`} className="mb-4 flex items-center gap-2 font-display text-lg font-semibold text-white transition hover:text-orange-400">
+        <GameIcon game={game} className="text-orange-400" />
         {title}
-      </h2>
+      </Link>
       {rows.length === 0 ? (
-        <p className="text-sm text-slate-500">No ranked players yet.</p>
+        <p className="text-sm text-zinc-500">No ranked players yet.</p>
       ) : (
         <ol className="space-y-1">
           {rows.map((entry) =>
-            boardRow(
-              entry.user_id,
-              entry.rank,
-              entry.profile_image_url,
-              entry.display_name,
-              <span className={cn('tabular shrink-0 text-sm font-bold', game === 'pool' ? 'text-pool' : 'text-pong')}>{entry.rating}</span>
-            )
+            boardRow(entry.user_id, entry.rank, entry.profile_image_url, entry.display_name, <span className="tabular shrink-0 font-display text-sm font-bold text-white">{entry.rating}</span>)
           )}
         </ol>
       )}
@@ -141,96 +138,106 @@ export default function DormDetails({
 
   const avgRating =
     stats.avgPoolRating || stats.avgPingPongRating
-      ? Math.round(
-          (stats.avgPoolRating + stats.avgPingPongRating) /
-            ((stats.avgPoolRating ? 1 : 0) + (stats.avgPingPongRating ? 1 : 0) || 1)
-        )
+      ? Math.round((stats.avgPoolRating + stats.avgPingPongRating) / ((stats.avgPoolRating ? 1 : 0) + (stats.avgPingPongRating ? 1 : 0) || 1))
       : '—'
+
+  const pokerLine =
+    pulse.pokerNetCents == null
+      ? null
+      : pulse.pokerNetCents > 0
+        ? `up ${formatCents(pulse.pokerNetCents, { compact: true })}`
+        : pulse.pokerNetCents < 0
+          ? `down ${formatCents(Math.abs(pulse.pokerNetCents), { compact: true })}`
+          : 'even'
 
   return (
     <div className="space-y-6">
-      {/* House header */}
-      <Card className="relative overflow-hidden">
-        <span aria-hidden="true" className="absolute inset-y-0 left-0 w-1.5" style={{ backgroundColor: color }} />
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 opacity-[0.08]"
-          style={{ background: `linear-gradient(120deg, ${color}, transparent 55%)` }}
-        />
-        <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <h1 className="font-display text-3xl font-bold text-white">{dorm.name}</h1>
-            {dorm.description && <p className="mt-2 text-slate-400">{dorm.description}</p>}
-            <p className="mt-2 text-xs text-slate-500">Founded {formatDate(dorm.created_at)}</p>
-          </div>
-          {isMember ? (
-            <Badge tone="green" dot className="sm:mt-1">
+      <PageHeader
+        size="md"
+        leading={<span aria-hidden="true" className="mt-1 inline-block h-10 w-10 shrink-0 rounded-lg" style={{ backgroundColor: color }} />}
+        title={<span className="text-2xl sm:text-3xl">{dorm.name}</span>}
+        subtitle={dorm.description ?? undefined}
+        meta={
+          <>
+            <span>Founded {formatDate(dorm.created_at)}</span>
+            <span>
+              · {dorm.total_members} member{dorm.total_members === 1 ? '' : 's'}
+            </span>
+          </>
+        }
+        actions={
+          isMember ? (
+            <Badge tone="win" dot>
               Member
             </Badge>
-          ) : (
-            <Button onClick={handleJoin} disabled={loading}>
+          ) : canJoin ? (
+            <Button onClick={handleJoin} disabled={loading} type="button">
               {loading ? 'Joining…' : 'Join house'}
             </Button>
-          )}
-        </div>
+          ) : undefined
+        }
+      />
 
-        {error && <Banner tone="error" className="relative z-10 mt-4">{error}</Banner>}
-        {message && <Banner tone="success" className="relative z-10 mt-4">{message}</Banner>}
-      </Card>
+      {error && <Banner tone="error">{error}</Banner>}
+      {message && <Banner tone="success">{message}</Banner>}
 
-      {/* Statistics */}
+      <p className="text-[13px] text-zinc-400">
+        {dorm.name} is {pokerLine ?? 'not on the ledger yet'} at poker this term
+        {pulse.cupRank != null ? ` and ${ordinal(pulse.cupRank)} in the House Cup.` : '.'}{' '}
+        <TextLink href={`/leaderboard?dorm_id=${dorm.id}`} arrow="right" className="text-[13px]">
+          Rankings
+        </TextLink>{' '}
+        <TextLink href={`/poker?dorm_id=${dorm.id}`} arrow="right" className="text-[13px]">
+          Ledger
+        </TextLink>
+      </p>
+
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         <StatTile label="Members" value={stats.totalMembers} />
-        <StatTile label="Pool matches" value={stats.totalPoolMatches} tone="pool" />
-        <StatTile label="Ping pong matches" value={stats.totalPingPongMatches} tone="pong" />
-        <StatTile label="Avg rating" value={avgRating} />
+        <StatTile label="Pool matches" value={stats.totalPoolMatches} />
+        <StatTile label="Ping pong matches" value={stats.totalPingPongMatches} />
+        <StatTile label="Avg rating" value={avgRating} tone="orange" />
       </div>
 
-      {/* Leaderboards */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {miniBoard('Pool', 'pool', poolLeaderboard)}
         {miniBoard('Ping Pong', 'ping_pong', pingPongLeaderboard)}
         <Card>
-          <h2 className="mb-4 flex items-center gap-2 font-display text-lg font-semibold text-white">
-            <GameIcon game="poker" className="h-5 w-5 text-poker" />
-            Poker <span className="text-xs font-normal text-slate-500">this term</span>
-          </h2>
+          <Link href={`/poker?dorm_id=${dorm.id}`} className="mb-4 flex items-center gap-2 font-display text-lg font-semibold text-white transition hover:text-orange-400">
+            <GameIcon game="poker" className="text-orange-400" />
+            Poker <span className="eyebrow normal-case tracking-normal">this term</span>
+          </Link>
           {pokerLeaderboard.length === 0 ? (
-            <p className="text-sm text-slate-500">
-              No sessions logged yet.{' '}
-              <Link href="/poker" className="text-orange-300 underline-offset-2 hover:underline">
+            <p className="text-sm text-zinc-500">
+              No sessions this term.{' '}
+              <TextLink href="/poker" className="text-sm">
                 Start one
-              </Link>
+              </TextLink>
             </p>
           ) : (
             <ol className="space-y-1">
-              {pokerLeaderboard.map((entry) =>
-                boardRow(entry.user_id, entry.rank, entry.profile_image_url, entry.display_name, <MoneyDelta cents={entry.net_cents} chip compact />)
-              )}
+              {pokerLeaderboard.map((entry) => boardRow(entry.user_id, entry.rank, entry.profile_image_url, entry.display_name, <MoneyDelta cents={entry.net_cents} chip compact />))}
             </ol>
           )}
         </Card>
       </div>
 
-      {/* Members */}
       <Card>
         <h2 className="mb-4 font-display text-lg font-semibold text-white">Members</h2>
         {members.length === 0 ? (
-          <p className="text-sm text-slate-500">No members yet.</p>
+          <p className="text-sm text-zinc-500">No members yet.</p>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {members.map((member) => (
-              <Link
+              <ListRow
                 key={member.id}
                 href={`/profile/${member.id}`}
-                className="flex items-center gap-3 rounded-xl border border-white/[0.06] p-3 transition hover:border-white/[0.14] hover:bg-white/[0.03]"
-              >
-                <Avatar src={member.profile_image_url} name={member.display_name} size="md" />
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-white">{member.display_name}</p>
-                  <p className="truncate text-xs text-slate-500">{member.university_email}</p>
-                </div>
-              </Link>
+                size="sm"
+                chevron={false}
+                leading={<Avatar src={member.profile_image_url} name={member.display_name} size="md" />}
+                title={member.display_name}
+                meta={<span className="truncate">{member.university_email}</span>}
+              />
             ))}
           </div>
         )}

@@ -8,6 +8,46 @@ export interface ChipOption<T extends string> {
   label: string
 }
 
+/** Shared pill styling for ChipSelect, ChipToggle and any ad-hoc chip */
+export function chipClass(active: boolean, size: 'sm' | 'md' = 'md'): string {
+  return cn(
+    'inline-flex items-center gap-2 rounded-full border font-medium transition',
+    size === 'sm' ? 'min-h-[32px] px-3 text-xs' : 'min-h-[36px] px-3.5 text-sm',
+    active
+      ? 'border-orange-500 bg-orange-500/10 text-orange-400'
+      : 'border-line bg-ink-700 text-zinc-300 hover:border-line-strong hover:text-white'
+  )
+}
+
+/** A single pressable chip (multi-select rows, "mine only" toggles) */
+export function ChipToggle({
+  pressed,
+  onClick,
+  size = 'md',
+  disabled,
+  className,
+  children,
+}: {
+  pressed: boolean
+  onClick: () => void
+  size?: 'sm' | 'md'
+  disabled?: boolean
+  className?: string
+  children: React.ReactNode
+}) {
+  return (
+    <button
+      type="button"
+      aria-pressed={pressed}
+      disabled={disabled}
+      onClick={onClick}
+      className={cn(chipClass(pressed, size), 'disabled:opacity-50', className)}
+    >
+      {children}
+    </button>
+  )
+}
+
 interface ChipSelectProps<T extends string> {
   options: readonly ChipOption<T>[]
   value: string | null
@@ -38,15 +78,6 @@ export default function ChipSelect<T extends string>({
   const [customOpen, setCustomOpen] = useState(value != null && !isPreset)
   const showCustom = allowCustom && (customOpen || (value != null && !isPreset))
 
-  const chip = (active: boolean) =>
-    cn(
-      'inline-flex items-center rounded-full border font-medium transition',
-      size === 'sm' ? 'min-h-[32px] px-3 text-xs' : 'min-h-[36px] px-3.5 text-sm',
-      active
-        ? 'border-orange-400/50 bg-orange-400/10 text-orange-200'
-        : 'border-white/10 bg-white/[0.04] text-slate-300 hover:bg-white/[0.08] hover:text-white'
-    )
-
   return (
     <div className={cn('flex flex-wrap items-center gap-2', className)} role="group" aria-label={rest['aria-label']}>
       {options.map((o) => {
@@ -56,7 +87,7 @@ export default function ChipSelect<T extends string>({
             key={o.value}
             type="button"
             aria-pressed={active}
-            className={chip(active)}
+            className={chipClass(active, size)}
             onClick={() => {
               setCustomOpen(false)
               onChange(active && clearable ? null : o.value)
@@ -70,7 +101,7 @@ export default function ChipSelect<T extends string>({
         <button
           type="button"
           aria-pressed={!!showCustom}
-          className={chip(!!showCustom)}
+          className={chipClass(!!showCustom, size)}
           onClick={() => {
             if (showCustom) {
               setCustomOpen(false)

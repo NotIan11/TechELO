@@ -3,7 +3,7 @@ import { ImageResponse } from 'next/og'
 export const size = { width: 180, height: 180 }
 export const contentType = 'image/png'
 
-/** Apple touch icon (no rounded corners — iOS applies its own mask). */
+/** Apple touch icon (no rounded corners — iOS applies its own mask). Same mark as /icon. */
 export default function AppleIcon() {
   return new ImageResponse(
     (
@@ -14,26 +14,17 @@ export default function AppleIcon() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: 'linear-gradient(135deg, #fb923c, #ea580c)',
+          background: '#FF6C0C',
         }}
       >
         <div
           style={{
-            width: 106,
-            height: 106,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            width: 84,
+            height: 84,
             borderRadius: '50%',
-            background: '#0a0e16',
-            color: '#ffffff',
-            fontSize: 66,
-            fontWeight: 700,
-            paddingBottom: 4,
+            border: '18px solid #0b0b0c',
           }}
-        >
-          8
-        </div>
+        />
       </div>
     ),
     { ...size }

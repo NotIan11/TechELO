@@ -3,7 +3,7 @@ import { ImageResponse } from 'next/og'
 export const size = { width: 512, height: 512 }
 export const contentType = 'image/png'
 
-/** App icon: 8-ball on the brand gradient. Generated, so no binary assets in the repo. */
+/** App icon: the brand mark — orange disc with a single black ring. Generated, so no binary assets. */
 export default function Icon() {
   return new ImageResponse(
     (
@@ -14,27 +14,18 @@ export default function Icon() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: 'linear-gradient(135deg, #fb923c, #ea580c)',
+          background: '#FF6C0C',
           borderRadius: 96,
         }}
       >
         <div
           style={{
-            width: 300,
-            height: 300,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            width: 240,
+            height: 240,
             borderRadius: '50%',
-            background: '#0a0e16',
-            color: '#ffffff',
-            fontSize: 190,
-            fontWeight: 700,
-            paddingBottom: 12,
+            border: '52px solid #0b0b0c',
           }}
-        >
-          8
-        </div>
+        />
       </div>
     ),
     { ...size }

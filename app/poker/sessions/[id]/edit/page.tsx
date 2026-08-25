@@ -21,7 +21,7 @@ export default async function EditPokerSessionPage({ params }: { params: Promise
   const [players, recent] = await Promise.all([loadPickerPlayers(supabase), loadRecentTablemates(supabase, user.id)])
 
   return (
-    <AppShell width="4xl">
+    <AppShell promo="tables" width="4xl">
       <LiveLedgerEditor session={session} currentUserId={user.id} players={players} recent={recent} mode="edit" />
     </AppShell>
   )

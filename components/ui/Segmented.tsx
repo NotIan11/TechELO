@@ -15,21 +15,10 @@ interface SegmentedProps<T extends string> {
   className?: string
 }
 
-/** Pill-style segmented control (game type switcher, filters) */
-export default function Segmented<T extends string>({
-  options,
-  value,
-  onChange,
-  className,
-}: SegmentedProps<T>) {
+/** Scoreboard-style tab switcher: dark track, active tab underlined in orange */
+export default function Segmented<T extends string>({ options, value, onChange, className }: SegmentedProps<T>) {
   return (
-    <div
-      className={cn(
-        'inline-flex rounded-xl border border-white/10 bg-white/[0.04] p-1',
-        className
-      )}
-      role="tablist"
-    >
+    <div className={cn('inline-flex rounded-lg border border-line bg-ink-900 p-1', className)} role="tablist">
       {options.map((option) => {
         const active = option.value === value
         return (
@@ -40,10 +29,10 @@ export default function Segmented<T extends string>({
             aria-selected={active}
             onClick={() => onChange(option.value)}
             className={cn(
-              'inline-flex min-h-[38px] items-center gap-2 rounded-lg px-4 text-sm font-medium transition',
+              'relative inline-flex min-h-[36px] items-center gap-2 rounded-md px-3.5 text-sm font-medium transition',
               active
-                ? 'bg-white/10 text-white shadow-sm'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-ink-600 text-white after:absolute after:inset-x-3 after:bottom-0.5 after:h-0.5 after:rounded-full after:bg-orange-500'
+                : 'text-zinc-400 hover:text-white'
             )}
           >
             {option.icon}

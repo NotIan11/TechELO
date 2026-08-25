@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { isValidUniversityEmail } from '@/lib/utils'
 import { useRouter, useSearchParams } from 'next/navigation'
 import AuthShell from './AuthShell'
+import Banner from '@/components/ui/Banner'
 import Button from '@/components/ui/Button'
 
 export default function LoginForm() {
@@ -95,7 +96,7 @@ export default function LoginForm() {
   }
 
   return (
-    <AuthShell title="Welcome back" subtitle="Sign in to challenge, confirm, and climb">
+    <AuthShell title="Sign in" subtitle="Pool, ping pong and poker for the Houses.">
       <form onSubmit={handleLogin} className="space-y-5">
         <div>
           <label htmlFor="email" className="label">
@@ -111,7 +112,7 @@ export default function LoginForm() {
             className="input"
             placeholder={`your.email${universityDomain}`}
           />
-          <p className="mt-1.5 text-xs text-slate-500">Must be a {universityDomain} email address</p>
+          <p className="mt-1.5 text-xs text-zinc-500">Must be a {universityDomain} email address</p>
         </div>
 
         <div>
@@ -130,27 +131,23 @@ export default function LoginForm() {
           />
         </div>
 
-        {error && (
-          <div className="rounded-xl border border-red-500/25 bg-red-500/10 p-4">
-            <p className="text-sm text-red-300">{error}</p>
-          </div>
-        )}
+        {error && <Banner tone="error">{error}</Banner>}
 
         <Button type="submit" full disabled={loading}>
-          {loading ? 'Signing in…' : 'Sign In'}
+          {loading ? 'Signing in…' : 'Sign in'}
         </Button>
 
-        <div className="space-y-1.5 text-center text-sm text-slate-400">
+        <div className="space-y-1.5 text-center text-sm text-zinc-400">
           <p>
             Don&apos;t have an account?{' '}
-            <Link href="/signup" className="font-medium text-orange-400 hover:text-orange-300">
+            <Link href="/signup" className="link">
               Sign up
             </Link>
           </p>
           <p>
             Need to set a password?{' '}
-            <Link href="/setup-password" className="font-medium text-orange-400 hover:text-orange-300">
-              Set Password
+            <Link href="/setup-password" className="link">
+              Set password
             </Link>
           </p>
         </div>

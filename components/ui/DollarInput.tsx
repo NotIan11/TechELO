@@ -58,7 +58,7 @@ export default function DollarInput({
     <div className={cn('relative', className)}>
       <span
         className={cn(
-          'pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500',
+          'pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500',
           size === 'sm' ? 'text-sm' : 'text-base'
         )}
         aria-hidden="true"
@@ -81,7 +81,7 @@ export default function DollarInput({
         className={cn(
           'input pl-7 text-right',
           size === 'sm' && 'min-h-[38px] px-2.5 py-1.5 text-sm',
-          (invalid || bad) && 'border-red-400/60 focus:border-red-400/60 focus:ring-red-400/20'
+          (invalid || bad) && 'border-loss/60 focus:border-loss/60 focus:ring-loss/30'
         )}
         onFocus={(e) => {
           focused.current = true

@@ -11,7 +11,7 @@ export default function WinLossDots({ form, className }: { form: FormResult[]; c
           key={i}
           className={cn(
             'inline-flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold',
-            r === 'W' ? 'bg-emerald-500/25 text-emerald-300' : 'bg-red-500/25 text-red-300'
+            r === 'W' ? 'bg-win/20 text-win' : 'bg-loss/20 text-loss'
           )}
         >
           {r}

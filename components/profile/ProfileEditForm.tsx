@@ -99,7 +99,7 @@ export default function ProfileEditForm({ profile }: ProfileEditFormProps) {
         throw new Error(updateError.message)
       }
 
-      setMessage('Profile updated!')
+      setMessage('Profile saved.')
       setTimeout(() => {
         router.push(`/profile/${profile.id}`)
         router.refresh()
@@ -130,7 +130,7 @@ export default function ProfileEditForm({ profile }: ProfileEditFormProps) {
               <Button type="button" variant="secondary" size="sm" onClick={() => fileInputRef.current?.click()}>
                 Change picture
               </Button>
-              {profileImage && <p className="mt-1.5 text-xs text-slate-500">{profileImage.name}</p>}
+              {profileImage && <p className="mt-1.5 text-xs text-zinc-500">{profileImage.name}</p>}
             </div>
           </div>
         </div>

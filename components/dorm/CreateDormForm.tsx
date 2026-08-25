@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Banner from '@/components/ui/Banner'
 import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
 
@@ -75,11 +76,7 @@ export default function CreateDormForm() {
           />
         </div>
 
-        {error && (
-          <div className="rounded-xl border border-red-500/25 bg-red-500/10 p-4">
-            <p className="text-sm text-red-300">{error}</p>
-          </div>
-        )}
+        {error && <Banner tone="error">{error}</Banner>}
 
         <div className="flex gap-3">
           <Button type="submit" disabled={loading} className="flex-1">

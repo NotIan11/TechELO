@@ -14,7 +14,7 @@ export default async function NewDormPage() {
 
   return (
     <AppShell width="2xl">
-      <PageHeader title="New House" subtitle="Creating a house also makes you its first member" />
+      <PageHeader title="New house" subtitle="Creating a house also makes you its first member" />
       <CreateDormForm />
     </AppShell>
   )

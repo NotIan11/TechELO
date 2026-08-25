@@ -1,16 +1,20 @@
+import MinimalShell from '@/components/layout/MinimalShell'
 import Button from '@/components/ui/Button'
 
 export default function NotFound() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-4">
+    <MinimalShell>
       <div className="text-center">
-        <p className="font-display text-7xl font-bold text-white/10">404</p>
-        <h1 className="mt-2 font-display text-2xl font-bold text-white">Scratch — page not found</h1>
-        <p className="mt-2 text-sm text-slate-400">The page you&apos;re looking for doesn&apos;t exist.</p>
-        <div className="mt-6">
-          <Button href="/">Back to the leaderboard</Button>
+        <p className="font-display text-7xl font-bold tracking-tight text-zinc-800">404</p>
+        <h1 className="mt-2 font-display text-2xl font-bold tracking-tight text-white">Scratch. Page not found.</h1>
+        <p className="mt-2 text-sm text-zinc-400">Nothing here. The tables are that way.</p>
+        <div className="mt-6 flex justify-center gap-3">
+          <Button href="/">Home</Button>
+          <Button href="/leaderboard" variant="secondary">
+            Rankings
+          </Button>
         </div>
       </div>
-    </div>
+    </MinimalShell>
   )
 }

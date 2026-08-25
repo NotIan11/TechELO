@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils'
 import Banner from '@/components/ui/Banner'
 import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
-import ChipSelect from '@/components/ui/ChipSelect'
+import ChipSelect, { ChipToggle } from '@/components/ui/ChipSelect'
 import DollarInput from '@/components/ui/DollarInput'
 import GameIcon from '@/components/ui/GameIcon'
 import Segmented from '@/components/ui/Segmented'
@@ -115,12 +115,12 @@ export default function StartSessionForm({ isOfficer, sponsors, houseNames, init
                 aria-pressed={active}
                 className={cn(
                   'card flex flex-col items-center gap-2 p-5 transition',
-                  active ? 'border-violet-400/50 bg-violet-400/[0.06] ring-1 ring-violet-400/40' : 'hover:border-white/[0.14]'
+                  active ? 'border-orange-500 bg-orange-500/10' : 'hover:border-line-strong'
                 )}
               >
-                <GameIcon game="poker" className="h-8 w-8 text-poker" />
+                <GameIcon game="poker" size="xl" className="text-orange-400" />
                 <span className="text-sm font-semibold text-white">{k === 'cash' ? 'Cash game' : 'Tournament'}</span>
-                <span className="text-xs text-slate-500">
+                <span className="text-xs text-zinc-500">
                   {k === 'cash' ? 'Buy-ins & cash-outs' : 'Entries, places & payouts'}
                 </span>
               </button>
@@ -130,17 +130,17 @@ export default function StartSessionForm({ isOfficer, sponsors, houseNames, init
       </div>
 
       {kind === 'tournament' && isOfficer && (
-        <Card padding="sm" className={cn(official && 'border-violet-400/40 bg-violet-400/[0.04]')}>
+        <Card padding="sm" className={cn(official && 'border-orange-500/40 bg-orange-500/5')}>
           <label className="flex cursor-pointer items-start gap-3">
             <input
               type="checkbox"
-              className="mt-1 h-4 w-4 accent-violet-400"
+              className="mt-1 h-4 w-4 accent-orange-500"
               checked={official}
               onChange={(e) => setOfficial(e.target.checked)}
             />
             <span>
               <span className="block text-sm font-semibold text-white">Official Tech Poker tournament</span>
-              <span className="block text-xs text-slate-400">
+              <span className="block text-xs text-zinc-400">
                 Free entry, sponsor logos, and a public event page people can RSVP to. Auto-titled “{officialTitlePreview}”.
               </span>
             </span>
@@ -178,7 +178,7 @@ export default function StartSessionForm({ isOfficer, sponsors, houseNames, init
             )}
             <div>
               <label htmlFor="title" className="label">
-                Title <span className="font-normal text-slate-500">(optional — defaults to the term title)</span>
+                Title <span className="font-normal text-zinc-500">(optional; defaults to the term title)</span>
               </label>
               <input
                 id="title"
@@ -193,9 +193,9 @@ export default function StartSessionForm({ isOfficer, sponsors, houseNames, init
             <div>
               <p className="label">Sponsors</p>
               {sponsors.length === 0 ? (
-                <p className="text-sm text-slate-500">
-                  No sponsors in the library yet —{' '}
-                  <a href="/poker/sponsors" className="text-orange-300 underline">
+                <p className="text-sm text-zinc-500">
+                  No sponsors in the library yet.{' '}
+                  <a href="/poker/sponsors" className="link">
                     add some
                   </a>
                   .
@@ -205,26 +205,13 @@ export default function StartSessionForm({ isOfficer, sponsors, houseNames, init
                   {sponsors.map((s) => {
                     const active = sponsorIds.includes(s.id)
                     return (
-                      <button
-                        key={s.id}
-                        type="button"
-                        aria-pressed={active}
-                        onClick={() =>
-                          setSponsorIds((ids) => (active ? ids.filter((id) => id !== s.id) : [...ids, s.id]))
-                        }
-                        className={cn(
-                          'inline-flex min-h-[36px] items-center gap-2 rounded-full border px-3 text-sm font-medium transition',
-                          active
-                            ? 'border-violet-400/50 bg-violet-400/10 text-violet-200'
-                            : 'border-white/10 bg-white/[0.04] text-slate-300 hover:bg-white/[0.08]'
-                        )}
-                      >
+                      <ChipToggle key={s.id} pressed={active} onClick={() => setSponsorIds((ids) => (active ? ids.filter((id) => id !== s.id) : [...ids, s.id]))}>
                         {s.logo_url && (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img src={s.logo_url} alt="" className="h-5 w-5 rounded object-contain" />
                         )}
                         {s.name}
-                      </button>
+                      </ChipToggle>
                     )
                   })}
                 </div>
@@ -265,7 +252,7 @@ export default function StartSessionForm({ isOfficer, sponsors, houseNames, init
                   chain={false}
                 />
               </div>
-              <p className="mt-1.5 text-xs text-slate-500">
+              <p className="mt-1.5 text-xs text-zinc-500">
                 {kind === 'cash'
                   ? 'Used for the “+ buy-in” quick button on each player. Everyone’s amounts stay editable.'
                   : 'Applied to every entry; rebuys and add-ons multiply it. Editable per player.'}
@@ -274,7 +261,7 @@ export default function StartSessionForm({ isOfficer, sponsors, houseNames, init
             {kind === 'tournament' && (
               <div>
                 <label htmlFor="title" className="label">
-                  Title <span className="font-normal text-slate-500">(optional)</span>
+                  Title <span className="font-normal text-zinc-500">(optional)</span>
                 </label>
                 <input
                   id="title"
@@ -302,7 +289,7 @@ export default function StartSessionForm({ isOfficer, sponsors, houseNames, init
 
         <div>
           <label htmlFor="location" className="label">
-            Location <span className="font-normal text-slate-500">(optional)</span>
+            Location <span className="font-normal text-zinc-500">(optional)</span>
           </label>
           <input
             id="location"
@@ -323,14 +310,14 @@ export default function StartSessionForm({ isOfficer, sponsors, houseNames, init
 
         {!isOfficial && (
           <div>
-            <label className="flex cursor-pointer items-center gap-3 text-sm text-slate-300">
+            <label className="flex cursor-pointer items-center gap-3 text-sm text-zinc-300">
               <input
                 type="checkbox"
-                className="h-4 w-4 accent-orange-400"
+                className="h-4 w-4 accent-orange-500"
                 checked={backdate}
                 onChange={(e) => setBackdate(e.target.checked)}
               />
-              This already happened — log a past session
+              This already happened. Log a past session
             </label>
             {backdate && (
               <input
@@ -361,8 +348,8 @@ export default function StartSessionForm({ isOfficer, sponsors, houseNames, init
                 : 'Start tournament'}
       </Button>
       {!backdate && !isOfficial && (
-        <p className="text-center text-xs text-slate-500">
-          The session is saved as soon as you start — closing the tab or refreshing won’t lose anything.
+        <p className="text-center text-xs text-zinc-500">
+          The session is saved as soon as you start. Closing the tab or refreshing loses nothing.
         </p>
       )}
     </form>

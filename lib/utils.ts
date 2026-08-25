@@ -139,15 +139,6 @@ export function getInitials(name: string | null | undefined): string {
   return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase()
 }
 
-/** Deterministic hue (0-359) from a string, for initials avatars */
-export function hueFromString(s: string): number {
-  let h = 0
-  for (let i = 0; i < s.length; i++) {
-    h = (h * 31 + s.charCodeAt(i)) % 360
-  }
-  return h
-}
-
 /** Compact relative time ("just now", "5m ago", "3h ago", "2d ago", then a date) */
 export function formatRelativeTime(date: Date | string): string {
   const d = typeof date === 'string' ? new Date(date) : date

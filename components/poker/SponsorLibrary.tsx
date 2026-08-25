@@ -6,7 +6,9 @@ import { createClient } from '@/lib/supabase/client'
 import Banner from '@/components/ui/Banner'
 import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
+import ConfirmStrip from '@/components/ui/ConfirmStrip'
 import EmptyState from '@/components/ui/EmptyState'
+import Icon from '@/components/ui/Icon'
 import type { PokerSponsorRow } from '@/lib/poker/types'
 
 interface SponsorLibraryProps {
@@ -127,12 +129,12 @@ export default function SponsorLibrary({ sponsors }: SponsorLibraryProps) {
         <Card className="space-y-5">
           <p className="font-display text-lg font-semibold text-white">{draft.id ? 'Edit sponsor' : 'New sponsor'}</p>
           <div className="flex items-center gap-5">
-            <span className="inline-flex h-20 w-20 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-white/[0.04]">
+            <span className="inline-flex h-20 w-20 items-center justify-center overflow-hidden rounded-lg border border-line bg-ink-700">
               {preview ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={preview} alt="" className="h-full w-full object-contain p-1" />
               ) : (
-                <span className="text-xs text-slate-500">No logo</span>
+                <span className="text-xs text-zinc-500">No logo</span>
               )}
             </span>
             <div>
@@ -140,7 +142,7 @@ export default function SponsorLibrary({ sponsors }: SponsorLibraryProps) {
               <Button type="button" variant="secondary" size="sm" onClick={() => fileRef.current?.click()}>
                 {preview ? 'Change logo' : 'Upload logo'}
               </Button>
-              <p className="mt-1.5 text-xs text-slate-500">PNG or SVG with a transparent background looks best.</p>
+              <p className="mt-1.5 text-xs text-zinc-500">PNG or SVG with a transparent background looks best.</p>
             </div>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -152,7 +154,7 @@ export default function SponsorLibrary({ sponsors }: SponsorLibraryProps) {
             </div>
             <div>
               <label htmlFor="sp-url" className="label">
-                Website <span className="font-normal text-slate-500">(optional)</span>
+                Website <span className="font-normal text-zinc-500">(optional)</span>
               </label>
               <input id="sp-url" type="url" className="input" placeholder="https://" value={draft.website_url} maxLength={300} onChange={(e) => setDraft({ ...draft, website_url: e.target.value })} />
             </div>
@@ -169,50 +171,42 @@ export default function SponsorLibrary({ sponsors }: SponsorLibraryProps) {
       ) : (
         <div className="flex justify-end">
           <Button onClick={() => startEdit()} type="button">
-            + Add sponsor
+            <Icon name="plus" className="h-4 w-4" strokeWidth={2} /> Add sponsor
           </Button>
         </div>
       )}
 
       {sponsors.length === 0 ? (
         <EmptyState
-          icon="🤝"
+          icon="gift"
           title="No sponsors yet"
-          description="Add the companies backing the term tournament — their logos show on the event page and hub card."
+          description="Add the companies backing the term tournament. Their logos show on the event page and hub card."
         />
       ) : (
         <Card padding="none" className="overflow-hidden">
-          <ul className="divide-y divide-white/[0.04]">
+          <ul className="divide-y divide-line">
             {sponsors.map((s) => (
               <li key={s.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
                 <div className="flex items-center gap-3">
-                  <span className="inline-flex h-12 w-12 items-center justify-center overflow-hidden rounded-lg border border-white/10 bg-white/[0.04]">
+                  <span className="inline-flex h-12 w-12 items-center justify-center overflow-hidden rounded-lg border border-line bg-ink-700">
                     {s.logo_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={s.logo_url} alt="" className="h-full w-full object-contain p-1" />
                     ) : (
-                      <span className="text-xs text-slate-500">—</span>
+                      <span className="text-xs text-zinc-500">—</span>
                     )}
                   </span>
                   <div>
                     <p className="text-sm font-semibold text-white">{s.name}</p>
                     {s.website_url && (
-                      <a href={s.website_url} target="_blank" rel="noopener noreferrer" className="text-xs text-slate-500 hover:text-slate-300">
+                      <a href={s.website_url} target="_blank" rel="noopener noreferrer" className="text-xs text-zinc-500 hover:text-zinc-300">
                         {s.website_url.replace(/^https?:\/\//, '')}
                       </a>
                     )}
                   </div>
                 </div>
                 {confirmDelete === s.id ? (
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-slate-400">Remove {s.name}?</span>
-                    <Button size="sm" variant="danger" onClick={() => remove(s.id)} disabled={busy} type="button">
-                      {busy ? '…' : 'Confirm'}
-                    </Button>
-                    <Button size="sm" variant="ghost" onClick={() => setConfirmDelete(null)} disabled={busy} type="button">
-                      Back
-                    </Button>
-                  </div>
+                  <ConfirmStrip inline tone="danger" text={`Remove ${s.name}?`} busy={busy} onConfirm={() => remove(s.id)} onBack={() => setConfirmDelete(null)} className="mt-0" />
                 ) : (
                   <div className="flex gap-2">
                     <Button size="sm" variant="secondary" onClick={() => startEdit(s)} disabled={busy} type="button">

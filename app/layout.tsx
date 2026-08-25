@@ -1,17 +1,17 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter, Space_Grotesk } from 'next/font/google'
+import { Inter, Inter_Tight } from 'next/font/google'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-body' })
-const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-display' })
+const interTight = Inter_Tight({ subsets: ['latin'], variable: '--font-display' })
 
 export const metadata: Metadata = {
   title: {
-    default: 'Tech ELO — Pool & Ping Pong Rankings',
+    default: 'Tech ELO · Caltech house games',
     template: '%s · Tech ELO',
   },
   description:
-    'Challenge your housemates, report results, and climb the pool and ping pong rankings.',
+    'Pool and ping pong ratings, a poker ledger. Confirmed by the people you played.',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#0a0e16',
+  themeColor: '#0b0b0c',
 }
 
 export default function RootLayout({
@@ -31,8 +31,8 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`dark ${inter.variable} ${spaceGrotesk.variable}`}>
-      <body className="font-sans antialiased">{children}</body>
+    <html lang="en" className={`dark ${inter.variable} ${interTight.variable}`}>
+      <body className="font-sans">{children}</body>
     </html>
   )
 }

@@ -45,8 +45,8 @@ export default async function NewMatchPage({
   return (
     <AppShell width="2xl">
       <PageHeader
-        title="New Match"
-        subtitle="Pick a game and an opponent — they'll get a challenge to accept."
+        title="New match"
+        subtitle="Pick a game and an opponent. They get a challenge to accept."
       />
       <CreateMatchForm
         opponents={opponents}

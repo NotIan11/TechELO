@@ -19,7 +19,7 @@ export default async function JoinDormPage() {
 
   return (
     <AppShell width="4xl">
-      <PageHeader title="Join a House" subtitle="Rep your colors on the leaderboard" />
+      <PageHeader title="Join a house" subtitle="Your house shows next to your name on every board." />
       <JoinDormList dorms={dorms || []} userDormId={userProfile?.dorm_id || null} />
     </AppShell>
   )

@@ -2,12 +2,15 @@
 
 import { useRouter, useSearchParams } from 'next/navigation'
 import Button from '@/components/ui/Button'
+import { ChipToggle } from '@/components/ui/ChipSelect'
 import EmptyState from '@/components/ui/EmptyState'
 import GameIcon from '@/components/ui/GameIcon'
+import Pagination from '@/components/ui/Pagination'
+import SectionHeader from '@/components/ui/SectionHeader'
 import Segmented from '@/components/ui/Segmented'
+import TextLink from '@/components/ui/TextLink'
 import SessionCard, { type SessionListItem } from './SessionCard'
 import type { PokerKindFilter } from '@/lib/poker/types'
-import { cn } from '@/lib/utils'
 
 interface SessionsListClientProps {
   live: SessionListItem[]
@@ -46,23 +49,15 @@ export default function SessionsListClient({ live, sessions, kind, mine, current
           ]}
         />
         {viewerId && (
-          <button
-            type="button"
-            aria-pressed={mine}
-            onClick={() => updateParams({ mine: mine ? null : '1', page: null })}
-            className={cn(
-              'inline-flex min-h-[38px] items-center rounded-xl border px-4 text-sm font-medium transition',
-              mine ? 'border-orange-400/50 bg-orange-400/10 text-orange-200' : 'border-white/10 bg-white/[0.04] text-slate-300 hover:bg-white/[0.08]'
-            )}
-          >
+          <ChipToggle pressed={mine} onClick={() => updateParams({ mine: mine ? null : '1', page: null })}>
             Sessions I played
-          </button>
+          </ChipToggle>
         )}
       </div>
 
       {live.length > 0 && (
         <section>
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-500">Live now</h2>
+          <SectionHeader title="Live now" />
           <div className="space-y-3">
             {live.map((s) => (
               <SessionCard key={s.id} session={s} viewerId={viewerId} />
@@ -73,14 +68,14 @@ export default function SessionsListClient({ live, sessions, kind, mine, current
 
       {sessions.length === 0 ? (
         <EmptyState
-          icon={<GameIcon game="poker" className="h-10 w-10 text-slate-500" />}
+          icon={<GameIcon game="poker" />}
           title={mine ? 'No sessions with you in them yet' : 'No sessions logged yet'}
-          description="Start a game and the ledger builds itself as the night goes."
-          action={viewerId ? <Button href="/poker/sessions/new">Start a session</Button> : <Button href="/signup">Join to play</Button>}
+          description="Start a game. The ledger fills in as the night goes."
+          action={viewerId ? <Button href="/poker/sessions/new">Start a session</Button> : <Button href="/signup">Join</Button>}
         />
       ) : (
         <section>
-          {live.length > 0 && <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-500">History</h2>}
+          {live.length > 0 && <SectionHeader title="History" />}
           <div className="space-y-3">
             {sessions.map((s) => (
               <SessionCard key={s.id} session={s} viewerId={viewerId} />
@@ -89,19 +84,14 @@ export default function SessionsListClient({ live, sessions, kind, mine, current
         </section>
       )}
 
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <Button variant="secondary" size="sm" disabled={currentPage === 1} onClick={() => updateParams({ page: String(currentPage - 1) })}>
-            ← Previous
-          </Button>
-          <p className="tabular text-sm text-slate-400">
-            Page {currentPage} of {totalPages}
-          </p>
-          <Button variant="secondary" size="sm" disabled={currentPage === totalPages} onClick={() => updateParams({ page: String(currentPage + 1) })}>
-            Next →
-          </Button>
-        </div>
-      )}
+      <Pagination page={currentPage} totalPages={totalPages} onPage={(p) => updateParams({ page: String(p) })} />
+
+      <p className="text-[13px] text-zinc-400">
+        Money settled. Now settle the rating.{' '}
+        <TextLink href="/matches/new" arrow="right" className="text-[13px]">
+          Challenge someone
+        </TextLink>
+      </p>
     </div>
   )
 }
