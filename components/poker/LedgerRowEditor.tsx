@@ -67,7 +67,7 @@ export default function LedgerRowEditor({
           onClick={onRemove}
           disabled={disabled}
           aria-label={`Remove ${row.user.display_name}`}
-          className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition hover:bg-white/[0.06] hover:text-red-300 sm:hidden"
+          className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-zinc-500 transition hover:bg-white/[0.06] hover:text-loss sm:hidden"
         >
           ×
         </button>
@@ -76,7 +76,7 @@ export default function LedgerRowEditor({
       {/* Buy-in */}
       <div className="grid grid-cols-2 gap-2 sm:contents">
         <div>
-          <p className="mb-1 text-[10px] uppercase tracking-wider text-slate-500 sm:hidden">
+          <p className="mb-1 eyebrow sm:hidden">
             {isTourney ? 'Buy-in' : 'Buy-in (total)'}
           </p>
           <DollarInput
@@ -91,7 +91,7 @@ export default function LedgerRowEditor({
 
         {/* Rebuys / quick buy-in */}
         <div className="flex flex-col gap-1">
-          <p className="text-[10px] uppercase tracking-wider text-slate-500 sm:hidden">
+          <p className="eyebrow sm:hidden">
             {isTourney ? 'Rebuys / add-ons' : 'Rebuys'}
           </p>
           <div className="flex items-center gap-1.5">
@@ -109,7 +109,7 @@ export default function LedgerRowEditor({
                 disabled={disabled}
                 onClick={onQuickBuyIn}
                 title={`Add a ${formatCents(standardBuyIn!, { compact: true })} buy-in`}
-                className="tabular inline-flex h-8 items-center rounded-lg border border-orange-400/30 bg-orange-400/10 px-2 text-xs font-semibold text-orange-200 transition hover:bg-orange-400/20 disabled:opacity-50"
+                className="tabular inline-flex h-8 items-center rounded-lg border border-orange-500/40 bg-orange-500/10 px-2 text-xs font-semibold text-orange-400 transition hover:bg-orange-500/15 disabled:opacity-50"
               >
                 +{formatCents(standardBuyIn!, { compact: true })}
               </button>
@@ -120,7 +120,7 @@ export default function LedgerRowEditor({
         {/* Place (tournament) */}
         {isTourney && (
           <div>
-            <p className="mb-1 text-[10px] uppercase tracking-wider text-slate-500 sm:hidden">Place</p>
+            <p className="mb-1 eyebrow sm:hidden">Place</p>
             <div className="flex items-center gap-1.5">
               <select
                 className="input min-h-[38px] px-2 py-1 text-sm"
@@ -147,7 +147,7 @@ export default function LedgerRowEditor({
 
         {/* Cash-out / payout */}
         <div>
-          <p className="mb-1 text-[10px] uppercase tracking-wider text-slate-500 sm:hidden">
+          <p className="mb-1 eyebrow sm:hidden">
             {isTourney ? 'Payout' : 'Cash-out'}
           </p>
           <DollarInput
@@ -164,9 +164,9 @@ export default function LedgerRowEditor({
 
       {/* Net */}
       <div className="flex items-center justify-between sm:justify-end">
-        <span className="text-[10px] uppercase tracking-wider text-slate-500 sm:hidden">Net</span>
+        <span className="eyebrow sm:hidden">Net</span>
         {row.cashOutCents == null && !isTourney ? (
-          <span className="text-xs text-slate-500">still playing</span>
+          <span className="text-xs text-zinc-500">still playing</span>
         ) : (
           <MoneyDelta cents={net} chip compact />
         )}
@@ -178,7 +178,7 @@ export default function LedgerRowEditor({
         onClick={onRemove}
         disabled={disabled}
         aria-label={`Remove ${row.user.display_name}`}
-        className="hidden h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition hover:bg-white/[0.06] hover:text-red-300 sm:inline-flex"
+        className="hidden h-8 w-8 items-center justify-center rounded-lg text-zinc-500 transition hover:bg-white/[0.06] hover:text-loss sm:inline-flex"
       >
         ×
       </button>

@@ -161,7 +161,7 @@ export default async function PokerHubPage({
           Who’s really up at the{' '}
           <span className="bg-gradient-to-r from-violet-400 to-fuchsia-300 bg-clip-text text-transparent">table?</span>
         </h1>
-        <p className="mx-auto mt-4 max-w-xl text-balance text-slate-400">
+        <p className="mx-auto mt-4 max-w-xl text-balance text-zinc-400">
           Log cash games and tournaments as they happen, confirm the ledger together, and let the numbers settle who the real shark is.
         </p>
         <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
@@ -222,7 +222,7 @@ export default async function PokerHubPage({
 
         {/* Leaderboard */}
         <section>
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-500">Leaderboard · {plabel}</h2>
+          <h2 className="mb-3 eyebrow">Leaderboard · {plabel}</h2>
           <PokerLeaderboardClient
             rows={rows}
             formByUser={formByUser}
@@ -240,13 +240,13 @@ export default async function PokerHubPage({
         {/* Recent sessions */}
         <section>
           <div className="mb-3 flex items-baseline justify-between">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500">Recent sessions</h2>
+            <h2 className="eyebrow">Recent sessions</h2>
             <Button href="/poker/sessions" variant="ghost" size="sm">
               See all →
             </Button>
           </div>
           {recent.length === 0 ? (
-            <p className="text-sm text-slate-500">Nothing logged yet.</p>
+            <p className="text-sm text-zinc-500">Nothing logged yet.</p>
           ) : (
             <div className="space-y-3">
               {recent.map((s) => (

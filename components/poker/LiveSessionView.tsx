@@ -52,7 +52,7 @@ export default function LiveSessionView({ session, currentUserId }: { session: S
           </span>
           <div className="min-w-0">
             <h1 className="truncate font-display text-xl font-bold text-white">{sessionTitle(session)}</h1>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-zinc-500">
               {isTourney ? 'Tournament' : 'Cash game'}
               {session.location && <> · {session.location}</>}
               {session.started_at && (
@@ -69,17 +69,17 @@ export default function LiveSessionView({ session, currentUserId }: { session: S
 
       <div className="grid grid-cols-3 gap-3">
         <Card padding="sm">
-          <p className="text-xs uppercase tracking-wider text-slate-500">Players</p>
+          <p className="eyebrow">Players</p>
           <p className="tabular mt-1 font-display text-2xl font-bold text-white">{session.player_count}</p>
         </Card>
         <Card padding="sm">
-          <p className="text-xs uppercase tracking-wider text-slate-500">{isTourney ? 'Entries' : 'On the table'}</p>
+          <p className="eyebrow">{isTourney ? 'Entries' : 'On the table'}</p>
           <p className="tabular mt-1 font-display text-2xl font-bold text-white">
             {formatCents(session.total_buy_in_cents, { compact: true })}
           </p>
         </Card>
         <Card padding="sm">
-          <p className="text-xs uppercase tracking-wider text-slate-500">{isTourney ? 'Paid out' : 'Cashed out'}</p>
+          <p className="eyebrow">{isTourney ? 'Paid out' : 'Cashed out'}</p>
           <p className="tabular mt-1 font-display text-2xl font-bold text-white">
             {formatCents(session.total_cash_out_cents, { compact: true })}
           </p>
@@ -88,20 +88,20 @@ export default function LiveSessionView({ session, currentUserId }: { session: S
 
       <Card padding="none" className="overflow-hidden">
         {rows.length === 0 ? (
-          <p className="p-6 text-center text-sm text-slate-500">The host hasn’t added players yet.</p>
+          <p className="p-6 text-center text-sm text-zinc-500">The host hasn’t added players yet.</p>
         ) : (
-          <ul className="divide-y divide-white/[0.04]">
+          <ul className="divide-y divide-line">
             {rows.map((e) => (
               <li key={e.id} className="flex items-center justify-between gap-3 px-4 py-3">
                 <PlayerName player={e.user} isMe={e.user_id === currentUserId} />
-                <div className="tabular flex items-center gap-4 text-sm text-slate-400">
+                <div className="tabular flex items-center gap-4 text-sm text-zinc-400">
                   <span className="hidden sm:inline">
                     in {formatCents(e.buy_in_cents, { compact: true })}
-                    {e.rebuy_count > 0 && <span className="text-slate-600"> · {e.rebuy_count} reload{e.rebuy_count === 1 ? '' : 's'}</span>}
+                    {e.rebuy_count > 0 && <span className="text-zinc-600"> · {e.rebuy_count} reload{e.rebuy_count === 1 ? '' : 's'}</span>}
                   </span>
-                  {isTourney && e.finish_place != null && <span className="text-slate-300">#{e.finish_place}</span>}
+                  {isTourney && e.finish_place != null && <span className="text-zinc-300">#{e.finish_place}</span>}
                   {!isTourney && e.cash_out_cents == null ? (
-                    <span className="text-xs text-slate-500">playing</span>
+                    <span className="text-xs text-zinc-500">playing</span>
                   ) : (
                     <MoneyDelta cents={e.net_cents} chip compact />
                   )}
@@ -111,7 +111,7 @@ export default function LiveSessionView({ session, currentUserId }: { session: S
           </ul>
         )}
       </Card>
-      <p className="text-center text-xs text-slate-500">Updates live as the host edits the ledger.</p>
+      <p className="text-center text-xs text-zinc-500">Updates live as the host edits the ledger.</p>
     </div>
   )
 }

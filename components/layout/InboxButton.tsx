@@ -48,7 +48,7 @@ export default function InboxButton() {
       <Link
         href="/inbox"
         aria-label={count > 0 ? `Inbox, ${count} pending` : 'Inbox'}
-        className="relative inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-slate-300 transition hover:bg-white/[0.06] hover:text-white"
+        className="relative inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-zinc-300 transition hover:bg-white/[0.06] hover:text-white"
       >
         <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
           <path
@@ -58,7 +58,7 @@ export default function InboxButton() {
           />
         </svg>
         {count > 0 && (
-          <span className="absolute right-0.5 top-0.5 flex min-w-[1.15rem] items-center justify-center rounded-full bg-orange-500 px-1 py-0.5 text-[10px] font-bold leading-none text-white shadow-md shadow-orange-500/40">
+          <span className="absolute right-0.5 top-0.5 flex min-w-[1.15rem] items-center justify-center rounded-full bg-orange-500 px-1 py-0.5 text-[10px] font-bold leading-none text-white">
             {badgeLabel}
           </span>
         )}
@@ -71,7 +71,7 @@ export default function InboxButton() {
           <p className="text-sm text-white">You have new items in your inbox.</p>
           <Link
             href="/inbox"
-            className="inline-flex items-center text-sm font-semibold text-orange-400 hover:text-orange-300"
+            className="inline-flex items-center text-sm font-semibold text-orange-400 hover:text-orange-400"
             onClick={() => setShowToast(false)}
           >
             View Inbox →

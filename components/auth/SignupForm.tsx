@@ -169,7 +169,7 @@ export default function SignupForm() {
                 className="input"
                 placeholder={`your.email${universityDomain}`}
               />
-              <p className="mt-1.5 text-xs text-slate-500">
+              <p className="mt-1.5 text-xs text-zinc-500">
                 Must be a {universityDomain} email address
               </p>
             </div>
@@ -209,14 +209,14 @@ export default function SignupForm() {
         )}
 
         {error && (
-          <div className="rounded-xl border border-red-500/25 bg-red-500/10 p-4">
-            <p className="text-sm text-red-300">{error}</p>
+          <div className="rounded-xl border border-loss/20 bg-loss/10 p-4">
+            <p className="text-sm text-loss">{error}</p>
           </div>
         )}
 
         {message && (
-          <div className="rounded-xl border border-emerald-500/25 bg-emerald-500/10 p-4">
-            <p className="text-sm text-emerald-300">{message}</p>
+          <div className="rounded-xl border border-win/20 bg-win/10 p-4">
+            <p className="text-sm text-win">{message}</p>
           </div>
         )}
 
@@ -231,9 +231,9 @@ export default function SignupForm() {
         </Button>
 
         {!isCompletingProfile && (
-          <p className="text-center text-sm text-slate-400">
+          <p className="text-center text-sm text-zinc-400">
             Already have an account?{' '}
-            <Link href="/login" className="font-medium text-orange-400 hover:text-orange-300">
+            <Link href="/login" className="font-medium text-orange-400 hover:text-orange-400">
               Sign in
             </Link>
           </p>

@@ -21,9 +21,9 @@ export default function Error({
           💥
         </p>
         <h1 className="font-display text-2xl font-bold text-white">Something went wrong</h1>
-        <p className="mt-2 text-sm text-slate-400">{error.message || 'An unexpected error occurred'}</p>
-        {error.digest && <p className="mt-2 font-mono text-xs text-slate-600">Digest: {error.digest}</p>}
-        <p className="mt-3 text-xs text-slate-500">
+        <p className="mt-2 text-sm text-zinc-400">{error.message || 'An unexpected error occurred'}</p>
+        {error.digest && <p className="mt-2 font-mono text-xs text-zinc-600">Digest: {error.digest}</p>}
+        <p className="mt-3 text-xs text-zinc-500">
           If this happens on Vercel, add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY
           in Project Settings → Environment Variables.
         </p>

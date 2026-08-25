@@ -50,7 +50,7 @@ export default async function MatchesPage() {
         <div className="space-y-8">
           {active.length > 0 && (
             <section>
-              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-500">
+              <h2 className="mb-3 eyebrow">
                 Active
               </h2>
               <div className="space-y-3">
@@ -63,7 +63,7 @@ export default async function MatchesPage() {
 
           {past.length > 0 && (
             <section>
-              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-500">
+              <h2 className="mb-3 eyebrow">
                 History
               </h2>
               <div className="space-y-3">

@@ -7,7 +7,7 @@ export default function EloDelta({ delta, className }: { delta: number; classNam
     <span
       className={cn(
         'tabular inline-flex items-center rounded-md px-1.5 py-0.5 text-xs font-bold',
-        positive ? 'bg-emerald-500/15 text-emerald-300' : 'bg-red-500/15 text-red-300',
+        positive ? 'bg-win/10 text-win' : 'bg-loss/10 text-loss',
         className
       )}
     >

@@ -16,15 +16,15 @@ export function moneyTone(cents: number): 'positive' | 'negative' | 'zero' {
 }
 
 const textTones = {
-  positive: 'text-emerald-300',
-  negative: 'text-red-300',
-  zero: 'text-slate-400',
+  positive: 'text-win',
+  negative: 'text-loss',
+  zero: 'text-zinc-400',
 }
 
 const chipTones = {
-  positive: 'bg-emerald-500/15 text-emerald-300',
-  negative: 'bg-red-500/15 text-red-300',
-  zero: 'bg-white/[0.06] text-slate-400',
+  positive: 'bg-win/10 text-win',
+  negative: 'bg-loss/10 text-loss',
+  zero: 'bg-white/[0.06] text-zinc-400',
 }
 
 interface MoneyDeltaProps {

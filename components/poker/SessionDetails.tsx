@@ -84,8 +84,8 @@ export default function SessionDetails({ session, currentUserId }: SessionDetail
   }
 
   const strip = (text: string, onConfirm: () => void, variant: 'danger' | 'success' | 'secondary' = 'danger', extra?: React.ReactNode) => (
-    <div className="mt-3 rounded-xl border border-white/10 bg-white/[0.03] p-3">
-      <p className="text-sm text-slate-200">{text}</p>
+    <div className="mt-3 rounded-xl border border-line bg-ink-700 p-3">
+      <p className="text-sm text-zinc-200">{text}</p>
       {extra}
       <div className="mt-3 flex gap-2">
         <Button size="sm" variant={variant} onClick={onConfirm} disabled={busy} type="button">
@@ -108,7 +108,7 @@ export default function SessionDetails({ session, currentUserId }: SessionDetail
           </span>
           <div className="min-w-0">
             <h1 className="font-display text-xl font-bold text-white">{title}</h1>
-            <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500">
+            <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-zinc-500">
               <Badge tone={isTourney ? 'purple' : 'poker'}>{isTourney ? (session.is_official ? 'Official tournament' : 'Tournament') : 'Cash game'}</Badge>
               {isTourney
                 ? session.standard_buy_in_cents != null && (
@@ -165,12 +165,12 @@ export default function SessionDetails({ session, currentUserId }: SessionDetail
 
       {/* Bink of the night */}
       {bink && bink.user && (
-        <Card className="border-emerald-400/20 bg-emerald-400/[0.04]">
+        <Card className="border-win/20 bg-win/5">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <Avatar src={bink.user.profile_image_url} name={bink.user.display_name} size="md" />
               <div>
-                <p className="text-xs uppercase tracking-wider text-emerald-300/80">Bink of the night</p>
+                <p className="text-xs uppercase tracking-wider text-win/80">Bink of the night</p>
                 <p className="font-display font-semibold text-white">
                   {bink.user.display_name}
                   {bink.user_id === currentUserId && <span className="ml-1.5 text-xs font-normal text-orange-400">you</span>}
@@ -202,8 +202,8 @@ export default function SessionDetails({ session, currentUserId }: SessionDetail
                 <span
                   key={e.id}
                   className={cn(
-                    'inline-flex rounded-full ring-2 ring-raise',
-                    e.disputed_at ? 'ring-red-400' : e.acknowledged_at ? '' : 'opacity-40'
+                    'inline-flex rounded-full ring-2 ring-ink-800',
+                    e.disputed_at ? 'ring-loss' : e.acknowledged_at ? '' : 'opacity-40'
                   )}
                   title={`${e.user?.display_name ?? '?'} — ${e.disputed_at ? 'disputed' : e.acknowledged_at ? 'confirmed' : 'not yet'}`}
                 >
@@ -211,13 +211,13 @@ export default function SessionDetails({ session, currentUserId }: SessionDetail
                 </span>
               ))}
             </div>
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-zinc-400">
               {acks.verified ? (
-                <span className="text-emerald-300">Everyone confirmed this ledger.</span>
+                <span className="text-win">Everyone confirmed this ledger.</span>
               ) : (
                 <>
                   {acks.acked} of {acks.total} confirmed
-                  {acks.disputed > 0 && <span className="text-red-300"> · {acks.disputed} disputed</span>}
+                  {acks.disputed > 0 && <span className="text-loss"> · {acks.disputed} disputed</span>}
                 </>
               )}
             </p>
@@ -231,7 +231,7 @@ export default function SessionDetails({ session, currentUserId }: SessionDetail
           {myEntry.disputed_at ? (
             <>
               <p className="font-medium text-white">You disputed this ledger.</p>
-              <p className="mt-1 text-sm text-slate-400">“{myEntry.dispute_reason}”</p>
+              <p className="mt-1 text-sm text-zinc-400">“{myEntry.dispute_reason}”</p>
               {confirming === 'withdraw' ? (
                 strip('Withdraw your dispute?', () => callApi('/api/poker/entries/withdraw-dispute', { entry_id: myEntry.id }, 'Dispute withdrawn.'), 'secondary')
               ) : (
@@ -247,7 +247,7 @@ export default function SessionDetails({ session, currentUserId }: SessionDetail
             </>
           ) : myEntry.acknowledged_at ? (
             <>
-              <p className="text-sm text-slate-300">
+              <p className="text-sm text-zinc-300">
                 You confirmed this ledger. Your line: <MoneyDelta cents={myEntry.net_cents} chip compact />
               </p>
               {confirming === 'dispute' ? (
@@ -258,7 +258,7 @@ export default function SessionDetails({ session, currentUserId }: SessionDetail
                   <textarea className="input mt-3 min-h-[72px]" placeholder="e.g. I cashed out $60, not $40" value={reason} maxLength={500} onChange={(e) => setReason(e.target.value)} />
                 )
               ) : (
-                <button type="button" className="mt-2 text-xs text-slate-500 underline-offset-2 hover:text-slate-300 hover:underline" onClick={() => setConfirming('dispute')}>
+                <button type="button" className="mt-2 text-xs text-zinc-500 underline-offset-2 hover:text-zinc-300 hover:underline" onClick={() => setConfirming('dispute')}>
                   Something wrong? Dispute it
                 </button>
               )}
@@ -266,7 +266,7 @@ export default function SessionDetails({ session, currentUserId }: SessionDetail
           ) : (
             <>
               <p className="font-medium text-white">Does this ledger look right?</p>
-              <p className="mt-1 text-sm text-slate-400">
+              <p className="mt-1 text-sm text-zinc-400">
                 Your line: in {formatCents(myEntry.buy_in_cents, { compact: true })}, out {formatCents(myEntry.cash_out_cents ?? 0, { compact: true })} —{' '}
                 <MoneyDelta cents={myEntry.net_cents} chip compact />
               </p>
@@ -287,7 +287,7 @@ export default function SessionDetails({ session, currentUserId }: SessionDetail
                   </Button>
                 </div>
               )}
-              <p className="mt-3 text-xs text-slate-500">The session already counts — confirming just marks it verified.</p>
+              <p className="mt-3 text-xs text-zinc-500">The session already counts — confirming just marks it verified.</p>
             </>
           )}
         </Card>
@@ -297,7 +297,7 @@ export default function SessionDetails({ session, currentUserId }: SessionDetail
       {isHost && counts && (
         <Card>
           <p className="font-medium text-white">You logged this session.</p>
-          <p className="mt-1 text-sm text-slate-400">Editing resets everyone’s confirmations; voiding removes it from every stat.</p>
+          <p className="mt-1 text-sm text-zinc-400">Editing resets everyone’s confirmations; voiding removes it from every stat.</p>
           {confirming === 'void' ? (
             strip('Void this session? It’ll be excluded from every stat. This can’t be undone.', () => callApi('/api/poker/sessions/void', { session_id: session.id }, 'Session voided.'))
           ) : (
@@ -315,8 +315,8 @@ export default function SessionDetails({ session, currentUserId }: SessionDetail
 
       {session.notes && (
         <Card padding="sm">
-          <p className="text-xs uppercase tracking-wider text-slate-500">Notes</p>
-          <p className="mt-1 whitespace-pre-wrap text-sm text-slate-300">{session.notes}</p>
+          <p className="eyebrow">Notes</p>
+          <p className="mt-1 whitespace-pre-wrap text-sm text-zinc-300">{session.notes}</p>
         </Card>
       )}
 
@@ -324,22 +324,22 @@ export default function SessionDetails({ session, currentUserId }: SessionDetail
       <Card padding="sm">
         <dl className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
           <div>
-            <dt className="text-xs uppercase tracking-wider text-slate-500">Host</dt>
+            <dt className="eyebrow">Host</dt>
             <dd className="mt-1">
               <PlayerName player={session.host ? { ...session.host, dorm_name: null } : null} size="xs" />
             </dd>
           </div>
           <div>
-            <dt className="text-xs uppercase tracking-wider text-slate-500">Played</dt>
-            <dd className="mt-0.5 text-slate-300">{formatPokerDateTime(session.played_at)}</dd>
+            <dt className="eyebrow">Played</dt>
+            <dd className="mt-0.5 text-zinc-300">{formatPokerDateTime(session.played_at)}</dd>
           </div>
           <div>
-            <dt className="text-xs uppercase tracking-wider text-slate-500">Logged</dt>
-            <dd className="mt-0.5 text-slate-300">{session.finalized_at ? formatPokerDateTime(session.finalized_at) : '—'}</dd>
+            <dt className="eyebrow">Logged</dt>
+            <dd className="mt-0.5 text-zinc-300">{session.finalized_at ? formatPokerDateTime(session.finalized_at) : '—'}</dd>
           </div>
           <div>
-            <dt className="text-xs uppercase tracking-wider text-slate-500">Last edited</dt>
-            <dd className="mt-0.5 text-slate-300">
+            <dt className="eyebrow">Last edited</dt>
+            <dd className="mt-0.5 text-zinc-300">
               {session.finalized_at && new Date(session.updated_at).getTime() - new Date(session.finalized_at).getTime() > 60_000
                 ? formatPokerDateTime(session.updated_at)
                 : '—'}

@@ -115,7 +115,7 @@ export default async function DormsPage() {
                     'tabular relative z-10 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full font-display text-sm font-bold',
                     index === 0
                       ? 'bg-gradient-to-b from-amber-300 to-amber-500 text-amber-950'
-                      : 'bg-white/[0.06] text-slate-300'
+                      : 'bg-white/[0.06] text-zinc-300'
                   )}
                 >
                   {index + 1}
@@ -123,12 +123,12 @@ export default async function DormsPage() {
 
                 <div className="relative z-10 min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h2 className="font-display text-lg font-semibold text-white group-hover:text-orange-300">
+                    <h2 className="font-display text-lg font-semibold text-white group-hover:text-orange-400">
                       {house.name}
                     </h2>
                     {isMine && <Badge tone="orange">Your house</Badge>}
                   </div>
-                  <p className="mt-0.5 text-xs text-slate-500">
+                  <p className="mt-0.5 text-xs text-zinc-500">
                     {house.total_members} member{house.total_members === 1 ? '' : 's'}
                     {house.rankedPlayers > 0 && <> · {house.rankedPlayers} ranked</>}
                     {house.description && <> · {house.description}</>}
@@ -137,14 +137,14 @@ export default async function DormsPage() {
 
                 <div className="relative z-10 flex shrink-0 items-center gap-6 text-right">
                   <div className="hidden sm:block">
-                    <p className="tabular text-sm font-semibold text-emerald-400">{house.totalWins}</p>
-                    <p className="text-[10px] uppercase tracking-wider text-slate-600">wins</p>
+                    <p className="tabular text-sm font-semibold text-win">{house.totalWins}</p>
+                    <p className="eyebrow">wins</p>
                   </div>
                   <div>
                     <p className="tabular font-display text-xl font-bold text-white">
                       {house.avgRating > 0 ? house.avgRating : '—'}
                     </p>
-                    <p className="text-[10px] uppercase tracking-wider text-slate-600">avg rating</p>
+                    <p className="eyebrow">avg rating</p>
                   </div>
                 </div>
               </Link>

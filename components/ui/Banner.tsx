@@ -3,9 +3,9 @@ import { cn } from '@/lib/utils'
 export type BannerTone = 'error' | 'success' | 'warning' | 'info'
 
 const tones: Record<BannerTone, string> = {
-  error: 'border-red-500/25 bg-red-500/10 text-red-300',
-  success: 'border-emerald-500/25 bg-emerald-500/10 text-emerald-300 animate-fade-up',
-  warning: 'border-amber-500/25 bg-amber-500/10 text-amber-200',
+  error: 'border-loss/20 bg-loss/10 text-loss',
+  success: 'border-win/20 bg-win/10 text-win animate-fade-up',
+  warning: 'border-warn/20 bg-warn/10 text-warn',
   info: 'border-sky-500/25 bg-sky-500/10 text-sky-200',
 }
 

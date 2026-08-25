@@ -111,7 +111,7 @@ export default function LoginForm() {
             className="input"
             placeholder={`your.email${universityDomain}`}
           />
-          <p className="mt-1.5 text-xs text-slate-500">Must be a {universityDomain} email address</p>
+          <p className="mt-1.5 text-xs text-zinc-500">Must be a {universityDomain} email address</p>
         </div>
 
         <div>
@@ -131,8 +131,8 @@ export default function LoginForm() {
         </div>
 
         {error && (
-          <div className="rounded-xl border border-red-500/25 bg-red-500/10 p-4">
-            <p className="text-sm text-red-300">{error}</p>
+          <div className="rounded-xl border border-loss/20 bg-loss/10 p-4">
+            <p className="text-sm text-loss">{error}</p>
           </div>
         )}
 
@@ -140,16 +140,16 @@ export default function LoginForm() {
           {loading ? 'Signing in…' : 'Sign In'}
         </Button>
 
-        <div className="space-y-1.5 text-center text-sm text-slate-400">
+        <div className="space-y-1.5 text-center text-sm text-zinc-400">
           <p>
             Don&apos;t have an account?{' '}
-            <Link href="/signup" className="font-medium text-orange-400 hover:text-orange-300">
+            <Link href="/signup" className="font-medium text-orange-400 hover:text-orange-400">
               Sign up
             </Link>
           </p>
           <p>
             Need to set a password?{' '}
-            <Link href="/setup-password" className="font-medium text-orange-400 hover:text-orange-300">
+            <Link href="/setup-password" className="font-medium text-orange-400 hover:text-orange-400">
               Set Password
             </Link>
           </p>

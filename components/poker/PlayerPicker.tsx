@@ -43,7 +43,7 @@ export default function PlayerPicker({ players, recent, selectedIds, onAdd, disa
     <div className="space-y-3">
       {recentAvailable.length > 0 && (
         <div>
-          <p className="mb-2 text-xs uppercase tracking-wider text-slate-500">Recent tablemates</p>
+          <p className="mb-2 eyebrow">Recent tablemates</p>
           <div className="flex flex-wrap gap-2">
             {recentAvailable.map((p) => (
               <button
@@ -51,10 +51,10 @@ export default function PlayerPicker({ players, recent, selectedIds, onAdd, disa
                 type="button"
                 disabled={disabled}
                 onClick={() => onAdd(p)}
-                className="inline-flex min-h-[36px] items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] pl-1.5 pr-3 text-sm text-slate-200 transition hover:bg-white/[0.1] hover:text-white disabled:opacity-50"
+                className="inline-flex min-h-[36px] items-center gap-2 rounded-full border border-line bg-ink-700 pl-1.5 pr-3 text-sm text-zinc-200 transition hover:bg-white/[0.1] hover:text-white disabled:opacity-50"
               >
                 <Avatar src={p.profile_image_url} name={p.display_name} size="xs" />
-                <span className="text-orange-300">+</span> {p.display_name}
+                <span className="text-orange-400">+</span> {p.display_name}
               </button>
             ))}
           </div>
@@ -77,9 +77,9 @@ export default function PlayerPicker({ players, recent, selectedIds, onAdd, disa
         {query.trim() !== '' && (
           <Card padding="none" className="mt-2 max-h-64 overflow-y-auto">
             {results.length === 0 ? (
-              <p className="p-4 text-center text-sm text-slate-500">No players match “{query}”.</p>
+              <p className="p-4 text-center text-sm text-zinc-500">No players match “{query}”.</p>
             ) : (
-              <ul className="divide-y divide-white/[0.04]">
+              <ul className="divide-y divide-line">
                 {results.map((p) => {
                   const added = selectedIds.has(p.id)
                   return (
@@ -93,7 +93,7 @@ export default function PlayerPicker({ players, recent, selectedIds, onAdd, disa
                         }}
                         className={cn(
                           'flex w-full items-center gap-3 px-4 py-2.5 text-left transition',
-                          added ? 'opacity-50' : 'hover:bg-white/[0.03]'
+                          added ? 'opacity-50' : 'hover:bg-ink-700'
                         )}
                       >
                         <Avatar src={p.profile_image_url} name={p.display_name} size="sm" />
@@ -103,7 +103,7 @@ export default function PlayerPicker({ players, recent, selectedIds, onAdd, disa
                             <HouseChip name={p.dorm_name} />
                           </span>
                         </span>
-                        <span className={cn('shrink-0 text-xs', added ? 'text-emerald-300' : 'text-orange-300')}>
+                        <span className={cn('shrink-0 text-xs', added ? 'text-win' : 'text-orange-400')}>
                           {added ? 'Added' : '+ Add'}
                         </span>
                       </button>
@@ -115,9 +115,9 @@ export default function PlayerPicker({ players, recent, selectedIds, onAdd, disa
           </Card>
         )}
       </div>
-      <p className="text-xs text-slate-500">
+      <p className="text-xs text-zinc-500">
         Someone not on the site yet?{' '}
-        <button type="button" onClick={copySignup} className="text-orange-300 underline-offset-2 hover:underline">
+        <button type="button" onClick={copySignup} className="text-orange-400 underline-offset-2 hover:underline">
           {copied ? 'Signup link copied' : 'Copy the signup link'}
         </button>{' '}
         — add them once they’ve registered.

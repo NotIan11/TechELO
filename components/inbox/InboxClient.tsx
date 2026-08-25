@@ -68,9 +68,9 @@ export default function InboxClient({ items: initialItems, currentUserId }: Inbo
   }
 
   const confirmStrip = (text: string, onConfirm: () => void, busy: boolean, variant: 'danger' | 'success' = 'success', extra?: React.ReactNode) => (
-    <div className="mt-3 rounded-xl border border-white/10 bg-white/[0.03] p-3">
+    <div className="mt-3 rounded-xl border border-line bg-ink-700 p-3">
       <div className="flex flex-wrap items-center gap-2">
-        <p className="mr-1 text-sm text-slate-300">{text}</p>
+        <p className="mr-1 text-sm text-zinc-300">{text}</p>
         {!extra && (
           <>
             <Button size="sm" variant={variant} disabled={busy} onClick={onConfirm}>
@@ -107,7 +107,7 @@ export default function InboxClient({ items: initialItems, currentUserId }: Inbo
           {notice.href && (
             <>
               {' '}
-              <Link href={notice.href} className="font-semibold underline hover:text-emerald-200">
+              <Link href={notice.href} className="font-semibold underline hover:text-win">
                 {notice.label}
               </Link>
             </>
@@ -170,11 +170,11 @@ export default function InboxClient({ items: initialItems, currentUserId }: Inbo
                         </>
                       )}
                     </p>
-                    <p className="mt-1 flex items-center gap-2 text-xs text-slate-500">
+                    <p className="mt-1 flex items-center gap-2 text-xs text-zinc-500">
                       <GameIcon game={match.game_type} className={cn('h-3.5 w-3.5', match.game_type === 'pool' ? 'text-pool' : 'text-pong')} />
                       <TimeAgo date={match.created_at} />
                       {' · '}
-                      <Link href={`/matches/${match.id}`} className="underline hover:text-slate-300">
+                      <Link href={`/matches/${match.id}`} className="underline hover:text-zinc-300">
                         details
                       </Link>
                     </p>
@@ -241,15 +241,15 @@ export default function InboxClient({ items: initialItems, currentUserId }: Inbo
                       ) : (
                         <>
                           you finished <MoneyDelta cents={entry.net_cents} chip compact />
-                          <span className="text-slate-400"> (in {formatCents(entry.buy_in_cents, { compact: true })}, out {formatCents(entry.cash_out_cents ?? 0, { compact: true })})</span>
+                          <span className="text-zinc-400"> (in {formatCents(entry.buy_in_cents, { compact: true })}, out {formatCents(entry.cash_out_cents ?? 0, { compact: true })})</span>
                         </>
                       )}
                     </p>
-                    <p className="mt-1 flex items-center gap-2 text-xs text-slate-500">
+                    <p className="mt-1 flex items-center gap-2 text-xs text-zinc-500">
                       <GameIcon game="poker" className="h-3.5 w-3.5 text-poker" />
                       <TimeAgo date={item.sortAt} />
                       {' · '}
-                      <Link href={`/poker/sessions/${session.id}`} className="underline hover:text-slate-300">
+                      <Link href={`/poker/sessions/${session.id}`} className="underline hover:text-zinc-300">
                         full ledger
                       </Link>
                     </p>
@@ -285,7 +285,7 @@ export default function InboxClient({ items: initialItems, currentUserId }: Inbo
           // ---------------- Poker: someone disputed your ledger ----------------
           const { session, disputes } = item
           return (
-            <div key={item.id} className="card animate-fade-in border-red-400/20 p-5">
+            <div key={item.id} className="card animate-fade-in border-loss/20 p-5">
               <div className="flex items-start gap-4">
                 <Avatar src={disputes[0]?.user?.profile_image_url} name={disputes[0]?.user?.display_name ?? '?'} size="md" />
                 <div className="min-w-0 flex-1">
@@ -301,14 +301,14 @@ export default function InboxClient({ items: initialItems, currentUserId }: Inbo
                       </>
                     )}
                   </p>
-                  <ul className="mt-2 space-y-1 text-sm text-slate-300">
+                  <ul className="mt-2 space-y-1 text-sm text-zinc-300">
                     {disputes.map((d) => (
                       <li key={d.entry_id}>
-                        <span className="text-slate-500">{d.user?.display_name}:</span> “{d.reason}”
+                        <span className="text-zinc-500">{d.user?.display_name}:</span> “{d.reason}”
                       </li>
                     ))}
                   </ul>
-                  <p className="mt-1 flex items-center gap-2 text-xs text-slate-500">
+                  <p className="mt-1 flex items-center gap-2 text-xs text-zinc-500">
                     <GameIcon game="poker" className="h-3.5 w-3.5 text-poker" />
                     <TimeAgo date={item.sortAt} />
                     {' · '}still counts until you edit or void it

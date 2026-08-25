@@ -25,9 +25,9 @@ function AwardCard({ award }: { award: Award }) {
       <span className="min-w-0 flex-1">
         <span className="flex items-baseline justify-between gap-2">
           <span className="font-display text-sm font-semibold text-white">{award.title}</span>
-          <span className="tabular shrink-0 text-xs font-semibold text-slate-300">{award.valueLabel}</span>
+          <span className="tabular shrink-0 text-xs font-semibold text-zinc-300">{award.valueLabel}</span>
         </span>
-        <span className="mt-1 flex items-center gap-1.5 text-xs text-slate-400">
+        <span className="mt-1 flex items-center gap-1.5 text-xs text-zinc-400">
           {award.holder ? (
             <>
               <Avatar src={award.holder.profile_image_url} name={award.holder.display_name} size="xs" />
@@ -36,10 +36,10 @@ function AwardCard({ award }: { award: Award }) {
           ) : award.sessionTitle ? (
             <span className="truncate">{award.sessionTitle}</span>
           ) : (
-            <span className="text-slate-600">Unclaimed</span>
+            <span className="text-zinc-600">Unclaimed</span>
           )}
         </span>
-        <span className="mt-1 block text-[11px] text-slate-500">{award.blurb}</span>
+        <span className="mt-1 block text-[11px] text-zinc-500">{award.blurb}</span>
       </span>
     </>
   )
@@ -58,8 +58,8 @@ export default function HallOfFame({ awards, periodLabel }: { awards: Award[]; p
   return (
     <section>
       <div className="mb-3 flex items-baseline justify-between">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500">Hall of Fame</h2>
-        <span className="text-xs text-slate-500">{periodLabel}</span>
+        <h2 className="eyebrow">Hall of Fame</h2>
+        <span className="text-xs text-zinc-500">{periodLabel}</span>
       </div>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {awards.map((a) => (

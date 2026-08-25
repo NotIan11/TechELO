@@ -49,31 +49,31 @@ export default function LedgerFooter({
   const inValue = isTourney && prizePoolCents != null ? prizePoolCents : totals.buyIn
 
   return (
-    <div className="sticky bottom-0 z-20 -mx-4 border-t border-white/[0.06] bg-base/90 px-4 py-3 backdrop-blur-xl sm:mx-0 sm:rounded-2xl sm:border">
+    <div className="sticky bottom-0 z-20 -mx-4 border-t border-white/[0.06] bg-ink-950/90 px-4 py-3 backdrop-blur-xl sm:mx-0 sm:rounded-2xl sm:border">
       <div className="flex flex-wrap items-center justify-between gap-x-5 gap-y-2">
-        <p className="tabular flex flex-wrap gap-x-4 gap-y-1 text-sm text-slate-300">
+        <p className="tabular flex flex-wrap gap-x-4 gap-y-1 text-sm text-zinc-300">
           <span>
-            <span className="text-slate-500">{playerCount}</span> player{playerCount === 1 ? '' : 's'}
+            <span className="text-zinc-500">{playerCount}</span> player{playerCount === 1 ? '' : 's'}
           </span>
           <span>
-            <span className="text-slate-500">{inLabel}</span> {formatCents(inValue, { compact: true })}
+            <span className="text-zinc-500">{inLabel}</span> {formatCents(inValue, { compact: true })}
           </span>
           <span>
-            <span className="text-slate-500">{outLabel}</span> {formatCents(totals.cashOut, { compact: true })}
+            <span className="text-zinc-500">{outLabel}</span> {formatCents(totals.cashOut, { compact: true })}
           </span>
           {balanced ? (
-            <span className="inline-flex items-center gap-1 text-emerald-300">
+            <span className="inline-flex items-center gap-1 text-win">
               <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
               </svg>
               Balanced
             </span>
           ) : totals.missingCashOuts > 0 && !isTourney ? (
-            <span className="text-slate-500">
+            <span className="text-zinc-500">
               {totals.missingCashOuts} still playing
             </span>
           ) : (
-            <span className={cn(totals.discrepancy > 0 ? 'text-amber-300' : 'text-amber-300')}>
+            <span className={cn(totals.discrepancy > 0 ? 'text-warn' : 'text-warn')}>
               Off by {formatCents(Math.abs(totals.discrepancy), { compact: true })}
             </span>
           )}
@@ -97,18 +97,18 @@ export default function LedgerFooter({
       )}
 
       {confirming && (
-        <div className="mt-3 rounded-xl border border-white/10 bg-white/[0.03] p-3">
-          <div className="text-sm text-slate-200">{confirmText}</div>
+        <div className="mt-3 rounded-xl border border-line bg-ink-700 p-3">
+          <div className="text-sm text-zinc-200">{confirmText}</div>
           {confirmExtra && <div className="mt-3">{confirmExtra}</div>}
           {hardErrors.length > 0 ? (
-            <ul className="mt-3 space-y-1 text-sm text-red-300">
+            <ul className="mt-3 space-y-1 text-sm text-loss">
               {hardErrors.map((e) => (
                 <li key={e}>• {e}</li>
               ))}
             </ul>
           ) : (
             softWarnings.length > 0 && (
-              <ul className="mt-3 space-y-1 text-sm text-amber-200">
+              <ul className="mt-3 space-y-1 text-sm text-warn">
                 {softWarnings.map((w) => (
                   <li key={w}>• {w}</li>
                 ))}

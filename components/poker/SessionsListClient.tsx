@@ -52,7 +52,7 @@ export default function SessionsListClient({ live, sessions, kind, mine, current
             onClick={() => updateParams({ mine: mine ? null : '1', page: null })}
             className={cn(
               'inline-flex min-h-[38px] items-center rounded-xl border px-4 text-sm font-medium transition',
-              mine ? 'border-orange-400/50 bg-orange-400/10 text-orange-200' : 'border-white/10 bg-white/[0.04] text-slate-300 hover:bg-white/[0.08]'
+              mine ? 'border-orange-500 bg-orange-500/10 text-orange-400' : 'border-line bg-ink-700 text-zinc-300 hover:bg-white/[0.08]'
             )}
           >
             Sessions I played
@@ -62,7 +62,7 @@ export default function SessionsListClient({ live, sessions, kind, mine, current
 
       {live.length > 0 && (
         <section>
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-500">Live now</h2>
+          <h2 className="mb-3 eyebrow">Live now</h2>
           <div className="space-y-3">
             {live.map((s) => (
               <SessionCard key={s.id} session={s} viewerId={viewerId} />
@@ -73,14 +73,14 @@ export default function SessionsListClient({ live, sessions, kind, mine, current
 
       {sessions.length === 0 ? (
         <EmptyState
-          icon={<GameIcon game="poker" className="h-10 w-10 text-slate-500" />}
+          icon={<GameIcon game="poker" className="h-10 w-10 text-zinc-500" />}
           title={mine ? 'No sessions with you in them yet' : 'No sessions logged yet'}
           description="Start a game and the ledger builds itself as the night goes."
           action={viewerId ? <Button href="/poker/sessions/new">Start a session</Button> : <Button href="/signup">Join to play</Button>}
         />
       ) : (
         <section>
-          {live.length > 0 && <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-500">History</h2>}
+          {live.length > 0 && <h2 className="mb-3 eyebrow">History</h2>}
           <div className="space-y-3">
             {sessions.map((s) => (
               <SessionCard key={s.id} session={s} viewerId={viewerId} />
@@ -94,7 +94,7 @@ export default function SessionsListClient({ live, sessions, kind, mine, current
           <Button variant="secondary" size="sm" disabled={currentPage === 1} onClick={() => updateParams({ page: String(currentPage - 1) })}>
             ← Previous
           </Button>
-          <p className="tabular text-sm text-slate-400">
+          <p className="tabular text-sm text-zinc-400">
             Page {currentPage} of {totalPages}
           </p>
           <Button variant="secondary" size="sm" disabled={currentPage === totalPages} onClick={() => updateParams({ page: String(currentPage + 1) })}>

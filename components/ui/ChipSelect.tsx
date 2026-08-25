@@ -43,8 +43,8 @@ export default function ChipSelect<T extends string>({
       'inline-flex items-center rounded-full border font-medium transition',
       size === 'sm' ? 'min-h-[32px] px-3 text-xs' : 'min-h-[36px] px-3.5 text-sm',
       active
-        ? 'border-orange-400/50 bg-orange-400/10 text-orange-200'
-        : 'border-white/10 bg-white/[0.04] text-slate-300 hover:bg-white/[0.08] hover:text-white'
+        ? 'border-orange-500 bg-orange-500/10 text-orange-400'
+        : 'border-line bg-ink-700 text-zinc-300 hover:bg-white/[0.08] hover:text-white'
     )
 
   return (

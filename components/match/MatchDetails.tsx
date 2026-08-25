@@ -113,8 +113,8 @@ export default function MatchDetails({ match: initialMatch, currentUserId }: Mat
       className={cn(
         'flex flex-1 flex-col items-center rounded-2xl border p-6 text-center transition',
         isWinner
-          ? 'border-amber-400/40 bg-amber-400/[0.05]'
-          : 'border-white/[0.06] bg-white/[0.02]'
+          ? 'border-warn/20 bg-amber-400/[0.05]'
+          : 'border-white/[0.06] bg-ink-900'
       )}
     >
       {isWinner && (
@@ -127,7 +127,7 @@ export default function MatchDetails({ match: initialMatch, currentUserId }: Mat
         {player.display_name}
         {player.id === currentUserId && <span className="ml-1.5 text-xs font-normal text-orange-400">you</span>}
       </p>
-      <p className="tabular mt-1 text-sm text-slate-400">
+      <p className="tabular mt-1 text-sm text-zinc-400">
         {eloAfter != null ? (
           <>
             {eloBefore} → <span className="font-semibold text-white">{eloAfter}</span>{' '}
@@ -150,7 +150,7 @@ export default function MatchDetails({ match: initialMatch, currentUserId }: Mat
           <span
             className={cn(
               'inline-flex h-10 w-10 items-center justify-center rounded-xl',
-              match.game_type === 'pool' ? 'bg-sky-400/10 text-pool' : 'bg-emerald-400/10 text-pong'
+              match.game_type === 'pool' ? 'bg-sky-400/10 text-pool' : 'bg-win/10 text-pong'
             )}
           >
             <GameIcon game={match.game_type} className="h-5 w-5" />
@@ -159,7 +159,7 @@ export default function MatchDetails({ match: initialMatch, currentUserId }: Mat
             <h1 className="font-display text-xl font-bold text-white">
               {gameLabel(match.game_type)} match
             </h1>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-zinc-500">
               Created <TimeAgo date={match.created_at} />
             </p>
           </div>
@@ -177,7 +177,7 @@ export default function MatchDetails({ match: initialMatch, currentUserId }: Mat
             completed && match.winner_id === match.player1_id
           )}
           <div className="flex items-center justify-center">
-            <span className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] font-display text-sm font-bold text-slate-400">
+            <span className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-line bg-ink-700 font-display text-sm font-bold text-zinc-400">
               VS
             </span>
           </div>
@@ -200,12 +200,12 @@ export default function MatchDetails({ match: initialMatch, currentUserId }: Mat
               <p className="font-medium text-white">
                 {match.player1.display_name} challenged you. Ready to play?
               </p>
-              <p className="mt-1 text-sm text-slate-400">
+              <p className="mt-1 text-sm text-zinc-400">
                 Challenges expire an hour after they're sent.
               </p>
               {confirming ? (
                 <div className="mt-4 flex flex-wrap items-center gap-3">
-                  <p className="text-sm text-slate-300">{confirmLabel}</p>
+                  <p className="text-sm text-zinc-300">{confirmLabel}</p>
                   <Button
                     size="sm"
                     variant={confirming.type === 'decline' ? 'danger' : 'success'}
@@ -234,12 +234,12 @@ export default function MatchDetails({ match: initialMatch, currentUserId }: Mat
               <p className="font-medium text-white">
                 Waiting for {match.player2.display_name} to accept…
               </p>
-              <p className="mt-1 text-sm text-slate-400">
+              <p className="mt-1 text-sm text-zinc-400">
                 They've been notified. The challenge expires an hour after it was sent.
               </p>
               {confirming?.type === 'cancel' ? (
                 <div className="mt-4 flex flex-wrap items-center gap-3">
-                  <p className="text-sm text-slate-300">{confirmLabel}</p>
+                  <p className="text-sm text-zinc-300">{confirmLabel}</p>
                   <Button size="sm" variant="danger" onClick={runConfirmed} disabled={busy}>
                     {busy ? 'Working…' : 'Confirm'}
                   </Button>
@@ -256,7 +256,7 @@ export default function MatchDetails({ match: initialMatch, currentUserId }: Mat
               )}
             </>
           ) : (
-            <p className="text-sm text-slate-400">Waiting for the challenge to be accepted.</p>
+            <p className="text-sm text-zinc-400">Waiting for the challenge to be accepted.</p>
           )}
         </Card>
       )}
@@ -264,12 +264,12 @@ export default function MatchDetails({ match: initialMatch, currentUserId }: Mat
       {canReport && (
         <Card>
           <p className="font-medium text-white">Who won?</p>
-          <p className="mt-1 text-sm text-slate-400">
+          <p className="mt-1 text-sm text-zinc-400">
             Both players report the result — ratings update when you agree.
           </p>
           {confirming?.type === 'report' ? (
             <div className="mt-4 flex flex-wrap items-center gap-3">
-              <p className="text-sm text-slate-300">{confirmLabel}</p>
+              <p className="text-sm text-zinc-300">{confirmLabel}</p>
               <Button size="sm" variant="success" onClick={runConfirmed} disabled={busy}>
                 {busy ? 'Submitting…' : 'Confirm'}
               </Button>
@@ -306,8 +306,8 @@ export default function MatchDetails({ match: initialMatch, currentUserId }: Mat
       )}
 
       {match.status === 'disputed' && (
-        <Card className="border-red-400/20 bg-red-400/[0.04]">
-          <p className="text-sm text-red-200">
+        <Card className="border-loss/20 bg-loss/5">
+          <p className="text-sm text-loss">
             You and your opponent reported different winners, so no ratings changed. Settle it the
             honorable way: rematch.
           </p>
@@ -316,7 +316,7 @@ export default function MatchDetails({ match: initialMatch, currentUserId }: Mat
 
       {expired && (
         <Card className="border-white/[0.06]">
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-zinc-400">
             This challenge expired before it was accepted. Send a new one when you're both around.
           </p>
         </Card>
@@ -324,7 +324,7 @@ export default function MatchDetails({ match: initialMatch, currentUserId }: Mat
 
       {match.status === 'cancelled' && (
         <Card className="border-white/[0.06]">
-          <p className="text-sm text-slate-400">This challenge was declined or withdrawn.</p>
+          <p className="text-sm text-zinc-400">This challenge was declined or withdrawn.</p>
         </Card>
       )}
 
@@ -332,18 +332,18 @@ export default function MatchDetails({ match: initialMatch, currentUserId }: Mat
       <Card padding="sm">
         <dl className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-3">
           <div>
-            <dt className="text-xs uppercase tracking-wider text-slate-500">Created</dt>
-            <dd className="mt-0.5 text-slate-300">{formatDateTime(match.created_at)}</dd>
+            <dt className="eyebrow">Created</dt>
+            <dd className="mt-0.5 text-zinc-300">{formatDateTime(match.created_at)}</dd>
           </div>
           <div>
-            <dt className="text-xs uppercase tracking-wider text-slate-500">Started</dt>
-            <dd className="mt-0.5 text-slate-300">
+            <dt className="eyebrow">Started</dt>
+            <dd className="mt-0.5 text-zinc-300">
               {match.started_at ? formatDateTime(match.started_at) : '—'}
             </dd>
           </div>
           <div>
-            <dt className="text-xs uppercase tracking-wider text-slate-500">Completed</dt>
-            <dd className="mt-0.5 text-slate-300">
+            <dt className="eyebrow">Completed</dt>
+            <dd className="mt-0.5 text-zinc-300">
               {match.completed_at ? formatDateTime(match.completed_at) : '—'}
             </dd>
           </div>

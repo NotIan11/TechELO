@@ -37,19 +37,19 @@ const podiumStyles = [
   {
     // 1st
     ring: 'ring-2 ring-amber-400/70',
-    glow: 'shadow-xl shadow-amber-500/10',
+    glow: '',
     medal: 'bg-gradient-to-b from-amber-300 to-amber-500 text-amber-950',
   },
   {
     // 2nd
-    ring: 'ring-2 ring-slate-300/40',
-    glow: 'shadow-lg shadow-slate-400/5',
-    medal: 'bg-gradient-to-b from-slate-200 to-slate-400 text-slate-900',
+    ring: 'ring-2 ring-zinc-300/40',
+    glow: '',
+    medal: 'bg-gradient-to-b from-zinc-200 to-zinc-400 text-zinc-900',
   },
   {
     // 3rd
-    ring: 'ring-2 ring-orange-700/50',
-    glow: 'shadow-lg shadow-orange-800/10',
+    ring: 'ring-2 ring-orange-500/40',
+    glow: '',
     medal: 'bg-gradient-to-b from-orange-400 to-orange-700 text-orange-50',
   },
 ]
@@ -112,7 +112,7 @@ export default function LeaderboardClient({
 
       {leaderboard.length === 0 ? (
         <EmptyState
-          icon={<GameIcon game={gameType} className="h-10 w-10 text-slate-500" />}
+          icon={<GameIcon game={gameType} className="h-10 w-10 text-zinc-500" />}
           title="No ranked players yet"
           description="Rankings appear once a match has been played and confirmed. Be the first on the board."
           action={<Button href="/matches/new">Start a match</Button>}
@@ -140,7 +140,7 @@ export default function LeaderboardClient({
                   >
                     <span
                       className={cn(
-                        'absolute -top-3 inline-flex h-7 w-7 items-center justify-center rounded-full text-sm font-bold shadow-md',
+                        'absolute -top-3 inline-flex h-7 w-7 items-center justify-center rounded-full text-sm font-bold',
                         style.medal
                       )}
                     >
@@ -152,13 +152,13 @@ export default function LeaderboardClient({
                       size={first ? 'xl' : 'lg'}
                       className={style.ring}
                     />
-                    <p className="mt-3 font-display text-lg font-semibold text-white group-hover:text-orange-300">
+                    <p className="mt-3 font-display text-lg font-semibold text-white group-hover:text-orange-400">
                       {entry.display_name}
                     </p>
                     <p className="tabular mt-0.5 font-display text-3xl font-bold text-white">
                       {entry.rating}
                     </p>
-                    <p className="mt-1 text-xs text-slate-400">
+                    <p className="mt-1 text-xs text-zinc-400">
                       {entry.wins}W – {entry.losses}L · {winRate(entry)}% win rate
                     </p>
                     <div className="mt-2">
@@ -174,9 +174,9 @@ export default function LeaderboardClient({
           {tableEntries.length > 0 && (
             <Card padding="none" className="overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-white/[0.06]">
+                <table className="min-w-full divide-y divide-line">
                   <thead>
-                    <tr className="text-left text-xs font-medium uppercase tracking-wider text-slate-500">
+                    <tr className="text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
                       <th className="px-4 py-3 sm:px-6">#</th>
                       <th className="px-4 py-3 sm:px-6">Player</th>
                       <th className="px-4 py-3 sm:px-6">Rating</th>
@@ -184,18 +184,18 @@ export default function LeaderboardClient({
                       <th className="hidden px-4 py-3 md:table-cell md:px-6">House</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-white/[0.04]">
+                  <tbody className="divide-y divide-line">
                     {tableEntries.map((entry) => {
                       const isMe = entry.user_id === currentUserId
                       return (
                         <tr
                           key={entry.user_id}
                           className={cn(
-                            'transition hover:bg-white/[0.03]',
-                            isMe && 'bg-orange-400/[0.06]'
+                            'transition hover:bg-ink-700',
+                            isMe && 'bg-orange-500/10'
                           )}
                         >
-                          <td className="tabular whitespace-nowrap px-4 py-3.5 text-sm font-semibold text-slate-500 sm:px-6">
+                          <td className="tabular whitespace-nowrap px-4 py-3.5 text-sm font-semibold text-zinc-500 sm:px-6">
                             {entry.rank}
                           </td>
                           <td className="whitespace-nowrap px-4 py-3.5 sm:px-6">
@@ -208,7 +208,7 @@ export default function LeaderboardClient({
                                 name={entry.display_name}
                                 size="sm"
                               />
-                              <span className="text-sm font-medium text-white group-hover:text-orange-300">
+                              <span className="text-sm font-medium text-white group-hover:text-orange-400">
                                 {entry.display_name}
                                 {isMe && <span className="ml-2 text-xs text-orange-400">you</span>}
                               </span>
@@ -230,11 +230,11 @@ export default function LeaderboardClient({
                               </span>
                             </div>
                           </td>
-                          <td className="hidden whitespace-nowrap px-4 py-3.5 text-sm text-slate-400 sm:table-cell sm:px-6">
-                            <span className="text-emerald-400">{entry.wins}W</span>
+                          <td className="hidden whitespace-nowrap px-4 py-3.5 text-sm text-zinc-400 sm:table-cell sm:px-6">
+                            <span className="text-win">{entry.wins}W</span>
                             {' – '}
-                            <span className="text-red-400">{entry.losses}L</span>
-                            <span className="ml-2 text-xs text-slate-500">{winRate(entry)}%</span>
+                            <span className="text-loss">{entry.losses}L</span>
+                            <span className="ml-2 text-xs text-zinc-500">{winRate(entry)}%</span>
                           </td>
                           <td className="hidden whitespace-nowrap px-4 py-3.5 md:table-cell md:px-6">
                             <HouseChip name={entry.dorm_name} />
@@ -259,7 +259,7 @@ export default function LeaderboardClient({
               >
                 ← Previous
               </Button>
-              <p className="tabular text-sm text-slate-400">
+              <p className="tabular text-sm text-zinc-400">
                 Page {currentPage} of {totalPages}
               </p>
               <Button

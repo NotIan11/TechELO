@@ -19,21 +19,21 @@ interface LedgerTableProps {
 function AckIcon({ entry }: { entry: SessionEntryWithUser }) {
   if (entry.disputed_at) {
     return (
-      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-red-500/20 text-xs font-bold text-red-300" title={`Disputed: ${entry.dispute_reason ?? ''}`}>
+      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-loss/20 text-xs font-bold text-loss" title={`Disputed: ${entry.dispute_reason ?? ''}`}>
         !
       </span>
     )
   }
   if (entry.acknowledged_at) {
     return (
-      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-300" title="Confirmed">
+      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-win/20 text-win" title="Confirmed">
         <svg className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
         </svg>
       </span>
     )
   }
-  return <span className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-white/15 text-slate-600" title="Not confirmed yet" />
+  return <span className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-line-strong text-zinc-600" title="Not confirmed yet" />
 }
 
 /** Sorted ledger for a finalized session */
@@ -49,9 +49,9 @@ export default function LedgerTable({ kind, entries, currentUserId, binkId, tota
   return (
     <Card padding="none" className="overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-white/[0.06]">
+        <table className="min-w-full divide-y divide-line">
           <thead>
-            <tr className="text-left text-xs font-medium uppercase tracking-wider text-slate-500">
+            <tr className="text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
               <th className="w-10 px-4 py-2.5">#</th>
               <th className="px-2 py-2.5">Player</th>
               <th className="hidden px-3 py-2.5 text-right sm:table-cell">Buy-in</th>
@@ -60,7 +60,7 @@ export default function LedgerTable({ kind, entries, currentUserId, binkId, tota
               {showAcks && <th className="hidden w-12 px-3 py-2.5 text-center sm:table-cell">✓</th>}
             </tr>
           </thead>
-          <tbody className="divide-y divide-white/[0.04]">
+          <tbody className="divide-y divide-line">
             {rows.map((e, i) => {
               const isMe = e.user_id === currentUserId
               const isBink = e.id === binkId
@@ -69,10 +69,10 @@ export default function LedgerTable({ kind, entries, currentUserId, binkId, tota
                 <tr
                   key={e.id}
                   className={cn(
-                    isMe ? 'bg-orange-400/[0.06]' : isBink ? 'bg-emerald-400/[0.04]' : undefined
+                    isMe ? 'bg-orange-500/10' : isBink ? 'bg-win/5' : undefined
                   )}
                 >
-                  <td className={cn('tabular px-4 py-3 text-sm', place === 1 && isTourney ? 'font-bold text-amber-300' : 'text-slate-500')}>
+                  <td className={cn('tabular px-4 py-3 text-sm', place === 1 && isTourney ? 'font-bold text-warn' : 'text-zinc-500')}>
                     {place == null ? '—' : isTourney ? ordinal(place) : place}
                   </td>
                   <td className="px-2 py-3">
@@ -80,24 +80,24 @@ export default function LedgerTable({ kind, entries, currentUserId, binkId, tota
                       <PlayerName player={e.user} isMe={isMe} />
                       {showAcks && <span className="sm:hidden"><AckIcon entry={e} /></span>}
                     </div>
-                    <p className="tabular mt-1 text-xs text-slate-500 sm:hidden">
+                    <p className="tabular mt-1 text-xs text-zinc-500 sm:hidden">
                       In {formatCents(e.buy_in_cents, { compact: true })} · Out {formatCents(e.cash_out_cents ?? 0, { compact: true })}
                     </p>
                   </td>
-                  <td className="tabular hidden px-3 py-3 text-right text-sm text-slate-300 sm:table-cell">
+                  <td className="tabular hidden px-3 py-3 text-right text-sm text-zinc-300 sm:table-cell">
                     <Money cents={e.buy_in_cents} compact />
                     {e.rebuy_count > 0 && (
-                      <span className="block text-[11px] text-slate-500">×{e.rebuy_count} reload{e.rebuy_count === 1 ? '' : 's'}</span>
+                      <span className="block text-[11px] text-zinc-500">×{e.rebuy_count} reload{e.rebuy_count === 1 ? '' : 's'}</span>
                     )}
                   </td>
-                  <td className="tabular hidden px-3 py-3 text-right text-sm text-slate-300 sm:table-cell">
+                  <td className="tabular hidden px-3 py-3 text-right text-sm text-zinc-300 sm:table-cell">
                     <Money cents={e.cash_out_cents ?? 0} compact />
                   </td>
                   <td className="px-3 py-3 text-right">
                     <div className="flex items-center justify-end gap-3">
                       <span className="hidden h-1.5 w-20 overflow-hidden rounded-full bg-white/[0.06] md:block" aria-hidden="true">
                         <span
-                          className={cn('block h-full rounded-full', e.net_cents >= 0 ? 'bg-emerald-400/70' : 'bg-red-400/70')}
+                          className={cn('block h-full rounded-full', e.net_cents >= 0 ? 'bg-win/70' : 'bg-loss/70')}
                           style={{ width: `${Math.round((Math.abs(e.net_cents) / maxAbs) * 100)}%` }}
                         />
                       </span>
@@ -116,21 +116,21 @@ export default function LedgerTable({ kind, entries, currentUserId, binkId, tota
           <tfoot>
             <tr className="border-t border-white/[0.08] text-sm">
               <td className="px-4 py-2.5" />
-              <td className="px-2 py-2.5 text-xs uppercase tracking-wider text-slate-500">
+              <td className="px-2 py-2.5 eyebrow">
                 Totals
-                <span className="tabular mt-0.5 block normal-case tracking-normal text-slate-400 sm:hidden">
+                <span className="tabular mt-0.5 block normal-case tracking-normal text-zinc-400 sm:hidden">
                   In {formatCents(totals.buyIn, { compact: true })} · Out {formatCents(totals.cashOut, { compact: true })}
                 </span>
               </td>
-              <td className="tabular hidden px-3 py-2.5 text-right text-slate-300 sm:table-cell">
+              <td className="tabular hidden px-3 py-2.5 text-right text-zinc-300 sm:table-cell">
                 <Money cents={prizePoolCents ?? totals.buyIn} compact />
-                {prizePoolCents != null && <span className="block text-[11px] text-slate-500">prize pool</span>}
+                {prizePoolCents != null && <span className="block text-[11px] text-zinc-500">prize pool</span>}
               </td>
-              <td className="tabular hidden px-3 py-2.5 text-right text-slate-300 sm:table-cell">
+              <td className="tabular hidden px-3 py-2.5 text-right text-zinc-300 sm:table-cell">
                 <Money cents={totals.cashOut} compact />
               </td>
               <td className="px-3 py-2.5 text-right">
-                <MoneyDelta cents={totals.discrepancy} compact size="xs" className={totals.discrepancy === 0 ? 'text-slate-500' : undefined} />
+                <MoneyDelta cents={totals.discrepancy} compact size="xs" className={totals.discrepancy === 0 ? 'text-zinc-500' : undefined} />
               </td>
               {showAcks && <td className="hidden sm:table-cell" />}
             </tr>

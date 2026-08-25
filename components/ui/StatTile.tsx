@@ -5,12 +5,12 @@ export type StatTone = 'default' | 'positive' | 'negative' | 'pool' | 'pong' | '
 
 const valueTones: Record<StatTone, string> = {
   default: 'text-white',
-  positive: 'text-emerald-300',
-  negative: 'text-red-300',
+  positive: 'text-win',
+  negative: 'text-loss',
   pool: 'text-pool',
   pong: 'text-pong',
   poker: 'text-poker',
-  muted: 'text-slate-400',
+  muted: 'text-zinc-400',
 }
 
 interface StatTileProps {
@@ -27,7 +27,7 @@ interface StatTileProps {
 export default function StatTile({ label, value, sub, tone = 'default', size = 'md', className }: StatTileProps) {
   return (
     <Card padding="sm" className={cn('min-w-0', className)}>
-      <p className="truncate text-xs uppercase tracking-wider text-slate-500">{label}</p>
+      <p className="truncate eyebrow">{label}</p>
       <p
         className={cn(
           'tabular mt-1 truncate font-display font-bold',
@@ -37,7 +37,7 @@ export default function StatTile({ label, value, sub, tone = 'default', size = '
       >
         {value}
       </p>
-      {sub != null && <p className="mt-0.5 truncate text-xs text-slate-500">{sub}</p>}
+      {sub != null && <p className="mt-0.5 truncate text-xs text-zinc-500">{sub}</p>}
     </Card>
   )
 }

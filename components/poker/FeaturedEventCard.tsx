@@ -25,7 +25,7 @@ export default function FeaturedEventCard({ event }: { event: FeaturedEvent }) {
         <PokerStatusBadge status={event.status} />
       </div>
       <p className="mt-3 font-display text-2xl font-bold text-white group-hover:text-violet-200 sm:text-3xl">{sessionTitle(event)}</p>
-      <p className="mt-1 text-sm text-slate-300">
+      <p className="mt-1 text-sm text-zinc-300">
         {live
           ? `Cards are in the air · ${event.player_count} players`
           : `${event.scheduled_for ? formatPokerDateTime(event.scheduled_for) : 'Date TBA'}${event.location ? ` · ${event.location}` : ''} · ${event.rsvp_count} RSVP${event.rsvp_count === 1 ? '' : 's'}`}

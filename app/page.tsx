@@ -89,7 +89,7 @@ export default async function Home({
     <AppShell>
       {/* Hero */}
       <section className="pb-10 pt-4 text-center sm:pt-8">
-        <p className="mb-3 inline-flex items-center gap-2 rounded-full border border-orange-400/25 bg-orange-400/10 px-3 py-1 text-xs font-medium text-orange-300">
+        <p className="mb-3 inline-flex items-center gap-2 rounded-full border border-orange-500/40 bg-orange-500/10 px-3 py-1 text-xs font-medium text-orange-400">
           <span aria-hidden="true">🏆</span> House standings
         </p>
         <h1 className="font-display text-4xl font-bold tracking-tight text-white sm:text-6xl">
@@ -98,7 +98,7 @@ export default async function Home({
             table?
           </span>
         </h1>
-        <p className="mx-auto mt-4 max-w-xl text-balance text-slate-400">
+        <p className="mx-auto mt-4 max-w-xl text-balance text-zinc-400">
           Challenge your housemates at pool and ping pong, confirm results together, and watch the
           rankings settle it once and for all.
         </p>
@@ -129,7 +129,7 @@ export default async function Home({
             </span>
             <span className="min-w-0">
               <span className="block font-display font-semibold text-white group-hover:text-violet-200">Poker</span>
-              <span className="block truncate text-sm text-slate-400">
+              <span className="block truncate text-sm text-zinc-400">
                 {pokerSessionCount > 0
                   ? `${formatCents(pokerStaked, { compact: true })} changed hands across ${pokerSessionCount} session${pokerSessionCount === 1 ? '' : 's'} in ${termFor().label}`
                   : 'Cash games, tournaments, and who’s really up this term'}

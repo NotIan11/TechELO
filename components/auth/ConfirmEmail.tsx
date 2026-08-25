@@ -56,14 +56,14 @@ export default function ConfirmEmail({ tokenHash, type }: ConfirmEmailProps) {
           {loading ? 'Confirming…' : 'Confirm my email'}
         </Button>
         {error && (
-          <div className="rounded-xl border border-red-500/25 bg-red-500/10 p-4 text-left">
-            <p className="text-sm text-red-300">{error}</p>
-            <p className="mt-2 text-sm text-slate-400">
+          <div className="rounded-xl border border-loss/20 bg-loss/10 p-4 text-left">
+            <p className="text-sm text-loss">{error}</p>
+            <p className="mt-2 text-sm text-zinc-400">
               You can sign in to request a new confirmation email.
             </p>
             <Link
               href="/login?error=link_expired"
-              className="mt-2 inline-block text-sm font-medium text-orange-400 hover:text-orange-300"
+              className="mt-2 inline-block text-sm font-medium text-orange-400 hover:text-orange-400"
             >
               Go to Sign in
             </Link>

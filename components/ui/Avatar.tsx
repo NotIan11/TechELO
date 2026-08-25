@@ -17,7 +17,7 @@ const sizes = {
 
 export default function Avatar({ src, name, size = 'md', className }: AvatarProps) {
   const base = cn(
-    'shrink-0 rounded-full ring-1 ring-white/10 select-none',
+    'shrink-0 rounded-full ring-1 ring-line select-none',
     sizes[size],
     className
   )

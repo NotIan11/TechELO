@@ -25,7 +25,7 @@ export default function Stepper({
   className,
 }: StepperProps) {
   const btn = cn(
-    'inline-flex items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-slate-200 transition hover:bg-white/[0.1] disabled:opacity-40 disabled:pointer-events-none',
+    'inline-flex items-center justify-center rounded-lg border border-line bg-ink-700 text-zinc-200 transition hover:bg-white/[0.1] disabled:opacity-40 disabled:pointer-events-none',
     size === 'sm' ? 'h-8 w-8 text-sm' : 'h-10 w-10 text-base'
   )
   return (

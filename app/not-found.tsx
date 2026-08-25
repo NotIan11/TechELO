@@ -6,7 +6,7 @@ export default function NotFound() {
       <div className="text-center">
         <p className="font-display text-7xl font-bold text-white/10">404</p>
         <h1 className="mt-2 font-display text-2xl font-bold text-white">Scratch — page not found</h1>
-        <p className="mt-2 text-sm text-slate-400">The page you&apos;re looking for doesn&apos;t exist.</p>
+        <p className="mt-2 text-sm text-zinc-400">The page you&apos;re looking for doesn&apos;t exist.</p>
         <div className="mt-6">
           <Button href="/">Back to the leaderboard</Button>
         </div>

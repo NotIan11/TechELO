@@ -417,7 +417,7 @@ export default function LiveLedgerEditor({ session, currentUserId, players, rece
           </span>
           <div className="min-w-0">
             <h1 className="truncate font-display text-xl font-bold text-white">{title}</h1>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-zinc-500">
               {isTourney ? 'Tournament' : 'Cash game'}
               {session.started_at && mode === 'live' && <> · started {new Date(session.started_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</>}
               {mode === 'live' && (
@@ -425,9 +425,9 @@ export default function LiveLedgerEditor({ session, currentUserId, players, rece
                   {' · '}
                   <span
                     className={cn(
-                      saveStatus === 'saved' && 'text-emerald-400',
-                      saveStatus === 'saving' && 'text-slate-400',
-                      saveStatus === 'error' && 'text-amber-300'
+                      saveStatus === 'saved' && 'text-win',
+                      saveStatus === 'saving' && 'text-zinc-400',
+                      saveStatus === 'error' && 'text-warn'
                     )}
                   >
                     {saveStatus === 'saved' ? 'Saved ✓' : saveStatus === 'saving' ? 'Saving…' : saveStatus === 'error' ? 'Not saved — retrying' : 'Autosaves as you go'}
@@ -456,8 +456,8 @@ export default function LiveLedgerEditor({ session, currentUserId, players, rece
       {error && <Banner tone="error">{error}</Banner>}
 
       {confirming === 'void' && (
-        <Card padding="sm" className="border-red-400/20 bg-red-400/[0.04]">
-          <p className="text-sm text-red-100">Void this session? It won’t count anywhere and can’t be reopened.</p>
+        <Card padding="sm" className="border-loss/20 bg-loss/5">
+          <p className="text-sm text-loss">Void this session? It won’t count anywhere and can’t be reopened.</p>
           <div className="mt-3 flex gap-2">
             <Button size="sm" variant="danger" onClick={voidSession} disabled={busy} type="button">
               {busy ? 'Voiding…' : 'Void session'}
@@ -478,7 +478,7 @@ export default function LiveLedgerEditor({ session, currentUserId, players, rece
           aria-expanded={detailsOpen}
         >
           <span className="text-sm font-semibold text-white">Table details</span>
-          <span className="text-xs text-slate-500">
+          <span className="text-xs text-zinc-500">
             {[state.stakes, state.variant, state.location.trim() || null].filter(Boolean).join(' · ') || 'Add stakes, variant, location'}
             {' '}
             {detailsOpen ? '▴' : '▾'}
@@ -488,7 +488,7 @@ export default function LiveLedgerEditor({ session, currentUserId, players, rece
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <div className="sm:col-span-2">
               <label htmlFor="session-title" className="label">
-                Title <span className="font-normal text-slate-500">(optional)</span>
+                Title <span className="font-normal text-zinc-500">(optional)</span>
               </label>
               <input
                 id="session-title"
@@ -546,7 +546,7 @@ export default function LiveLedgerEditor({ session, currentUserId, players, rece
             {isTourney && (
               <div>
                 <label className="label" htmlFor="prize-pool">
-                  Prize pool <span className="font-normal text-slate-500">(if not just the entries)</span>
+                  Prize pool <span className="font-normal text-zinc-500">(if not just the entries)</span>
                 </label>
                 <DollarInput
                   id="prize-pool"
@@ -614,14 +614,14 @@ export default function LiveLedgerEditor({ session, currentUserId, players, rece
 
       {/* Players */}
       <div>
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-500">Players</h2>
+        <h2 className="mb-3 eyebrow">Players</h2>
         <PlayerPicker players={players} recent={recent} selectedIds={selectedIds} onAdd={addPlayer} disabled={busy} />
       </div>
 
       {/* Ledger */}
       <div>
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500">Ledger</h2>
+          <h2 className="eyebrow">Ledger</h2>
           {isTourney && state.rows.length > 1 && (
             <div className="flex gap-2">
               <Button size="sm" variant="secondary" onClick={numberByOrder} type="button" disabled={busy}>
@@ -635,12 +635,12 @@ export default function LiveLedgerEditor({ session, currentUserId, players, rece
         </div>
         <Card padding="none" className="overflow-hidden">
           {state.rows.length === 0 ? (
-            <p className="p-6 text-center text-sm text-slate-500">Add players above to start the ledger.</p>
+            <p className="p-6 text-center text-sm text-zinc-500">Add players above to start the ledger.</p>
           ) : (
             <>
               <div
                 className={cn(
-                  'hidden px-4 py-2 text-[11px] uppercase tracking-wider text-slate-500 sm:grid',
+                  'hidden px-4 py-2 eyebrow sm:grid',
                   isTourney
                     ? 'sm:grid-cols-[minmax(0,1fr)_7rem_6.5rem_6rem_7rem_5rem_2rem]'
                     : 'sm:grid-cols-[minmax(0,1fr)_7rem_7.5rem_7rem_5rem_2rem]'
@@ -654,7 +654,7 @@ export default function LiveLedgerEditor({ session, currentUserId, players, rece
                 <span className="text-right">Net</span>
                 <span />
               </div>
-              <div className="divide-y divide-white/[0.04]">
+              <div className="divide-y divide-line">
                 {state.rows.map((row) => (
                   <LedgerRowEditor
                     key={row.key}
@@ -678,7 +678,7 @@ export default function LiveLedgerEditor({ session, currentUserId, players, rece
           )}
         </Card>
         {!isTourney && (
-          <p className="mt-2 text-xs text-slate-500">
+          <p className="mt-2 text-xs text-zinc-500">
             Buy-in is each player’s total for the night. Use the +{state.standardBuyIn ? formatCents(state.standardBuyIn, { compact: true }) : 'buy-in'} button when someone reloads.
           </p>
         )}
@@ -707,7 +707,7 @@ export default function LiveLedgerEditor({ session, currentUserId, players, rece
         confirmExtra={
           mode === 'live' ? (
             <div>
-              <p className="mb-1.5 text-xs uppercase tracking-wider text-slate-500">
+              <p className="mb-1.5 eyebrow">
                 Duration {session.started_at && '(auto from start time if left blank)'}
               </p>
               <ChipSelect

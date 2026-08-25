@@ -76,8 +76,8 @@ export default function CreateDormForm() {
         </div>
 
         {error && (
-          <div className="rounded-xl border border-red-500/25 bg-red-500/10 p-4">
-            <p className="text-sm text-red-300">{error}</p>
+          <div className="rounded-xl border border-loss/20 bg-loss/10 p-4">
+            <p className="text-sm text-loss">{error}</p>
           </div>
         )}
 

@@ -63,7 +63,7 @@ export default function SetupPasswordPage() {
   if (checking) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center p-4">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/10 border-t-orange-400" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-line border-t-orange-400" />
       </div>
     )
   }
@@ -107,8 +107,8 @@ export default function SetupPasswordPage() {
         </div>
 
         {error && (
-          <div className="rounded-xl border border-red-500/25 bg-red-500/10 p-4">
-            <p className="text-sm text-red-300">{error}</p>
+          <div className="rounded-xl border border-loss/20 bg-loss/10 p-4">
+            <p className="text-sm text-loss">{error}</p>
           </div>
         )}
 

@@ -104,9 +104,9 @@ export default function DormDetails({
 
   const boardRow = (userId: string, rank: number, avatar: string | null, name: string, value: React.ReactNode) => (
     <li key={userId}>
-      <Link href={`/profile/${userId}`} className="flex items-center justify-between gap-3 rounded-lg p-2 transition hover:bg-white/[0.04]">
+      <Link href={`/profile/${userId}`} className="flex items-center justify-between gap-3 rounded-lg p-2 transition hover:bg-ink-700">
         <span className="flex min-w-0 items-center gap-3">
-          <span className="tabular w-5 shrink-0 text-right text-sm font-semibold text-slate-500">{rank}</span>
+          <span className="tabular w-5 shrink-0 text-right text-sm font-semibold text-zinc-500">{rank}</span>
           <Avatar src={avatar} name={name} size="xs" />
           <span className="truncate text-sm font-medium text-white">{name}</span>
         </span>
@@ -122,7 +122,7 @@ export default function DormDetails({
         {title}
       </h2>
       {rows.length === 0 ? (
-        <p className="text-sm text-slate-500">No ranked players yet.</p>
+        <p className="text-sm text-zinc-500">No ranked players yet.</p>
       ) : (
         <ol className="space-y-1">
           {rows.map((entry) =>
@@ -160,8 +160,8 @@ export default function DormDetails({
         <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h1 className="font-display text-3xl font-bold text-white">{dorm.name}</h1>
-            {dorm.description && <p className="mt-2 text-slate-400">{dorm.description}</p>}
-            <p className="mt-2 text-xs text-slate-500">Founded {formatDate(dorm.created_at)}</p>
+            {dorm.description && <p className="mt-2 text-zinc-400">{dorm.description}</p>}
+            <p className="mt-2 text-xs text-zinc-500">Founded {formatDate(dorm.created_at)}</p>
           </div>
           {isMember ? (
             <Badge tone="green" dot className="sm:mt-1">
@@ -193,12 +193,12 @@ export default function DormDetails({
         <Card>
           <h2 className="mb-4 flex items-center gap-2 font-display text-lg font-semibold text-white">
             <GameIcon game="poker" className="h-5 w-5 text-poker" />
-            Poker <span className="text-xs font-normal text-slate-500">this term</span>
+            Poker <span className="text-xs font-normal text-zinc-500">this term</span>
           </h2>
           {pokerLeaderboard.length === 0 ? (
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-zinc-500">
               No sessions logged yet.{' '}
-              <Link href="/poker" className="text-orange-300 underline-offset-2 hover:underline">
+              <Link href="/poker" className="text-orange-400 underline-offset-2 hover:underline">
                 Start one
               </Link>
             </p>
@@ -216,19 +216,19 @@ export default function DormDetails({
       <Card>
         <h2 className="mb-4 font-display text-lg font-semibold text-white">Members</h2>
         {members.length === 0 ? (
-          <p className="text-sm text-slate-500">No members yet.</p>
+          <p className="text-sm text-zinc-500">No members yet.</p>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {members.map((member) => (
               <Link
                 key={member.id}
                 href={`/profile/${member.id}`}
-                className="flex items-center gap-3 rounded-xl border border-white/[0.06] p-3 transition hover:border-white/[0.14] hover:bg-white/[0.03]"
+                className="flex items-center gap-3 rounded-xl border border-white/[0.06] p-3 transition hover:border-white/[0.14] hover:bg-ink-700"
               >
                 <Avatar src={member.profile_image_url} name={member.display_name} size="md" />
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium text-white">{member.display_name}</p>
-                  <p className="truncate text-xs text-slate-500">{member.university_email}</p>
+                  <p className="truncate text-xs text-zinc-500">{member.university_email}</p>
                 </div>
               </Link>
             ))}

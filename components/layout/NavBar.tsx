@@ -23,7 +23,7 @@ export default function NavBar() {
     href === '/' ? pathname === '/' : pathname.startsWith(href)
 
   return (
-    <nav className="sticky top-0 z-40 border-b border-white/[0.06] bg-base/80 backdrop-blur-xl">
+    <nav className="sticky top-0 z-40 border-b border-white/[0.06] bg-ink-950/80 backdrop-blur-xl">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between gap-3">
           <div className="flex items-center gap-8">
@@ -39,7 +39,7 @@ export default function NavBar() {
                     'rounded-lg px-3.5 py-2 text-sm font-medium transition',
                     isActive(href)
                       ? 'bg-white/[0.08] text-white'
-                      : 'text-slate-400 hover:bg-white/[0.04] hover:text-white'
+                      : 'text-zinc-400 hover:bg-ink-700 hover:text-white'
                   )}
                 >
                   {label}
@@ -54,7 +54,7 @@ export default function NavBar() {
             <button
               type="button"
               onClick={() => setMobileMenuOpen((open) => !open)}
-              className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-slate-300 transition hover:bg-white/[0.06] hover:text-white md:hidden"
+              className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-zinc-300 transition hover:bg-white/[0.06] hover:text-white md:hidden"
               aria-expanded={mobileMenuOpen}
               aria-label="Toggle menu"
             >
@@ -81,7 +81,7 @@ export default function NavBar() {
                     'flex min-h-[44px] items-center rounded-lg px-4 text-sm font-medium transition',
                     isActive(href)
                       ? 'bg-white/[0.08] text-white'
-                      : 'text-slate-400 hover:bg-white/[0.04] hover:text-white'
+                      : 'text-zinc-400 hover:bg-ink-700 hover:text-white'
                   )}
                 >
                   {label}

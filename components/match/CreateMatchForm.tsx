@@ -98,7 +98,7 @@ export default function CreateMatchForm({
                 className={cn(
                   'card flex flex-col items-center gap-2 p-5 transition',
                   active
-                    ? 'border-orange-400/50 bg-orange-400/[0.06] ring-1 ring-orange-400/40'
+                    ? 'border-orange-500 bg-orange-500/10 ring-1 ring-orange-500/40'
                     : 'hover:border-white/[0.14]'
                 )}
               >
@@ -107,7 +107,7 @@ export default function CreateMatchForm({
                   className={cn('h-8 w-8', game === 'pool' ? 'text-pool' : 'text-pong')}
                 />
                 <span className="text-sm font-semibold text-white">{gameLabel(game)}</span>
-                <span className="tabular text-xs text-slate-500">
+                <span className="tabular text-xs text-zinc-500">
                   Your rating: {myRatings[game] ?? 1500}
                 </span>
               </button>
@@ -131,9 +131,9 @@ export default function CreateMatchForm({
         />
         <Card padding="none" className="max-h-80 overflow-y-auto">
           {filtered.length === 0 ? (
-            <p className="p-5 text-center text-sm text-slate-500">No players match “{search}”.</p>
+            <p className="p-5 text-center text-sm text-zinc-500">No players match “{search}”.</p>
           ) : (
-            <ul className="divide-y divide-white/[0.04]">
+            <ul className="divide-y divide-line">
               {filtered.map((opponent) => {
                 const active = opponent.id === opponentId
                 return (
@@ -144,7 +144,7 @@ export default function CreateMatchForm({
                       aria-pressed={active}
                       className={cn(
                         'flex w-full items-center gap-3 px-4 py-3 text-left transition',
-                        active ? 'bg-orange-400/[0.08]' : 'hover:bg-white/[0.03]'
+                        active ? 'bg-orange-500/10' : 'hover:bg-ink-700'
                       )}
                     >
                       <Avatar
@@ -160,15 +160,15 @@ export default function CreateMatchForm({
                           <HouseChip name={opponent.dorm_name} />
                         </span>
                       </span>
-                      <span className="tabular shrink-0 text-sm font-semibold text-slate-300">
+                      <span className="tabular shrink-0 text-sm font-semibold text-zinc-300">
                         {opponent.ratings[gameType] ?? 1500}
                       </span>
                       <span
                         className={cn(
                           'inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition',
                           active
-                            ? 'border-orange-400 bg-orange-400 text-white'
-                            : 'border-white/20 text-transparent'
+                            ? 'border-orange-500 bg-orange-500 text-white'
+                            : 'border-line-strong text-transparent'
                         )}
                       >
                         <svg className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">

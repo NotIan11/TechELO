@@ -55,7 +55,7 @@ export default function MatchCard({
       <span
         className={cn(
           'inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl',
-          match.game_type === 'pool' ? 'bg-sky-400/10 text-pool' : 'bg-emerald-400/10 text-pong'
+          match.game_type === 'pool' ? 'bg-sky-400/10 text-pool' : 'bg-win/10 text-pong'
         )}
       >
         <GameIcon game={match.game_type} className="h-6 w-6" />
@@ -63,12 +63,12 @@ export default function MatchCard({
 
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <p className="truncate text-sm font-semibold text-white group-hover:text-orange-300">
+          <p className="truncate text-sm font-semibold text-white group-hover:text-orange-400">
             vs {opponent.display_name}
           </p>
           <StatusBadge status={match.status} />
         </div>
-        <p className="mt-1 text-xs text-slate-500">
+        <p className="mt-1 text-xs text-zinc-500">
           {gameLabel(match.game_type)} · <TimeAgo date={match.completed_at || match.created_at} />
         </p>
       </div>
@@ -79,7 +79,7 @@ export default function MatchCard({
             <span
               className={cn(
                 'inline-flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold',
-                won ? 'bg-emerald-500/20 text-emerald-300' : 'bg-red-500/20 text-red-300'
+                won ? 'bg-win/20 text-win' : 'bg-loss/20 text-loss'
               )}
             >
               {won ? 'W' : 'L'}
@@ -89,7 +89,7 @@ export default function MatchCard({
         )}
         <Avatar src={opponent.profile_image_url} name={opponent.display_name} size="sm" className="hidden sm:block" />
         <svg
-          className="h-4 w-4 text-slate-600 transition group-hover:translate-x-0.5 group-hover:text-slate-400"
+          className="h-4 w-4 text-zinc-600 transition group-hover:translate-x-0.5 group-hover:text-zinc-400"
           fill="none"
           stroke="currentColor"
           strokeWidth={2}

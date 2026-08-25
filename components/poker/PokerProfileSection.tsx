@@ -64,7 +64,7 @@ export default function PokerProfileSection({ userId, displayName, isOwnProfile,
             </Button>
           ) : null}
         </div>
-        <p className="mt-2 text-sm text-slate-500">
+        <p className="mt-2 text-sm text-zinc-500">
           {isOwnProfile ? 'No logged sessions yet — your PnL, ROI and streaks show up here after your first night.' : `${displayName} hasn’t played a logged session yet.`}
         </p>
       </Card>
@@ -93,22 +93,22 @@ export default function PokerProfileSection({ userId, displayName, isOwnProfile,
       </div>
 
       {filtered.length === 0 ? (
-        <p className="text-sm text-slate-500">No sessions in this range.</p>
+        <p className="text-sm text-zinc-500">No sessions in this range.</p>
       ) : (
         <>
           {/* Headline + chart */}
           <div className="grid gap-5 md:grid-cols-[auto_1fr] md:items-end">
             <div>
-              <p className="text-xs uppercase tracking-wider text-slate-500">Net</p>
+              <p className="eyebrow">Net</p>
               <MoneyDelta cents={summary.netCents} size="xl" compact />
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-zinc-500">
                 {summary.sessions} session{summary.sessions === 1 ? '' : 's'} · {formatCents(summary.stakedCents, { compact: true })} staked
               </p>
               {summary.currentStreak && summary.currentStreak.count >= 2 && (
                 <span
                   className={cn(
                     'mt-2 inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold',
-                    summary.currentStreak.type === 'W' ? 'bg-emerald-500/15 text-emerald-300' : 'bg-red-500/15 text-red-300'
+                    summary.currentStreak.type === 'W' ? 'bg-win/10 text-win' : 'bg-loss/10 text-loss'
                   )}
                 >
                   {summary.currentStreak.type === 'W' ? '🔥' : '🧊'} {summary.currentStreak.count} session {summary.currentStreak.type === 'W' ? 'heater' : 'cooler'}
@@ -117,7 +117,7 @@ export default function PokerProfileSection({ userId, displayName, isOwnProfile,
             </div>
             <div className="text-poker">
               <PnlChart values={series.map((p) => p.cumulativeCents)} />
-              <div className="mt-1 flex justify-between text-[11px] text-slate-500">
+              <div className="mt-1 flex justify-between text-[11px] text-zinc-500">
                 <span>{series.length > 0 ? formatPokerDateTime(series[0].playedAt, false) : ''}</span>
                 <span>{series.length > 1 ? formatPokerDateTime(series[series.length - 1].playedAt, false) : ''}</span>
               </div>
@@ -147,7 +147,7 @@ export default function PokerProfileSection({ userId, displayName, isOwnProfile,
           {/* Tournaments */}
           {t.entries > 0 && (
             <div>
-              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">Tournaments</h3>
+              <h3 className="mb-2 eyebrow">Tournaments</h3>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
                 <StatTile label="Entries" value={t.entries} />
                 <StatTile label="Cashes" value={t.cashes} />
@@ -162,24 +162,24 @@ export default function PokerProfileSection({ userId, displayName, isOwnProfile,
           {/* Tablemates + recent */}
           <div className="grid gap-6 md:grid-cols-2">
             <div>
-              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">Tablemates</h3>
+              <h3 className="mb-2 eyebrow">Tablemates</h3>
               {mates.length === 0 ? (
-                <p className="text-sm text-slate-500">No shared tables yet.</p>
+                <p className="text-sm text-zinc-500">No shared tables yet.</p>
               ) : (
                 <ul className="space-y-1">
                   {mates.map((m) => (
                     <li key={m.user.id}>
-                      <Link href={`/profile/${m.user.id}`} className="flex items-center justify-between gap-3 rounded-lg p-2 transition hover:bg-white/[0.04]">
+                      <Link href={`/profile/${m.user.id}`} className="flex items-center justify-between gap-3 rounded-lg p-2 transition hover:bg-ink-700">
                         <span className="flex min-w-0 items-center gap-2.5">
                           <Avatar src={m.user.profile_image_url} name={m.user.display_name} size="xs" />
                           <span className="truncate text-sm text-white">{m.user.display_name}</span>
-                          <span className="shrink-0 text-xs text-slate-500">{m.sharedSessions}×</span>
+                          <span className="shrink-0 text-xs text-zinc-500">{m.sharedSessions}×</span>
                         </span>
-                        <span className="tabular flex shrink-0 items-center gap-1.5 text-xs text-slate-400">
+                        <span className="tabular flex shrink-0 items-center gap-1.5 text-xs text-zinc-400">
                           <span title={`${displayName} at those tables`}>
                             <MoneyDelta cents={m.myNetCents} size="xs" compact />
                           </span>
-                          <span className="text-slate-600">vs</span>
+                          <span className="text-zinc-600">vs</span>
                           <span title={`${m.user.display_name} at those tables`}>
                             <MoneyDelta cents={m.theirNetCents} size="xs" compact />
                           </span>
@@ -191,11 +191,11 @@ export default function PokerProfileSection({ userId, displayName, isOwnProfile,
               )}
             </div>
             <div>
-              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">Recent sessions</h3>
+              <h3 className="mb-2 eyebrow">Recent sessions</h3>
               <ul className="space-y-1">
                 {recent.map((e) => (
                   <li key={e.id}>
-                    <Link href={`/poker/sessions/${e.session_id}`} className="flex items-center justify-between gap-3 rounded-lg p-2 transition hover:bg-white/[0.04]">
+                    <Link href={`/poker/sessions/${e.session_id}`} className="flex items-center justify-between gap-3 rounded-lg p-2 transition hover:bg-ink-700">
                       <span className="min-w-0">
                         <span className="flex items-center gap-2">
                           <span className="truncate text-sm text-white">{sessionTitle(e)}</span>
@@ -204,7 +204,7 @@ export default function PokerProfileSection({ userId, displayName, isOwnProfile,
                           )}
                           {e.status === 'disputed' && <Badge tone="red">Disputed</Badge>}
                         </span>
-                        <span className="block text-xs text-slate-500">{formatPokerDateTime(e.played_at, false)}</span>
+                        <span className="block text-xs text-zinc-500">{formatPokerDateTime(e.played_at, false)}</span>
                       </span>
                       <MoneyDelta cents={e.net_cents} chip compact />
                     </Link>

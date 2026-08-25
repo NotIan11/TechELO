@@ -29,7 +29,7 @@ export default function SessionCard({ session, viewerId }: { session: SessionLis
       href={`/poker/sessions/${session.id}`}
       className={cn(
         'card group flex items-center gap-4 p-4 transition hover:-translate-y-px hover:border-white/[0.14] sm:p-5',
-        session.status === 'live' && 'border-red-400/30'
+        session.status === 'live' && 'border-loss/20'
       )}
     >
       <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-violet-400/10 text-poker">
@@ -38,11 +38,11 @@ export default function SessionCard({ session, viewerId }: { session: SessionLis
 
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <p className="truncate text-sm font-semibold text-white group-hover:text-orange-300">{sessionTitle(session)}</p>
+          <p className="truncate text-sm font-semibold text-white group-hover:text-orange-400">{sessionTitle(session)}</p>
           <Badge tone={isTourney ? 'purple' : 'poker'}>{isTourney ? (session.is_official ? 'Official' : 'Tournament') : 'Cash'}</Badge>
           <PokerStatusBadge status={session.status} acked={session.ack_count} total={session.player_count} />
         </div>
-        <p className="mt-1 flex flex-wrap items-center gap-x-2 text-xs text-slate-500">
+        <p className="mt-1 flex flex-wrap items-center gap-x-2 text-xs text-zinc-500">
           {session.status === 'scheduled' && session.scheduled_for ? (
             <span>{formatPokerDateTime(session.scheduled_for)}</span>
           ) : (
@@ -52,7 +52,7 @@ export default function SessionCard({ session, viewerId }: { session: SessionLis
           {session.total_buy_in_cents > 0 && <span>· {formatCents(session.total_buy_in_cents, { compact: true })} in play</span>}
           {bink?.user && (
             <span className="hidden sm:inline">
-              · <span className="text-emerald-300">{bink.user.display_name}</span> +{formatCents(bink.net_cents, { compact: true })}
+              · <span className="text-win">{bink.user.display_name}</span> +{formatCents(bink.net_cents, { compact: true })}
             </span>
           )}
           {session.status === 'scheduled' && <span>· {session.rsvp_count} RSVP{session.rsvp_count === 1 ? '' : 's'}</span>}
@@ -63,15 +63,15 @@ export default function SessionCard({ session, viewerId }: { session: SessionLis
         {mine && counts && <MoneyDelta cents={mine.net_cents} chip compact />}
         <span className="hidden items-center -space-x-1.5 sm:flex">
           {avatars.map((e) => (
-            <Avatar key={e.user_id} src={e.user?.profile_image_url} name={e.user?.display_name ?? '?'} size="xs" className="ring-2 ring-raise" />
+            <Avatar key={e.user_id} src={e.user?.profile_image_url} name={e.user?.display_name ?? '?'} size="xs" className="ring-2 ring-ink-800" />
           ))}
           {session.entries.length > 5 && (
-            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/[0.08] text-[10px] font-semibold text-slate-300 ring-2 ring-raise">
+            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/[0.08] text-[10px] font-semibold text-zinc-300 ring-2 ring-ink-800">
               +{session.entries.length - 5}
             </span>
           )}
         </span>
-        <svg className="h-4 w-4 text-slate-600 transition group-hover:translate-x-0.5 group-hover:text-slate-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+        <svg className="h-4 w-4 text-zinc-600 transition group-hover:translate-x-0.5 group-hover:text-zinc-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
         </svg>
       </div>

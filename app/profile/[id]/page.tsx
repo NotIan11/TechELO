@@ -92,20 +92,20 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
               <h1 className="font-display text-2xl font-bold text-white sm:text-3xl">
                 {profile.display_name}
               </h1>
-              <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-slate-400">
+              <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-zinc-400">
                 {profile.dorms ? (
                   <Link href={`/dorms/${profile.dorms.id}`} className="transition hover:opacity-80">
                     <HouseChip name={profile.dorms.name} />
                   </Link>
                 ) : (
-                  <span className="text-xs text-slate-500">No house yet</span>
+                  <span className="text-xs text-zinc-500">No house yet</span>
                 )}
-                <span className="text-xs text-slate-500">
+                <span className="text-xs text-zinc-500">
                   Member since {formatDate(profile.created_at)}
                 </span>
               </div>
               {isOwnProfile && (
-                <p className="mt-1 truncate text-xs text-slate-600">{profile.university_email}</p>
+                <p className="mt-1 truncate text-xs text-zinc-600">{profile.university_email}</p>
               )}
             </div>
           </div>
@@ -141,8 +141,8 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                   className={cn(
                     'inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold',
                     streak.type === 'W'
-                      ? 'bg-emerald-500/15 text-emerald-300'
-                      : 'bg-red-500/15 text-red-300'
+                      ? 'bg-win/10 text-win'
+                      : 'bg-loss/10 text-loss'
                   )}
                 >
                   {streak.type === 'W' ? '🔥' : '🧊'} {streak.count} {streak.type === 'W' ? 'win' : 'loss'} streak
@@ -153,7 +153,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
             <div className="mt-4 flex items-end justify-between gap-4">
               <div>
                 <p className="tabular font-display text-4xl font-bold text-white">{rating}</p>
-                <p className="mt-1 text-xs text-slate-500">
+                <p className="mt-1 text-xs text-zinc-500">
                   {played > 0 ? `${played} matches played` : 'Unranked — play a match!'}
                 </p>
               </div>
@@ -165,22 +165,22 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
 
             <div className="mt-5 grid grid-cols-3 gap-3 border-t border-white/[0.06] pt-4 text-center">
               <div>
-                <p className="tabular text-lg font-semibold text-emerald-400">{wins}</p>
-                <p className="text-xs text-slate-500">Wins</p>
+                <p className="tabular text-lg font-semibold text-win">{wins}</p>
+                <p className="text-xs text-zinc-500">Wins</p>
               </div>
               <div>
-                <p className="tabular text-lg font-semibold text-red-400">{losses}</p>
-                <p className="text-xs text-slate-500">Losses</p>
+                <p className="tabular text-lg font-semibold text-loss">{losses}</p>
+                <p className="text-xs text-zinc-500">Losses</p>
               </div>
               <div>
                 <p className="tabular text-lg font-semibold text-white">{winRate}%</p>
-                <p className="text-xs text-slate-500">Win rate</p>
+                <p className="text-xs text-zinc-500">Win rate</p>
               </div>
             </div>
 
             {form.length > 0 && (
               <div className="mt-4 flex items-center justify-between">
-                <span className="text-xs text-slate-500">Recent form</span>
+                <span className="text-xs text-zinc-500">Recent form</span>
                 <WinLossDots form={form} />
               </div>
             )}
@@ -200,7 +200,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
 
       {/* Match history */}
       <section>
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-500">
+        <h2 className="mb-3 eyebrow">
           Match history
         </h2>
         {completedMatches.length === 0 ? (

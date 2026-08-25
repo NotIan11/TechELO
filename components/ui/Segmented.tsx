@@ -25,7 +25,7 @@ export default function Segmented<T extends string>({
   return (
     <div
       className={cn(
-        'inline-flex rounded-xl border border-white/10 bg-white/[0.04] p-1',
+        'inline-flex rounded-xl border border-line bg-ink-700 p-1',
         className
       )}
       role="tablist"
@@ -42,8 +42,8 @@ export default function Segmented<T extends string>({
             className={cn(
               'inline-flex min-h-[38px] items-center gap-2 rounded-lg px-4 text-sm font-medium transition',
               active
-                ? 'bg-white/10 text-white shadow-sm'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'bg-ink-600 text-white'
+                : 'text-zinc-400 hover:text-zinc-200'
             )}
           >
             {option.icon}

@@ -100,13 +100,13 @@ export default function EventPage({ session, currentUserId, isHost, sponsors }: 
           </div>
         </div>
         <h1 className="mt-4 font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">{displayTitle}</h1>
-        <p className="mt-2 text-slate-300">
+        <p className="mt-2 text-zinc-300">
           {when}
           {session.location && <> · {session.location}</>}
-          <span className="text-slate-500"> · Free entry</span>
+          <span className="text-zinc-500"> · Free entry</span>
         </p>
         {session.sponsors.length > 0 && <SponsorRow sponsors={session.sponsors} className="mt-5" />}
-        {session.notes && <p className="mt-5 max-w-2xl whitespace-pre-wrap text-sm text-slate-300">{session.notes}</p>}
+        {session.notes && <p className="mt-5 max-w-2xl whitespace-pre-wrap text-sm text-zinc-300">{session.notes}</p>}
       </div>
 
       {notice && <Banner tone="success">{notice}</Banner>}
@@ -119,12 +119,12 @@ export default function EventPage({ session, currentUserId, isHost, sponsors }: 
             <p className="font-display text-lg font-semibold text-white">
               {session.rsvp_count === 0 ? 'Be the first to RSVP' : `${session.rsvp_count} ${session.rsvp_count === 1 ? 'player is' : 'players are'} in`}
             </p>
-            <p className="mt-0.5 text-sm text-slate-400">RSVPs pre-fill the ledger when the tournament starts.</p>
+            <p className="mt-0.5 text-sm text-zinc-400">RSVPs pre-fill the ledger when the tournament starts.</p>
           </div>
           {currentUserId ? (
             myRsvp ? (
               <div className="flex items-center gap-3">
-                <span className="text-sm text-emerald-300">You’re in ✓</span>
+                <span className="text-sm text-win">You’re in ✓</span>
                 <Button variant="secondary" size="sm" disabled={busy} type="button" onClick={() => post('/api/poker/sessions/rsvp', { session_id: session.id, attending: false })}>
                   Can’t make it
                 </Button>
@@ -144,7 +144,7 @@ export default function EventPage({ session, currentUserId, isHost, sponsors }: 
           <ul className="mt-5 flex flex-wrap gap-2">
             {session.rsvps.map((r) =>
               r.user ? (
-                <li key={r.user.id} className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] py-1 pl-1 pr-3 text-sm text-slate-200">
+                <li key={r.user.id} className="inline-flex items-center gap-2 rounded-full border border-line bg-ink-700 py-1 pl-1 pr-3 text-sm text-zinc-200">
                   <Avatar src={r.user.profile_image_url} name={r.user.display_name} size="xs" />
                   {r.user.display_name}
                 </li>
@@ -160,7 +160,7 @@ export default function EventPage({ session, currentUserId, isHost, sponsors }: 
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="font-medium text-white">Organizer controls</p>
-              <p className="mt-0.5 text-sm text-slate-400">Start it when the cards are in the air — everyone who RSVP’d lands in the ledger.</p>
+              <p className="mt-0.5 text-sm text-zinc-400">Start it when the cards are in the air — everyone who RSVP’d lands in the ledger.</p>
             </div>
             {confirming == null && !editing && (
               <div className="flex flex-wrap gap-2">
@@ -178,8 +178,8 @@ export default function EventPage({ session, currentUserId, isHost, sponsors }: 
           </div>
 
           {confirming === 'open' && (
-            <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.03] p-3">
-              <p className="text-sm text-slate-200">Start the tournament now? {session.rsvp_count} RSVP{session.rsvp_count === 1 ? '' : 's'} will be added to the ledger.</p>
+            <div className="mt-4 rounded-xl border border-line bg-ink-700 p-3">
+              <p className="text-sm text-zinc-200">Start the tournament now? {session.rsvp_count} RSVP{session.rsvp_count === 1 ? '' : 's'} will be added to the ledger.</p>
               <div className="mt-3 flex gap-2">
                 <Button size="sm" variant="success" disabled={busy} type="button" onClick={() => post('/api/poker/sessions/open', { session_id: session.id })}>
                   {busy ? 'Starting…' : 'Confirm'}
@@ -191,8 +191,8 @@ export default function EventPage({ session, currentUserId, isHost, sponsors }: 
             </div>
           )}
           {confirming === 'void' && (
-            <div className="mt-4 rounded-xl border border-red-400/20 bg-red-400/[0.04] p-3">
-              <p className="text-sm text-red-100">Cancel this event? The page stays visible as voided and can’t be reopened.</p>
+            <div className="mt-4 rounded-xl border border-loss/20 bg-loss/5 p-3">
+              <p className="text-sm text-loss">Cancel this event? The page stays visible as voided and can’t be reopened.</p>
               <div className="mt-3 flex gap-2">
                 <Button size="sm" variant="danger" disabled={busy} type="button" onClick={() => post('/api/poker/sessions/void', { session_id: session.id }, 'Event cancelled.')}>
                   {busy ? 'Cancelling…' : 'Confirm'}
@@ -208,7 +208,7 @@ export default function EventPage({ session, currentUserId, isHost, sponsors }: 
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               <div className="sm:col-span-2">
                 <label htmlFor="ev-title" className="label">
-                  Title <span className="font-normal text-slate-500">(blank = term title)</span>
+                  Title <span className="font-normal text-zinc-500">(blank = term title)</span>
                 </label>
                 <input id="ev-title" type="text" className="input" value={title} maxLength={80} onChange={(e) => setTitle(e.target.value)} />
               </div>
@@ -233,9 +233,9 @@ export default function EventPage({ session, currentUserId, isHost, sponsors }: 
               <div className="sm:col-span-2">
                 <p className="label">Sponsors</p>
                 {sponsors.length === 0 ? (
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm text-zinc-500">
                     No sponsors in the library —{' '}
-                    <a href="/poker/sponsors" className="text-orange-300 underline">
+                    <a href="/poker/sponsors" className="text-orange-400 underline">
                       add some
                     </a>
                     .
@@ -252,7 +252,7 @@ export default function EventPage({ session, currentUserId, isHost, sponsors }: 
                           onClick={() => setSponsorIds((ids) => (active ? ids.filter((id) => id !== s.id) : [...ids, s.id]))}
                           className={cn(
                             'inline-flex min-h-[36px] items-center gap-2 rounded-full border px-3 text-sm font-medium transition',
-                            active ? 'border-violet-400/50 bg-violet-400/10 text-violet-200' : 'border-white/10 bg-white/[0.04] text-slate-300 hover:bg-white/[0.08]'
+                            active ? 'border-violet-400/50 bg-violet-400/10 text-violet-200' : 'border-line bg-ink-700 text-zinc-300 hover:bg-white/[0.08]'
                           )}
                         >
                           {s.name}
@@ -275,7 +275,7 @@ export default function EventPage({ session, currentUserId, isHost, sponsors }: 
         </Card>
       )}
 
-      <p className="text-center text-xs text-slate-500">
+      <p className="text-center text-xs text-zinc-500">
         Hosted by {session.host?.display_name ?? 'the poker club'} · Tech Poker
       </p>
     </div>

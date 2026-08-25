@@ -9,17 +9,17 @@ export default function HouseChip({
   className?: string
 }) {
   if (!name) {
-    return <span className={cn('text-sm text-slate-600', className)}>—</span>
+    return <span className={cn('text-sm text-zinc-600', className)}>—</span>
   }
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-0.5 text-xs font-medium text-slate-300',
+        'inline-flex items-center gap-1.5 rounded-full border border-line bg-ink-700 px-2.5 py-0.5 text-xs font-medium text-zinc-300',
         className
       )}
     >
       <span
-        className="h-2 w-2 shrink-0 rounded-full ring-1 ring-white/25"
+        className="h-2 w-2 shrink-0 rounded-full ring-1 ring-line-strong"
         style={{ backgroundColor: getHouseColor(name) }}
       />
       {name}

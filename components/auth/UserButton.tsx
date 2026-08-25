@@ -76,7 +76,7 @@ export default function UserButton() {
       <Link
         href="/profile"
         aria-label="Your profile"
-        className="rounded-full transition hover:ring-2 hover:ring-orange-400/50"
+        className="rounded-full transition hover:ring-2 hover:ring-orange-500/40"
       >
         <Avatar src={profile?.profile_image_url} name={profile?.display_name || 'Me'} size="sm" />
       </Link>
@@ -85,7 +85,7 @@ export default function UserButton() {
         onClick={handleSignOut}
         aria-label="Sign out"
         title="Sign out"
-        className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-slate-400 transition hover:bg-white/[0.06] hover:text-white"
+        className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-zinc-400 transition hover:bg-white/[0.06] hover:text-white"
       >
         <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
           <path

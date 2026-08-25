@@ -102,12 +102,12 @@ export default function PokerLeaderboardClient({
             </option>
           ))}
         </select>
-        {sort === 'roi' && <span className="text-xs text-slate-500">ROI ranking needs 5+ sessions</span>}
+        {sort === 'roi' && <span className="text-xs text-zinc-500">ROI ranking needs 5+ sessions</span>}
       </div>
 
       {rows.length === 0 ? (
         <EmptyState
-          icon={<GameIcon game="poker" className="h-10 w-10 text-slate-500" />}
+          icon={<GameIcon game="poker" className="h-10 w-10 text-zinc-500" />}
           title="Nobody on the board yet"
           description="Players appear once a session has been logged in this period. Be the first to bink."
           action={<Button href="/poker/sessions/new">Start a session</Button>}
@@ -115,9 +115,9 @@ export default function PokerLeaderboardClient({
       ) : (
         <Card padding="none" className="overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-white/[0.06]">
+            <table className="min-w-full divide-y divide-line">
               <thead>
-                <tr className="text-left text-xs font-medium uppercase tracking-wider text-slate-500">
+                <tr className="text-left text-xs font-medium uppercase tracking-wider text-zinc-500">
                   <th className="px-4 py-3 sm:px-5">#</th>
                   <th className="px-4 py-3 sm:px-5">Player</th>
                   <th className="px-4 py-3 text-right sm:px-5">Net</th>
@@ -128,18 +128,18 @@ export default function PokerLeaderboardClient({
                   <th className="hidden px-4 py-3 lg:table-cell lg:px-5">Form</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/[0.04]">
+              <tbody className="divide-y divide-line">
                 {rows.map((r) => {
                   const isMe = r.user_id === currentUserId
                   const net = Number(r.net_cents)
                   return (
-                    <tr key={r.user_id} className={cn('transition hover:bg-white/[0.03]', isMe && 'bg-orange-400/[0.06]')}>
-                      <td className="tabular whitespace-nowrap px-4 py-3.5 text-sm font-semibold text-slate-500 sm:px-5">{r.rank}</td>
+                    <tr key={r.user_id} className={cn('transition hover:bg-ink-700', isMe && 'bg-orange-500/10')}>
+                      <td className="tabular whitespace-nowrap px-4 py-3.5 text-sm font-semibold text-zinc-500 sm:px-5">{r.rank}</td>
                       <td className="whitespace-nowrap px-4 py-3.5 sm:px-5">
                         <Link href={`/profile/${r.user_id}`} className="group inline-flex items-center gap-3">
                           <Avatar src={r.profile_image_url} name={r.display_name} size="sm" />
                           <span>
-                            <span className="block text-sm font-medium text-white group-hover:text-orange-300">
+                            <span className="block text-sm font-medium text-white group-hover:text-orange-400">
                               {r.display_name}
                               {isMe && <span className="ml-2 text-xs text-orange-400">you</span>}
                             </span>
@@ -153,21 +153,21 @@ export default function PokerLeaderboardClient({
                         <div className="flex items-center justify-end gap-3">
                           <span className="hidden h-1.5 w-16 overflow-hidden rounded-full bg-white/[0.06] lg:block" aria-hidden="true">
                             <span
-                              className={cn('block h-full rounded-full', net >= 0 ? 'bg-emerald-400/70' : 'bg-red-400/70')}
+                              className={cn('block h-full rounded-full', net >= 0 ? 'bg-win/70' : 'bg-loss/70')}
                               style={{ width: `${Math.max(6, Math.round((Math.abs(net) / maxAbs) * 100))}%` }}
                             />
                           </span>
                           <MoneyDelta cents={net} chip compact />
                         </div>
                       </td>
-                      <td className="tabular hidden whitespace-nowrap px-4 py-3.5 text-right text-sm text-slate-300 sm:table-cell sm:px-5">
+                      <td className="tabular hidden whitespace-nowrap px-4 py-3.5 text-right text-sm text-zinc-300 sm:table-cell sm:px-5">
                         {formatCents(Number(r.staked_cents), { compact: true })}
                       </td>
-                      <td className="tabular hidden whitespace-nowrap px-4 py-3.5 text-right text-sm text-slate-300 sm:table-cell sm:px-5">
+                      <td className="tabular hidden whitespace-nowrap px-4 py-3.5 text-right text-sm text-zinc-300 sm:table-cell sm:px-5">
                         {formatRoi(r.roi_pct == null ? null : Number(r.roi_pct))}
                       </td>
-                      <td className="tabular whitespace-nowrap px-4 py-3.5 text-right text-sm text-slate-300 sm:px-5">{r.sessions_played}</td>
-                      <td className="tabular hidden whitespace-nowrap px-4 py-3.5 text-right text-sm text-slate-400 md:table-cell md:px-5">
+                      <td className="tabular whitespace-nowrap px-4 py-3.5 text-right text-sm text-zinc-300 sm:px-5">{r.sessions_played}</td>
+                      <td className="tabular hidden whitespace-nowrap px-4 py-3.5 text-right text-sm text-zinc-400 md:table-cell md:px-5">
                         {winPct(r)}%
                       </td>
                       <td className="hidden whitespace-nowrap px-4 py-3.5 lg:table-cell lg:px-5">
@@ -187,7 +187,7 @@ export default function PokerLeaderboardClient({
           <Button variant="secondary" size="sm" disabled={currentPage === 1} onClick={() => updateParams({ page: String(currentPage - 1) })}>
             ← Previous
           </Button>
-          <p className="tabular text-sm text-slate-400">
+          <p className="tabular text-sm text-zinc-400">
             Page {currentPage} of {totalPages}
           </p>
           <Button variant="secondary" size="sm" disabled={currentPage === totalPages} onClick={() => updateParams({ page: String(currentPage + 1) })}>

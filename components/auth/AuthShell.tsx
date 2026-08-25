@@ -16,11 +16,11 @@ export default function AuthShell({ title, subtitle, children }: AuthShellProps)
       </Link>
       <div className="card w-full max-w-md p-8">
         <h1 className="text-center font-display text-2xl font-bold text-white">{title}</h1>
-        {subtitle && <p className="mt-2 text-center text-sm text-slate-400">{subtitle}</p>}
+        {subtitle && <p className="mt-2 text-center text-sm text-zinc-400">{subtitle}</p>}
         <div className="mt-7">{children}</div>
       </div>
-      <p className="mt-6 text-center text-xs text-slate-600">
-        <Link href="/" className="hover:text-slate-400">
+      <p className="mt-6 text-center text-xs text-zinc-600">
+        <Link href="/" className="hover:text-zinc-400">
           ← Back to the leaderboard
         </Link>
       </p>
