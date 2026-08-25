@@ -140,6 +140,13 @@ export async function loadLiveSessionFor(
   return (data as PokerSessionRow | null) ?? null
 }
 
+/** Select used by session lists / cards (host + entry avatars) */
+export const SESSION_LIST_SELECT = `
+  *,
+  host:users!host_id(id, display_name, profile_image_url),
+  entries:poker_entries(user_id, net_cents, cash_out_cents, user:users(id, display_name, profile_image_url))
+`
+
 export async function loadIsOfficer(supabase: SupabaseClient, userId: string): Promise<boolean> {
   const { data } = await supabase.from('users').select('poker_officer').eq('id', userId).maybeSingle()
   return Boolean(data?.poker_officer)
