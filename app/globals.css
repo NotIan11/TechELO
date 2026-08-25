@@ -2,33 +2,46 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #0a0e16;
-  --foreground: #e5eaf3;
-}
-
-body {
-  color: var(--foreground);
-  background-color: var(--background);
-  /* Subtle arena glow at the top of every page */
-  background-image:
-    radial-gradient(60rem 32rem at 50% -12rem, rgba(249, 115, 22, 0.09), transparent 60%),
-    radial-gradient(40rem 24rem at 85% -8rem, rgba(56, 189, 248, 0.06), transparent 60%);
-  background-repeat: no-repeat;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@layer base {
+  body {
+    @apply bg-ink-950 text-zinc-200 antialiased;
+  }
+  /* Brand signature: a 2px orange hairline at the very top of every viewport */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0 0 auto 0;
+    height: 2px;
+    background: theme('colors.orange.500');
+    z-index: 60;
+    pointer-events: none;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-display tracking-tight;
+  }
+  *:focus-visible {
+    outline: 2px solid theme('colors.orange.500');
+    outline-offset: 2px;
+  }
 }
 
 @layer components {
-  /* Shared surface + form styles so every page stays consistent */
   .card {
-    @apply rounded-2xl border border-edge bg-raise shadow-lg shadow-black/20;
+    @apply rounded-2xl border border-line bg-ink-800;
   }
   .input {
-    @apply block w-full min-h-[44px] rounded-xl border border-white/10 bg-white/[0.04] px-3.5 py-2.5 text-base text-white shadow-sm transition placeholder:text-slate-500 focus:border-orange-400/60 focus:outline-none focus:ring-2 focus:ring-orange-400/20;
+    @apply block w-full min-h-[44px] rounded-lg border border-line bg-ink-900 px-3.5 py-2.5 text-base text-white transition placeholder:text-zinc-600 focus:border-orange-500/60 focus:outline-none focus:ring-2 focus:ring-orange-500/30;
   }
   .label {
-    @apply mb-1.5 block text-sm font-medium text-slate-300;
+    @apply mb-1.5 block text-[13px] font-medium text-zinc-300;
+  }
+  .eyebrow {
+    @apply text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-500;
+  }
+  .link {
+    @apply font-medium text-orange-400 underline decoration-orange-400/30 underline-offset-4 transition hover:decoration-orange-400;
   }
 }
 
@@ -41,13 +54,7 @@ body {
   }
 }
 
-/* Focus styles for accessibility */
-*:focus-visible {
-  outline: 2px solid #fb923c;
-  outline-offset: 2px;
-}
-
-/* Slimmer, darker scrollbars to match the theme */
+/* Slim, dark scrollbars */
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
@@ -56,9 +63,9 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.25);
+  background: rgba(255, 255, 255, 0.12);
   border-radius: 8px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.4);
+  background: rgba(255, 255, 255, 0.2);
 }

@@ -4,11 +4,11 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'Tech ELO',
     short_name: 'Tech ELO',
-    description: 'Pool & ping pong rankings for the Houses',
+    description: 'Pool, ping pong and poker for the Houses',
     start_url: '/',
     display: 'standalone',
-    background_color: '#0a0e16',
-    theme_color: '#0a0e16',
+    background_color: '#0b0b0c',
+    theme_color: '#0b0b0c',
     orientation: 'portrait-primary',
     icons: [
       {
