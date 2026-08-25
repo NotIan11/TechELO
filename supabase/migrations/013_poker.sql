@@ -999,7 +999,27 @@ REVOKE EXECUTE ON FUNCTION poker_write_entries(UUID, poker_session_kind, UUID, J
 REVOKE EXECUTE ON FUNCTION poker_derive_duration(poker_sessions, JSONB)                        FROM PUBLIC, anon, authenticated;
 
 -- ------------------------------------------------------------
--- 12. Sponsor logo storage (public read; officers write)
+-- 12. Realtime: live session pages subscribe to these tables
+-- ------------------------------------------------------------
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_publication_tables
+        WHERE pubname = 'supabase_realtime' AND schemaname = 'public' AND tablename = 'poker_sessions'
+    ) THEN
+        ALTER PUBLICATION supabase_realtime ADD TABLE poker_sessions;
+    END IF;
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_publication_tables
+        WHERE pubname = 'supabase_realtime' AND schemaname = 'public' AND tablename = 'poker_entries'
+    ) THEN
+        ALTER PUBLICATION supabase_realtime ADD TABLE poker_entries;
+    END IF;
+END $$;
+
+-- ------------------------------------------------------------
+-- 13. Sponsor logo storage (public read; officers write)
 -- ------------------------------------------------------------
 
 INSERT INTO storage.buckets (id, name, public)
