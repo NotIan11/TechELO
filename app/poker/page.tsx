@@ -1,9 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
 import AppShell from '@/components/layout/AppShell'
 import Button from '@/components/ui/Button'
-import GameIcon from '@/components/ui/GameIcon'
 import MoneyDelta from '@/components/ui/MoneyDelta'
+import PageHeader from '@/components/ui/PageHeader'
+import SectionHeader from '@/components/ui/SectionHeader'
 import StatTile from '@/components/ui/StatTile'
+import TextLink from '@/components/ui/TextLink'
 import FeaturedEventCard, { type FeaturedEvent } from '@/components/poker/FeaturedEventCard'
 import HallOfFame from '@/components/poker/HallOfFame'
 import LiveSessionBanner from '@/components/poker/LiveSessionBanner'
@@ -152,46 +154,29 @@ export default async function PokerHubPage({
 
   return (
     <AppShell promo="tables">
-      {/* Hero */}
-      <section className="pb-8 pt-4 text-center sm:pt-8">
-        <p className="mb-3 inline-flex items-center gap-2 rounded-full border border-violet-400/25 bg-violet-400/10 px-3 py-1 text-xs font-medium text-violet-300">
-          <GameIcon game="poker" className="h-3.5 w-3.5" /> Club ledger
-        </p>
-        <h1 className="font-display text-4xl font-bold tracking-tight text-white sm:text-6xl">
-          Who’s really up at the{' '}
-          <span className="bg-gradient-to-r from-violet-400 to-fuchsia-300 bg-clip-text text-transparent">table?</span>
-        </h1>
-        <p className="mx-auto mt-4 max-w-xl text-balance text-zinc-400">
-          Log cash games and tournaments as they happen, confirm the ledger together, and let the numbers settle who the real shark is.
-        </p>
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-          {user ? (
+      <PageHeader
+        eyebrow="Poker"
+        title="The ledger"
+        subtitle={` · cash games and tournaments, confirmed by everyone at the table`}
+        actions={
+          user ? (
             myLive ? (
-              <Button href={`/poker/sessions/${myLive.id}`} size="lg">
-                Resume live session
-              </Button>
+              <Button href={`/poker/sessions/`}>Resume live session</Button>
             ) : (
               <>
-                <Button href="/poker/sessions/new" size="lg">
-                  Start a game
-                </Button>
-                <Button href="/poker/sessions/new?kind=tournament" variant="secondary" size="lg">
+                <Button href="/poker/sessions/new">Start a game</Button>
+                <Button href="/poker/sessions/new?kind=tournament" variant="secondary">
                   Start a tournament
                 </Button>
               </>
             )
           ) : (
-            <>
-              <Button href="/signup" size="lg">
-                Join Tech ELO
-              </Button>
-              <Button href="/login" variant="secondary" size="lg">
-                Sign in
-              </Button>
-            </>
-          )}
-        </div>
-      </section>
+            <Button href="/login?redirect=/poker/sessions/new" variant="secondary">
+              Sign in to log a session
+            </Button>
+          )
+        }
+      />
 
       <LiveSessionBanner session={myLive} />
 
@@ -213,7 +198,7 @@ export default async function PokerHubPage({
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-            <StatTile label={`Changed hands · ${plabel}`} value={formatCents(clubStaked, { compact: true })} tone="poker" />
+            <StatTile label={`Changed hands · ${plabel}`} value={formatCents(clubStaked, { compact: true })} tone="orange" />
             <StatTile label="Sessions logged" value={clubSessions} />
             <StatTile label="Players" value={clubPlayers} />
             <StatTile label="Biggest night" value={formatCents(biggestNight, { compact: true })} />
@@ -222,7 +207,7 @@ export default async function PokerHubPage({
 
         {/* Leaderboard */}
         <section>
-          <h2 className="mb-3 eyebrow">Leaderboard · {plabel}</h2>
+          <SectionHeader title={`Leaderboard · ${plabel}`} />
           <PokerLeaderboardClient
             rows={rows}
             formByUser={formByUser}
@@ -239,14 +224,9 @@ export default async function PokerHubPage({
 
         {/* Recent sessions */}
         <section>
-          <div className="mb-3 flex items-baseline justify-between">
-            <h2 className="eyebrow">Recent sessions</h2>
-            <Button href="/poker/sessions" variant="ghost" size="sm">
-              See all →
-            </Button>
-          </div>
+          <SectionHeader title="Recent sessions" aside={<TextLink href="/poker/sessions" arrow="right">See all</TextLink>} />
           {recent.length === 0 ? (
-            <p className="text-sm text-zinc-500">Nothing logged yet.</p>
+            <p className="text-sm text-zinc-500">No sessions logged yet.</p>
           ) : (
             <div className="space-y-3">
               {recent.map((s) => (
