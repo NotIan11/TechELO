@@ -12,7 +12,10 @@ import type { PlayerRefWithHouse, PokerSessionKind } from '@/lib/poker/types'
 
 export interface RowState {
   key: string
+  /** The account, or a guest placeholder (`guest: true`) when there is none */
   user: PlayerRefWithHouse
+  /** poker_guests id when this row was seated as a guest (kept after linking so edits stay attached) */
+  guestId: string | null
   buyInCents: number
   cashOutCents: number | null
   rebuys: number

@@ -56,7 +56,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
     const sessionIds = Array.from(new Set(pokerEntries.map((e) => e.session_id)))
     const { data: tableRows } = await supabase.from('poker_counted_entries').select('*').in('session_id', sessionIds).limit(5000)
     tableEntries = (tableRows ?? []) as PokerCountedEntry[]
-    const ids = Array.from(new Set(tableEntries.map((e) => e.user_id)))
+    const ids = Array.from(new Set(tableEntries.map((e) => e.user_id).filter((id): id is string => id != null)))
     const { data: users } = await supabase.from('users').select('id, display_name, profile_image_url').in('id', ids)
     for (const u of users ?? []) pokerPlayers[u.id] = { id: u.id, display_name: u.display_name, profile_image_url: u.profile_image_url }
   }

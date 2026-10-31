@@ -14,7 +14,7 @@ import SessionCard, { type SessionListItem } from '@/components/poker/SessionCar
 import { PAGE_SIZE, SHARK_MIN_SESSIONS } from '@/lib/poker/constants'
 import { formatCents, formatRoi } from '@/lib/poker/money'
 import { isPokerPeriod, periodBounds, periodLabel } from '@/lib/poker/periods'
-import { SESSION_LIST_SELECT, loadLiveSessionFor } from '@/lib/poker/queries'
+import { SESSION_LIST_SELECT, loadLiveSessionFor, loadUnlinkedGuestCount } from '@/lib/poker/queries'
 import { groupAwards, playerSummary, sessionResults } from '@/lib/poker/stats'
 import type { PlayerRef, PokerCountedEntry, PokerKindFilter, PokerLeaderboardRow, PokerSessionRow, PokerSort, PokerSponsorRow } from '@/lib/poker/types'
 
@@ -109,8 +109,9 @@ export default async function PokerHubPage({
     'id' | 'kind' | 'title' | 'stakes' | 'variant' | 'is_official' | 'played_at' | 'total_buy_in_cents' | 'player_count'
   >[]
 
-  // Player lookups for awards + form dots
-  const userIds = Array.from(new Set(entries.map((e) => e.user_id)))
+  // Player lookups for awards + form dots (guest rows have no user)
+  const userIds = Array.from(new Set(entries.map((e) => e.user_id).filter((id): id is string => id != null)))
+  const guestIds = new Set(entries.filter((e) => e.user_id == null && e.guest_id).map((e) => e.guest_id as string))
   const players = new Map<string, PlayerRef>()
   if (userIds.length > 0) {
     const { data: users } = await supabase.from('users').select('id, display_name, profile_image_url').in('id', userIds)
@@ -118,6 +119,7 @@ export default async function PokerHubPage({
   }
   const byUser = new Map<string, PokerCountedEntry[]>()
   for (const e of entries) {
+    if (e.user_id == null) continue
     const list = byUser.get(e.user_id) ?? []
     list.push(e)
     byUser.set(e.user_id, list)
@@ -131,10 +133,12 @@ export default async function PokerHubPage({
   const mySummary = user ? playerSummary(byUser.get(user.id) ?? []) : null
   const clubStaked = periodSessions.reduce((s, x) => s + Number(x.total_buy_in_cents), 0)
   const clubSessions = periodSessions.length
-  const clubPlayers = userIds.length
+  const clubPlayers = userIds.length + guestIds.size
   const biggestNight = periodSessions.reduce((m, x) => Math.max(m, Number(x.total_buy_in_cents)), 0)
 
-  const myLive = user ? await loadLiveSessionFor(supabase, user.id) : null
+  const [myLive, unlinkedGuests] = user
+    ? await Promise.all([loadLiveSessionFor(supabase, user.id), loadUnlinkedGuestCount(supabase, user.id)])
+    : [null, 0]
   const recent = (recentRes.data ?? []) as unknown as SessionListItem[]
   const featuredRaw = (featuredRes.data ?? [])[0] as
     | (PokerSessionRow & { session_sponsors: { position: number; sponsor: PokerSponsorRow | null }[] })
@@ -179,6 +183,15 @@ export default async function PokerHubPage({
       />
 
       <LiveSessionBanner session={myLive} />
+
+      {unlinkedGuests > 0 && (
+        <p className="mb-6 text-[13px] text-zinc-400">
+          {unlinkedGuests === 1 ? 'One guest on your ledgers has' : `${unlinkedGuests} guests on your ledgers have`} no account yet.{' '}
+          <TextLink href="/poker/guests" arrow="right" className="text-[13px]">
+            Link accounts
+          </TextLink>
+        </p>
+      )}
 
       <div className="space-y-10">
         {featured && <FeaturedEventCard event={featured} />}

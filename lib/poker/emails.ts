@@ -22,7 +22,7 @@ interface SessionForEmail {
 }
 
 interface EntryForEmail {
-  user_id: string
+  user_id: string | null
   buy_in_cents: number
   cash_out_cents: number | null
   net_cents: number
@@ -148,5 +148,51 @@ export async function sendDisputeNotification(
     await sendEmail(s.host.university_email, subject, text, html)
   } catch (err) {
     console.error('Poker dispute notification failed:', err)
+  }
+}
+
+/**
+ * After a host links a guest to an account: one summary email telling the
+ * player their past sessions now count and are waiting in their inbox.
+ */
+export async function sendGuestLinkedNotification(
+  supabase: RouteSupabase,
+  guestId: string,
+  userId: string,
+  linkedById: string
+): Promise<void> {
+  try {
+    const [{ data: guest }, { data: user }, { data: linker }, { data: rows }] = await Promise.all([
+      supabase.from('poker_guests').select('name').eq('id', guestId).maybeSingle(),
+      supabase.from('users').select('university_email, first_name, display_name').eq('id', userId).maybeSingle(),
+      supabase.from('users').select('display_name').eq('id', linkedById).maybeSingle(),
+      supabase
+        .from('poker_entries')
+        .select('id, session:poker_sessions!inner(status)')
+        .eq('guest_id', guestId)
+        .in('session.status', ['final', 'disputed']),
+    ])
+    if (!guest || !user?.university_email) return
+    const n = (rows ?? []).length
+    if (n === 0) return
+    const hostName = linker?.display_name || 'A host'
+    const base = appBaseUrl()
+    const inboxUrl = base ? `${base}/inbox` : '#'
+    const profileUrl = base ? `${base}/profile/${userId}` : '#'
+    const sessionsWord = `${n} poker session${n === 1 ? '' : 's'}`
+    const subject = `${hostName} linked ${sessionsWord} to your account`
+    const text = `${hostName} had you on the ledger as "${guest.name}" before you signed up. ${sessionsWord} now count toward your record. Confirm or dispute each one at ${inboxUrl}.`
+    const html = renderEmail({
+      greetingName: user.first_name || user.display_name?.split(' ')[0] || 'there',
+      paragraphs: [
+        `${escapeHtml(hostName)} had you on the ledger as <strong>${escapeHtml(guest.name)}</strong> before you signed up.`,
+        `${escapeHtml(sessionsWord)} now count toward your poker record. Each one is waiting in your inbox so you can confirm the numbers or dispute them.`,
+        `<a href="${escapeHtml(profileUrl)}" style="color: #2563eb;">See your poker stats</a>`,
+      ],
+      cta: { label: 'Review them in your inbox', url: inboxUrl },
+    })
+    await sendEmail(user.university_email, subject, text, html)
+  } catch (err) {
+    console.error('Poker guest-link notification failed:', err)
   }
 }

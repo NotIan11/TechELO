@@ -13,6 +13,8 @@ export interface PlayerRef {
   id: string
   display_name: string
   profile_image_url: string | null
+  /** Host-created placeholder for someone without an account; `id` is then a poker_guests id */
+  guest?: boolean
 }
 
 export interface PlayerRefWithHouse extends PlayerRef {
@@ -40,6 +42,8 @@ export interface PokerSessionRow {
   status: PokerSessionStatus
   version: number
   player_count: number
+  /** Rows with no account behind them (unlinked guests); they cannot confirm */
+  guest_count: number
   ack_count: number
   dispute_count: number
   total_buy_in_cents: number
@@ -52,11 +56,12 @@ export interface PokerSessionRow {
   voided_at: string | null
 }
 
-/** `poker_entries` row */
+/** `poker_entries` row. Exactly one of user_id / guest_id may be null; both are set once a guest is linked. */
 export interface PokerEntryRow {
   id: string
   session_id: string
-  user_id: string
+  user_id: string | null
+  guest_id: string | null
   buy_in_cents: number
   /** null while a live cash session hasn't recorded the cash-out yet */
   cash_out_cents: number | null
@@ -79,6 +84,26 @@ export interface PokerSponsorRow {
   created_at: string
 }
 
+/** `poker_guests` row */
+export interface PokerGuestRow {
+  id: string
+  name: string
+  created_by: string | null
+  linked_user_id: string | null
+  linked_at: string | null
+  created_at: string
+}
+
+/** A guest as the picker and ledger see it */
+export interface GuestRef {
+  id: string
+  name: string
+  created_by: string | null
+  /** Display name of the host who added the guest */
+  added_by: string | null
+  linked_user_id: string | null
+}
+
 /** `poker_rsvps` row */
 export interface PokerRsvpRow {
   session_id: string
@@ -90,7 +115,8 @@ export interface PokerRsvpRow {
 export interface PokerCountedEntry {
   id: string
   session_id: string
-  user_id: string
+  user_id: string | null
+  guest_id: string | null
   buy_in_cents: number
   cash_out_cents: number | null
   rebuy_count: number
@@ -137,7 +163,9 @@ export interface PokerLeaderboardRow {
 }
 
 export interface PokerEntryInput {
-  user_id: string
+  /** At least one of user_id / guest_id. A linked guest resolves to its user server-side. */
+  user_id: string | null
+  guest_id: string | null
   buy_in_cents: number
   cash_out_cents: number | null
   rebuy_count: number

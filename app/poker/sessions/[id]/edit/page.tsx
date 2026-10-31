@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound, redirect } from 'next/navigation'
 import AppShell from '@/components/layout/AppShell'
 import LiveLedgerEditor from '@/components/poker/LiveLedgerEditor'
-import { loadPickerPlayers, loadRecentTablemates, loadSessionFull } from '@/lib/poker/queries'
+import { loadPickerGuests, loadPickerPlayers, loadRecentTablemates, loadSessionFull } from '@/lib/poker/queries'
 
 export default async function EditPokerSessionPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -18,11 +18,15 @@ export default async function EditPokerSessionPage({ params }: { params: Promise
     redirect(`/poker/sessions/${id}`)
   }
 
-  const [players, recent] = await Promise.all([loadPickerPlayers(supabase), loadRecentTablemates(supabase, user.id)])
+  const [players, guests, recent] = await Promise.all([
+    loadPickerPlayers(supabase),
+    loadPickerGuests(supabase),
+    loadRecentTablemates(supabase, user.id),
+  ])
 
   return (
     <AppShell promo="tables" width="4xl">
-      <LiveLedgerEditor session={session} currentUserId={user.id} players={players} recent={recent} mode="edit" />
+      <LiveLedgerEditor session={session} currentUserId={user.id} players={players} guests={guests} recent={recent} mode="edit" />
     </AppShell>
   )
 }

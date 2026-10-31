@@ -5,7 +5,7 @@ import EventPage from '@/components/poker/EventPage'
 import LiveLedgerEditor from '@/components/poker/LiveLedgerEditor'
 import LiveSessionView from '@/components/poker/LiveSessionView'
 import SessionDetails from '@/components/poker/SessionDetails'
-import { loadIsOfficer, loadPickerPlayers, loadRecentTablemates, loadSessionFull, loadSponsors } from '@/lib/poker/queries'
+import { loadIsOfficer, loadPickerGuests, loadPickerPlayers, loadRecentTablemates, loadSessionFull, loadSponsors } from '@/lib/poker/queries'
 
 export default async function PokerSessionPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -17,13 +17,14 @@ export default async function PokerSessionPage({ params }: { params: Promise<{ i
   const isHost = !!user && session.host_id === user.id
 
   if (session.status === 'live' && isHost) {
-    const [players, recent] = await Promise.all([
+    const [players, guests, recent] = await Promise.all([
       loadPickerPlayers(supabase),
+      loadPickerGuests(supabase),
       loadRecentTablemates(supabase, user!.id),
     ])
     return (
       <AppShell promo="tables" width="4xl">
-        <LiveLedgerEditor session={session} currentUserId={user!.id} players={players} recent={recent} mode="live" />
+        <LiveLedgerEditor session={session} currentUserId={user!.id} players={players} guests={guests} recent={recent} mode="live" />
       </AppShell>
     )
   }

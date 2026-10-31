@@ -10,6 +10,7 @@ export const MAX_LOCATION_LENGTH = 80
 export const MAX_NOTES_LENGTH = 1000
 export const MAX_STAKES_LENGTH = 30
 export const MAX_VARIANT_LENGTH = 30
+export const MAX_GUEST_NAME_LENGTH = 40
 /** Sessions may be stamped up to this far in the future (clock skew) */
 export const FUTURE_SLACK_MS = 60 * 60 * 1000
 export const MIN_PLAYED_AT = '2015-01-01T00:00:00.000Z'

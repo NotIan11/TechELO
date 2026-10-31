@@ -14,9 +14,10 @@ interface PlayerNameProps {
   className?: string
 }
 
-/** Avatar + name (+ "you" marker), linking to the player's profile */
+/** Avatar + name (+ "you" / "guest" marker). Links to the profile when the player has an account. */
 export default function PlayerName({ player, isMe, size = 'sm', href = true, showHouse, className }: PlayerNameProps) {
   const name = player?.display_name ?? 'Unknown'
+  const isGuest = !!player?.guest
   const inner = (
     <>
       <Avatar src={player?.profile_image_url} name={name} size={size} />
@@ -24,6 +25,11 @@ export default function PlayerName({ player, isMe, size = 'sm', href = true, sho
         <span className="flex items-center gap-1.5">
           <span className="truncate text-sm font-medium text-white">{name}</span>
           {isMe && <span className="shrink-0 text-xs text-orange-400">you</span>}
+          {isGuest && (
+            <span className="shrink-0 text-xs text-zinc-500" title="No account yet">
+              guest
+            </span>
+          )}
         </span>
         {showHouse && player?.dorm_name && (
           <span className="mt-0.5 block">
@@ -34,7 +40,7 @@ export default function PlayerName({ player, isMe, size = 'sm', href = true, sho
     </>
   )
   const classes = cn('inline-flex min-w-0 items-center gap-2.5', className)
-  if (href && player) {
+  if (href && player && !isGuest) {
     return (
       <Link href={`/profile/${player.id}`} className={cn(classes, 'group/name hover:opacity-90')}>
         {inner}

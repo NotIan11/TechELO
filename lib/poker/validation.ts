@@ -2,6 +2,7 @@ import {
   FUTURE_SLACK_MS,
   MAX_DURATION_MINUTES,
   MAX_ENTRY_AMOUNT_CENTS,
+  MAX_GUEST_NAME_LENGTH,
   MAX_LOCATION_LENGTH,
   MAX_NOTES_LENGTH,
   MAX_PLAYERS,
@@ -118,12 +119,20 @@ export function validateStartPayload(body: unknown): Ok<StartSessionPayload> | F
   }
 }
 
+function optionalUuid(v: unknown): string | null | Fail {
+  if (v == null || v === '') return null
+  if (typeof v !== 'string' || !UUID_RE.test(v)) return { ok: false, error: 'Invalid id.' }
+  return v
+}
+
 function validateEntry(raw: unknown, index: number, kind: PokerSessionKind): PokerEntryInput | Fail {
   if (!isRecord(raw)) return { ok: false, error: `Row ${index + 1} is malformed.` }
   const label = `Row ${index + 1}`
-  if (typeof raw.user_id !== 'string' || !UUID_RE.test(raw.user_id)) {
-    return { ok: false, error: `${label} needs a player.` }
-  }
+  const userId = optionalUuid(raw.user_id)
+  if (isFail(userId)) return { ok: false, error: `${label} has an invalid player.` }
+  const guestId = optionalUuid(raw.guest_id)
+  if (isFail(guestId)) return { ok: false, error: `${label} has an invalid guest.` }
+  if (userId == null && guestId == null) return { ok: false, error: `${label} needs a player.` }
   const buyIn = optionalCents(raw.buy_in_cents, `${label} buy-in`)
   if (isFail(buyIn)) return buyIn
   const cashOut = optionalCents(raw.cash_out_cents, `${label} cash-out`)
@@ -147,7 +156,8 @@ function validateEntry(raw: unknown, index: number, kind: PokerSessionKind): Pok
     place = raw.finish_place
   }
   return {
-    user_id: raw.user_id,
+    user_id: userId,
+    guest_id: guestId,
     buy_in_cents: buyIn ?? 0,
     cash_out_cents: cashOut,
     rebuy_count: rebuys,
@@ -214,12 +224,19 @@ export function validateSavePayload(
     return { ok: false, error: `A session can have at most ${MAX_PLAYERS} players.` }
   }
   const entries: PokerEntryInput[] = []
-  const seen = new Set<string>()
+  const seenUsers = new Set<string>()
+  const seenGuests = new Set<string>()
   for (let i = 0; i < body.entries.length; i++) {
     const e = validateEntry(body.entries[i], i, kind)
     if (isFail(e)) return e
-    if (seen.has(e.user_id)) return { ok: false, error: 'Each player can only appear once per session.' }
-    seen.add(e.user_id)
+    if (e.user_id != null) {
+      if (seenUsers.has(e.user_id)) return { ok: false, error: 'Each player can only appear once per session.' }
+      seenUsers.add(e.user_id)
+    }
+    if (e.guest_id != null) {
+      if (seenGuests.has(e.guest_id)) return { ok: false, error: 'Each guest can only appear once per session.' }
+      seenGuests.add(e.guest_id)
+    }
     entries.push(e)
   }
 
@@ -284,4 +301,14 @@ export function validateDisputeReason(v: unknown): Ok<string> | Fail {
 
 export function isUuid(v: unknown): v is string {
   return typeof v === 'string' && UUID_RE.test(v)
+}
+
+export function validateGuestName(v: unknown): Ok<string> | Fail {
+  if (typeof v !== 'string') return { ok: false, error: 'Guest name is required.' }
+  const t = v.trim().replace(/\s+/g, ' ')
+  if (t.length === 0) return { ok: false, error: 'Guest name is required.' }
+  if (t.length > MAX_GUEST_NAME_LENGTH) {
+    return { ok: false, error: `Guest name must be ${MAX_GUEST_NAME_LENGTH} characters or fewer.` }
+  }
+  return { ok: true, payload: t }
 }

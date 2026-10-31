@@ -18,6 +18,14 @@ interface LedgerTableProps {
 }
 
 function AckIcon({ entry }: { entry: SessionEntryWithUser }) {
+  if (entry.user_id == null) {
+    return (
+      <span
+        className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-dashed border-line-strong"
+        title="Guest · no account to confirm with yet"
+      />
+    )
+  }
   if (entry.disputed_at) {
     return (
       <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-loss/20 text-loss" title={`Disputed: ${entry.dispute_reason ?? ''}`}>

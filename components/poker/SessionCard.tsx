@@ -8,12 +8,24 @@ import PokerStatusBadge from '@/components/ui/PokerStatusBadge'
 import TimeAgo from '@/components/ui/TimeAgo'
 import { formatCents } from '@/lib/poker/money'
 import { formatPokerDateTime } from '@/lib/poker/periods'
-import { binkOfTheNight, sessionTitle } from '@/lib/poker/stats'
+import { binkOfTheNight, confirmableCount, sessionTitle } from '@/lib/poker/stats'
 import type { PlayerRef, PokerSessionRow } from '@/lib/poker/types'
 
 export interface SessionListItem extends PokerSessionRow {
   host: PlayerRef | null
-  entries: { user_id: string; net_cents: number; cash_out_cents: number | null; user: PlayerRef | null }[]
+  entries: {
+    id: string
+    user_id: string | null
+    guest_id: string | null
+    net_cents: number
+    cash_out_cents: number | null
+    user: PlayerRef | null
+    guest: { id: string; name: string } | null
+  }[]
+}
+
+function nameOf(e: SessionListItem['entries'][number]): string {
+  return e.user?.display_name ?? e.guest?.name ?? '?'
 }
 
 /** One row in a session list */
@@ -33,7 +45,7 @@ export default function SessionCard({ session, viewerId }: { session: SessionLis
       badges={
         <>
           <Badge tone="orange">{isTourney ? (session.is_official ? 'Official' : 'Tournament') : 'Cash'}</Badge>
-          <PokerStatusBadge status={session.status} acked={session.ack_count} total={session.player_count} />
+          <PokerStatusBadge status={session.status} acked={session.ack_count} total={confirmableCount(session)} />
         </>
       }
       meta={
@@ -43,9 +55,9 @@ export default function SessionCard({ session, viewerId }: { session: SessionLis
             · {session.player_count} player{session.player_count === 1 ? '' : 's'}
           </span>
           {session.total_buy_in_cents > 0 && <span>· {formatCents(session.total_buy_in_cents, { compact: true })} in play</span>}
-          {bink?.user && (
+          {bink && (
             <span className="hidden sm:inline">
-              · <span className="text-win">{bink.user.display_name}</span> +{formatCents(bink.net_cents, { compact: true })}
+              · <span className="text-win">{nameOf(bink)}</span> +{formatCents(bink.net_cents, { compact: true })}
             </span>
           )}
           {session.status === 'scheduled' && (
@@ -60,7 +72,7 @@ export default function SessionCard({ session, viewerId }: { session: SessionLis
           {mine && counts && <MoneyDelta cents={mine.net_cents} chip compact />}
           <span className="hidden items-center -space-x-1.5 sm:flex">
             {avatars.map((e) => (
-              <Avatar key={e.user_id} src={e.user?.profile_image_url} name={e.user?.display_name ?? '?'} size="xs" className="ring-2 ring-ink-800" />
+              <Avatar key={e.id} src={e.user?.profile_image_url} name={nameOf(e)} size="xs" className="ring-2 ring-ink-800" />
             ))}
             {session.entries.length > 5 && (
               <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-ink-600 text-[10px] font-semibold text-zinc-300 ring-2 ring-ink-800">

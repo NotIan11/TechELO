@@ -59,6 +59,7 @@ export default function SessionDetails({ session, currentUserId }: SessionDetail
   const totals = computeTotals(session.entries, isTourney ? session.prize_pool_cents : null)
   const bink = session.status !== 'voided' ? binkOfTheNight(session.entries) : null
   const disputes = session.entries.filter((e) => e.disputed_at != null)
+  const unlinkedGuests = session.entries.filter((e) => e.user_id == null).length
   const title = sessionTitle(session)
 
   const callApi = async (endpoint: string, body: Record<string, unknown>, successText: string) => {
@@ -199,7 +200,9 @@ export default function SessionDetails({ session, currentUserId }: SessionDetail
                 <span
                   key={e.id}
                   className={cn('inline-flex rounded-full ring-2 ring-ink-800', e.disputed_at ? 'ring-loss' : e.acknowledged_at ? '' : 'opacity-40')}
-                  title={`${e.user?.display_name ?? '?'} · ${e.disputed_at ? 'disputed' : e.acknowledged_at ? 'confirmed' : 'not yet'}`}
+                  title={`${e.user?.display_name ?? '?'} · ${
+                    e.user_id == null ? 'guest, no account yet' : e.disputed_at ? 'disputed' : e.acknowledged_at ? 'confirmed' : 'not yet'
+                  }`}
                 >
                   <Avatar src={e.user?.profile_image_url} name={e.user?.display_name ?? '?'} size="xs" />
                 </span>
@@ -213,6 +216,12 @@ export default function SessionDetails({ session, currentUserId }: SessionDetail
                   {acks.acked} of {acks.total} confirmed
                   {acks.disputed > 0 && <span className="text-loss"> · {acks.disputed} disputed</span>}
                 </>
+              )}
+              {acks.guests > 0 && (
+                <span className="text-zinc-500">
+                  {' '}
+                  · {acks.guests} guest{acks.guests === 1 ? '' : 's'} without an account
+                </span>
               )}
             </p>
           </div>
@@ -312,6 +321,14 @@ export default function SessionDetails({ session, currentUserId }: SessionDetail
         <Card>
           <p className="font-medium text-white">You logged this session.</p>
           <p className="mt-1 text-sm text-zinc-400">Editing resets everyone’s confirmations. Voiding removes it from every stat.</p>
+          {unlinkedGuests > 0 && (
+            <p className="mt-2 text-sm text-zinc-400">
+              {unlinkedGuests === 1 ? 'One guest on this ledger has' : `${unlinkedGuests} guests on this ledger have`} no account yet.{' '}
+              <TextLink href="/poker/guests" arrow="right" className="text-sm">
+                Link accounts
+              </TextLink>
+            </p>
+          )}
           {confirming === 'void' ? (
             <ConfirmStrip
               text="Void this session? It will be excluded from every stat. This cannot be undone."

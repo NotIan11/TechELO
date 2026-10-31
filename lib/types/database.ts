@@ -1,6 +1,7 @@
 import type {
   PokerCountedEntry,
   PokerEntryRow,
+  PokerGuestRow,
   PokerRsvpRow,
   PokerSessionRow,
   PokerSponsorRow,
@@ -77,6 +78,11 @@ export interface Database {
         Row: PokerRsvpRow
         Insert: Partial<PokerRsvpRow>
         Update: Partial<PokerRsvpRow>
+      }
+      poker_guests: {
+        Row: PokerGuestRow
+        Insert: Partial<PokerGuestRow>
+        Update: Partial<PokerGuestRow>
       }
       dorms: {
         Row: {

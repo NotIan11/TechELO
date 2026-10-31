@@ -43,6 +43,14 @@ const MESSAGES: [string, string][] = [
   ['INVALID_SPONSOR', 'One of the selected sponsors does not exist.'],
   ['SPONSOR_IN_USE', 'That sponsor is attached to a tournament and cannot be deleted.'],
   ['INVALID_SORT', 'Unknown sort.'],
+  ['GUEST_NOT_FOUND', 'Guest not found.'],
+  ['NOT_GUEST_OWNER', 'Only the host who added this guest (or a poker officer) can manage them.'],
+  ['GUEST_ALREADY_LINKED', 'This guest is already linked to an account.'],
+  ['GUEST_NOT_LINKED', 'This guest is not linked to an account.'],
+  ['GUEST_LINK_CONFLICT', 'That player already has their own row in a session this guest is in. Edit that session first, then link.'],
+  ['GUEST_IN_USE', 'This guest is on a ledger and cannot be removed. Link them to an account instead.'],
+  ['UNKNOWN_GUEST', 'One of the guests no longer exists.'],
+  ['INVALID_GUEST_NAME', 'Guest name must be between 1 and 40 characters.'],
 ]
 
 export function pokerRpcErrorMessage(err: RpcErrorLike): string {
@@ -61,13 +69,24 @@ export function pokerRpcErrorStatus(err: RpcErrorLike): number {
   const msg = messageOf(err)
   if (msg.includes('NOT_AUTHENTICATED')) return 401
   if (msg.includes('_NOT_FOUND')) return 404
-  if (msg.includes('NOT_HOST') || msg.includes('NOT_YOUR_ENTRY') || msg.includes('NOT_OFFICER')) return 403
+  if (
+    msg.includes('NOT_HOST') ||
+    msg.includes('NOT_YOUR_ENTRY') ||
+    msg.includes('NOT_OFFICER') ||
+    msg.includes('NOT_GUEST_OWNER')
+  ) {
+    return 403
+  }
   if (
     msg.includes('WRONG_STATUS') ||
     msg.includes('STALE_VERSION') ||
     msg.includes('DUPLICATE_PLAYER') ||
     msg.includes('LIVE_SESSION_EXISTS') ||
-    msg.includes('SPONSOR_IN_USE')
+    msg.includes('SPONSOR_IN_USE') ||
+    msg.includes('GUEST_IN_USE') ||
+    msg.includes('GUEST_ALREADY_LINKED') ||
+    msg.includes('GUEST_NOT_LINKED') ||
+    msg.includes('GUEST_LINK_CONFLICT')
   ) {
     return 409
   }

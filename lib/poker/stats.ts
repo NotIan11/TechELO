@@ -218,20 +218,33 @@ export function binkOfTheNight<T extends { net_cents: number }>(entries: T[]): T
 
 export interface AckSummary {
   acked: number
+  /** Rows that have an account behind them and can confirm */
   total: number
   disputed: number
+  /** Rows for guests with no account yet; they can neither confirm nor dispute */
+  guests: number
   verified: boolean
 }
 
-export function ackSummary(entries: Pick<PokerEntryRow, 'acknowledged_at' | 'disputed_at'>[]): AckSummary {
-  const total = entries.length
-  const acked = entries.filter((e) => e.acknowledged_at != null).length
-  const disputed = entries.filter((e) => e.disputed_at != null).length
-  return { acked, total, disputed, verified: total > 0 && acked === total }
+export function ackSummary(entries: Pick<PokerEntryRow, 'acknowledged_at' | 'disputed_at' | 'user_id'>[]): AckSummary {
+  const confirmable = entries.filter((e) => e.user_id != null)
+  const total = confirmable.length
+  const guests = entries.length - total
+  const acked = confirmable.filter((e) => e.acknowledged_at != null).length
+  const disputed = confirmable.filter((e) => e.disputed_at != null).length
+  return { acked, total, disputed, guests, verified: total > 0 && acked === total }
 }
 
-export function isVerified(s: Pick<PokerSessionRow, 'status' | 'player_count' | 'ack_count'>): boolean {
-  return s.status === 'final' && s.player_count > 0 && s.ack_count === s.player_count
+/** Players who can confirm the ledger (guests without an account cannot) */
+export function confirmableCount(s: Pick<PokerSessionRow, 'player_count'> & { guest_count?: number | null }): number {
+  return Math.max(0, s.player_count - (s.guest_count ?? 0))
+}
+
+export function isVerified(
+  s: Pick<PokerSessionRow, 'status' | 'player_count' | 'ack_count'> & { guest_count?: number | null }
+): boolean {
+  const total = confirmableCount(s)
+  return s.status === 'final' && total > 0 && s.ack_count === total
 }
 
 export interface SessionTotals {
@@ -290,8 +303,10 @@ export interface AwardInput {
 }
 
 export function groupAwards({ entries, sessions, players, sharkMinSessions = SHARK_MIN_SESSIONS }: AwardInput): Award[] {
+  // Guests without an account are not eligible for awards (their rows still count toward session totals)
   const byUser = new Map<string, PokerCountedEntry[]>()
   for (const e of entries) {
+    if (e.user_id == null) continue
     const list = byUser.get(e.user_id)
     if (list) list.push(e)
     else byUser.set(e.user_id, [e])
@@ -308,6 +323,7 @@ export function groupAwards({ entries, sessions, players, sharkMinSessions = SHA
   }
   const bubbles = new Map<string, number>()
   for (const e of entries) {
+    if (e.user_id == null) continue
     const paid = paidBySession.get(e.session_id) ?? 0
     if (e.kind === 'tournament' && paid > 0 && e.finish_place === paid + 1 && (e.cash_out_cents ?? 0) === 0) {
       bubbles.set(e.user_id, (bubbles.get(e.user_id) ?? 0) + 1)
@@ -459,7 +475,7 @@ export function tablemates(
 
   const acc = new Map<string, { shared: number; myNet: number; theirNet: number }>()
   for (const e of entries) {
-    if (e.user_id === userId) continue
+    if (e.user_id == null || e.user_id === userId) continue
     const myNet = mine.get(e.session_id)
     if (myNet == null) continue
     const cur = acc.get(e.user_id) ?? { shared: 0, myNet: 0, theirNet: 0 }

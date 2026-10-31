@@ -21,16 +21,19 @@ import LedgerFooter from './LedgerFooter'
 import LedgerRowEditor, { type RowState } from './LedgerRowEditor'
 import PlayerPicker from './PlayerPicker'
 import { DURATION_PRESETS_MINUTES, STAKES_PRESETS, VARIANT_OPTIONS } from '@/lib/poker/constants'
+import { guestAsPlayer } from '@/lib/poker/guests'
 import { formatCents, formatDuration } from '@/lib/poker/money'
 import { fromDateTimeLocalValue, toDateTimeLocalValue } from '@/lib/poker/periods'
-import { computeTotals, sessionTitle } from '@/lib/poker/stats'
+import { computeTotals, confirmableCount, sessionTitle } from '@/lib/poker/stats'
 import type { SessionFull } from '@/lib/poker/queries'
-import type { PlayerRefWithHouse, PokerSessionKind } from '@/lib/poker/types'
+import type { GuestRef, PlayerRefWithHouse, PokerGuestRow, PokerSessionKind } from '@/lib/poker/types'
 
 interface LiveLedgerEditorProps {
   session: SessionFull
   currentUserId: string
   players: PlayerRefWithHouse[]
+  /** Guests without an account yet, offered by the picker */
+  guests: GuestRef[]
   recent: PlayerRefWithHouse[]
   /** live = autosave + "End & log"; edit = explicit save of a finalized session */
   mode: 'live' | 'edit'
@@ -57,6 +60,7 @@ function rowsFromSession(session: SessionFull): RowState[] {
     .map((e) => ({
       key: e.id,
       user: e.user!,
+      guestId: e.guest_id,
       buyInCents: e.buy_in_cents,
       cashOutCents: e.cash_out_cents,
       rebuys: e.rebuy_count,
@@ -94,7 +98,9 @@ function buildPayload(sessionId: string, version: number, kind: PokerSessionKind
     played_at: fromDateTimeLocalValue(s.playedAt),
     duration_minutes: s.durationMinutes,
     entries: s.rows.map((r) => ({
-      user_id: r.user.id,
+      // A guest row sends its guest id; the server resolves a linked guest to the account.
+      user_id: r.user.guest ? null : r.user.id,
+      guest_id: r.user.guest ? r.user.id : r.guestId,
       buy_in_cents: r.buyInCents,
       cash_out_cents: kind === 'tournament' ? (r.cashOutCents ?? 0) : r.cashOutCents,
       rebuy_count: r.rebuys,
@@ -153,10 +159,11 @@ function ledgerProblems(kind: PokerSessionKind, s: EditorState): { hard: string[
   return { hard, soft }
 }
 
-export default function LiveLedgerEditor({ session, currentUserId, players, recent, mode }: LiveLedgerEditorProps) {
+export default function LiveLedgerEditor({ session, currentUserId, players, guests, recent, mode }: LiveLedgerEditorProps) {
   const router = useRouter()
   const kind = session.kind
   const [state, setState] = useState<EditorState>(() => stateFromSession(session))
+  const [guestList, setGuestList] = useState<GuestRef[]>(guests)
   const [version, setVersion] = useState(session.version)
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
   const [error, setError] = useState('')
@@ -176,6 +183,7 @@ export default function LiveLedgerEditor({ session, currentUserId, players, rece
   versionRef.current = version
 
   const selectedIds = useMemo(() => new Set(state.rows.map((r) => r.user.id)), [state.rows])
+  const guestRows = useMemo(() => state.rows.filter((r) => r.user.guest).length, [state.rows])
   const totals = useMemo(
     () =>
       computeTotals(
@@ -299,6 +307,7 @@ export default function LiveLedgerEditor({ session, currentUserId, players, rece
         {
           key: `new:${p.id}`,
           user: p,
+          guestId: p.guest ? p.id : null,
           buyInCents: prev.standardBuyIn ?? 0,
           cashOutCents: kind === 'tournament' ? 0 : null,
           rebuys: 0,
@@ -307,6 +316,28 @@ export default function LiveLedgerEditor({ session, currentUserId, players, rece
         },
       ],
     }))
+  }
+
+  /** Create a guest row on the server, then seat them like any other player */
+  const addGuest = async (name: string): Promise<boolean> => {
+    setError('')
+    try {
+      const res = await fetch('/api/poker/guests/upsert', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.error || 'Could not add guest')
+      const g = data.guest as PokerGuestRow
+      const ref: GuestRef = { id: g.id, name: g.name, created_by: g.created_by, added_by: null, linked_user_id: null }
+      setGuestList((prev) => (prev.some((x) => x.id === ref.id) ? prev : [...prev, ref]))
+      addPlayer(guestAsPlayer(ref))
+      return true
+    } catch (err: any) {
+      setError(err?.message || 'Could not add guest')
+      return false
+    }
   }
 
   const patchRow = (key: string, patch: Partial<RowState>) =>
@@ -436,7 +467,7 @@ export default function LiveLedgerEditor({ session, currentUserId, players, rece
         }
         actions={
           <>
-            <PokerStatusBadge status={mode === 'live' ? 'live' : session.status} acked={session.ack_count} total={session.player_count} />
+            <PokerStatusBadge status={mode === 'live' ? 'live' : session.status} acked={session.ack_count} total={confirmableCount(session)} />
             {mode === 'live' && confirming !== 'void' && (
               <Button size="sm" variant="ghost" onClick={() => setConfirming('void')} disabled={busy} type="button">
                 Void
@@ -570,7 +601,7 @@ export default function LiveLedgerEditor({ session, currentUserId, players, rece
 
       <div>
         <SectionHeader title="Players" />
-        <PlayerPicker players={players} recent={recent} selectedIds={selectedIds} onAdd={addPlayer} disabled={busy} />
+        <PlayerPicker players={players} guests={guestList} recent={recent} selectedIds={selectedIds} onAdd={addPlayer} onAddGuest={addGuest} disabled={busy} />
       </div>
 
       <div>
@@ -648,6 +679,16 @@ export default function LiveLedgerEditor({ session, currentUserId, players, rece
             <>
               Log this session with <strong>{state.rows.length}</strong> players, {formatCents(totals.buyIn, { compact: true })} in and {formatCents(totals.cashOut, { compact: true })} out?
               Everyone will be asked to confirm their line.
+              {guestRows > 0 && (
+                <>
+                  {' '}
+                  {guestRows === 1 ? 'One guest has' : `${guestRows} guests have`} no account yet; their line counts now and they can confirm once you{' '}
+                  <TextLink href="/poker/guests" className="text-sm">
+                    link their account
+                  </TextLink>
+                  .
+                </>
+              )}
             </>
           ) : (
             <>Save these changes? All confirmations will be reset and players re-notified.</>
