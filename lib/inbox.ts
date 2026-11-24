@@ -1,9 +1,10 @@
 /**
- * Inbox derivation shared by /inbox and /api/inbox/count. Nothing is stored:
+ * Inbox derivation shared by the home queue and /api/inbox/count. Nothing is stored:
  * "pending items" are computed from match and poker rows each time.
  */
 
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { countWord } from '@/lib/stats'
 import { isChallengeExpired } from '@/lib/utils'
 import type { PokerSessionKind, PokerSessionStatus } from '@/lib/poker/types'
 
@@ -20,6 +21,8 @@ export interface InboxMatch {
   player1_id: string
   player2_id: string
   winner_id: string | null
+  player1_elo_before: number | null
+  player2_elo_before: number | null
   player1_start_accepted: boolean
   player2_start_accepted: boolean
   player1_result_accepted: boolean
@@ -178,4 +181,12 @@ export async function getInboxItems(supabase: SupabaseClient, userId: string): P
 
 export async function getInboxCount(supabase: SupabaseClient, userId: string): Promise<number> {
   return (await getInboxItems(supabase, userId)).length
+}
+
+/** The home headline: the size of the queue, said in words */
+export function waitingHeadline(count: number): string {
+  if (count <= 0) return 'Nothing is waiting on you.'
+  if (count === 1) return 'One thing is waiting on you.'
+  const word = countWord(count)
+  return `${word.charAt(0).toUpperCase()}${word.slice(1)} things are waiting on you.`
 }

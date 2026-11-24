@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import AuthShell from './AuthShell'
+import MinimalShell from '@/components/layout/MinimalShell'
 import Banner from '@/components/ui/Banner'
 import Button from '@/components/ui/Button'
 
@@ -39,33 +39,33 @@ export default function ConfirmEmail({ tokenHash, type }: ConfirmEmailProps) {
 
   if (!tokenHash || !type) {
     return (
-      <AuthShell
+      <MinimalShell
         title="Invalid or expired link"
-        subtitle="This confirmation link is invalid or has expired. Sign in to request a new confirmation email."
+        lede="This confirmation link is invalid or has expired. Sign in to request a new confirmation email."
       >
-        <Button href="/login?error=link_expired" full>
+        <Button href="/login?error=link_expired" size="lg">
           Go to sign in
         </Button>
-      </AuthShell>
+      </MinimalShell>
     )
   }
 
   return (
-    <AuthShell title="Confirm your email" subtitle="One click and you are on the board.">
+    <MinimalShell title="Confirm your email" lede="One click and you are on the board.">
       <div className="space-y-4">
-        <Button type="button" onClick={handleConfirm} disabled={loading} full>
+        <Button type="button" size="lg" onClick={handleConfirm} disabled={loading}>
           {loading ? 'Confirming…' : 'Confirm my email'}
         </Button>
         {error && (
-          <Banner tone="error" className="text-left">
+          <Banner tone="error">
             <p>{error}</p>
             <p className="mt-1 text-zinc-400">You can sign in to request a new confirmation email.</p>
-            <Link href="/login?error=link_expired" className="link mt-2 inline-block text-sm">
+            <Link href="/login?error=link_expired" className="link mt-2 inline-flex min-h-[44px] items-center text-sm">
               Go to sign in
             </Link>
           </Banner>
         )}
       </div>
-    </AuthShell>
+    </MinimalShell>
   )
 }

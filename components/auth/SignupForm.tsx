@@ -3,11 +3,13 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { isValidUniversityEmail } from '@/lib/utils'
+import { cn, isValidUniversityEmail } from '@/lib/utils'
 import { useRouter, useSearchParams } from 'next/navigation'
-import AuthShell from './AuthShell'
+import AuthShell, { AUTH_FIELD, AUTH_LABEL } from './AuthShell'
 import Banner from '@/components/ui/Banner'
 import Button from '@/components/ui/Button'
+
+const STEPS = ['Join', 'Confirm your email', 'Challenge someone']
 
 export default function SignupForm() {
   const [firstName, setFirstName] = useState('')
@@ -113,96 +115,118 @@ export default function SignupForm() {
 
   return (
     <AuthShell
-      title={isCompletingProfile ? 'Complete your profile' : 'Join Tech ELO'}
-      subtitle={
-        isCompletingProfile
-          ? 'Add your name so opponents know who beat them'
-          : 'Pool, ping pong and poker for the Houses. All you need is a university email.'
+      statement="Everyone starts at 1500."
+      lede="One confirmed match puts you on the board. One logged night puts you on the ledger."
+      footer={
+        <ol className="grid grid-cols-3 gap-6 border-t border-line-strong pt-5">
+          {STEPS.map((step, i) => (
+            <li key={step} className="min-w-0">
+              <span className={cn('tabular block text-xs', i === 0 ? 'text-white' : 'text-mute')}>{i + 1}</span>
+              <span className={cn('mt-1.5 block text-sm', i === 0 ? 'text-white' : 'text-zinc-400')}>{step}</span>
+            </li>
+          ))}
+        </ol>
+      }
+      title={isCompletingProfile ? 'Complete your profile' : 'Join'}
+      subtitle={isCompletingProfile ? 'Add your name so opponents know who beat them' : 'All you need is a university email.'}
+      below={
+        !isCompletingProfile ? (
+          <>
+            Already playing?{' '}
+            <Link href="/login" className="link">
+              Sign in
+            </Link>
+          </>
+        ) : undefined
       }
     >
-      <form onSubmit={handleSignup} className="space-y-5">
+      <form onSubmit={handleSignup} className="flex flex-col gap-[18px]">
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
-            <label htmlFor="firstName" className="label">
-              First Name
+            <label htmlFor="firstName" className={AUTH_LABEL}>
+              First name
             </label>
             <input
               id="firstName"
               name="firstName"
               type="text"
+              autoComplete="given-name"
               required
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
-              className="input"
+              className={AUTH_FIELD}
               placeholder="John"
             />
           </div>
           <div>
-            <label htmlFor="lastName" className="label">
-              Last Name
+            <label htmlFor="lastName" className={AUTH_LABEL}>
+              Last name
             </label>
             <input
               id="lastName"
               name="lastName"
               type="text"
+              autoComplete="family-name"
               required
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
-              className="input"
+              className={AUTH_FIELD}
               placeholder="Doe"
             />
           </div>
         </div>
+        <p className="-mt-2.5 text-xs text-mute">Your name, as opponents will see it.</p>
 
         {!isCompletingProfile && (
           <>
             <div>
-              <label htmlFor="email" className="label">
-                University Email
+              <label htmlFor="email" className={AUTH_LABEL}>
+                University email
               </label>
               <input
                 id="email"
                 name="email"
                 type="email"
+                autoComplete="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="input"
+                className={AUTH_FIELD}
                 placeholder={`your.email${universityDomain}`}
               />
-              <p className="mt-1.5 text-xs text-zinc-500">
-                Must be a {universityDomain} email address
-              </p>
+              <p className="mt-1.5 text-xs text-mute">Must be a {universityDomain} email address</p>
             </div>
 
             <div>
-              <label htmlFor="password" className="label">
+              <label htmlFor="password" className={AUTH_LABEL}>
                 Password
               </label>
               <input
                 id="password"
                 name="password"
                 type="password"
+                autoComplete="new-password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="input"
+                className={AUTH_FIELD}
                 placeholder="Choose a password"
               />
             </div>
 
             <div>
-              <label htmlFor="confirmPassword" className="label">
-                Confirm Password
+              <label htmlFor="confirmPassword" className={AUTH_LABEL}>
+                Confirm password
               </label>
               <input
                 id="confirmPassword"
                 name="confirmPassword"
                 type="password"
+                autoComplete="new-password"
                 required
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="input"
+                className={AUTH_FIELD}
                 placeholder="Confirm your password"
               />
             </div>
@@ -213,7 +237,7 @@ export default function SignupForm() {
 
         {message && <Banner tone="success">{message}</Banner>}
 
-        <Button type="submit" full disabled={loading}>
+        <Button type="submit" size="lg" full disabled={loading}>
           {loading
             ? isCompletingProfile
               ? 'Updating…'
@@ -222,15 +246,6 @@ export default function SignupForm() {
               ? 'Save profile'
               : 'Create account'}
         </Button>
-
-        {!isCompletingProfile && (
-          <p className="text-center text-sm text-zinc-400">
-            Already have an account?{' '}
-            <Link href="/login" className="link">
-              Sign in
-            </Link>
-          </p>
-        )}
       </form>
     </AuthShell>
   )

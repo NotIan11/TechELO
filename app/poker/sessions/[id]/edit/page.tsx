@@ -25,7 +25,7 @@ export default async function EditPokerSessionPage({ params }: { params: Promise
   ])
 
   return (
-    <AppShell promo="tables" width="4xl">
+    <AppShell width="4xl">
       <LiveLedgerEditor session={session} currentUserId={user.id} players={players} guests={guests} recent={recent} mode="edit" />
     </AppShell>
   )

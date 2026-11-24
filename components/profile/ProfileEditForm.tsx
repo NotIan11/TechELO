@@ -3,10 +3,12 @@
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import SignOutButton from '@/components/auth/SignOutButton'
 import Avatar from '@/components/ui/Avatar'
 import Banner from '@/components/ui/Banner'
 import Button from '@/components/ui/Button'
-import Card from '@/components/ui/Card'
+import HouseChip from '@/components/ui/HouseChip'
+import TextLink from '@/components/ui/TextLink'
 
 interface Profile {
   id: string
@@ -16,9 +18,17 @@ interface Profile {
 
 interface ProfileEditFormProps {
   profile: Profile
+  /** Shown read-only */
+  email: string
+  /** Current house, or null when the player has not joined one */
+  houseName: string | null
 }
 
-export default function ProfileEditForm({ profile }: ProfileEditFormProps) {
+const ROW = 'flex flex-wrap items-center gap-x-6 gap-y-3 border-b border-line py-5'
+const LABEL = 'w-40 shrink-0 text-sm text-zinc-400'
+const FIELD = 'min-w-0 flex-[1_1_260px]'
+
+export default function ProfileEditForm({ profile, email, houseName }: ProfileEditFormProps) {
   const [displayName, setDisplayName] = useState(profile.display_name)
   const [profileImage, setProfileImage] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(profile.profile_image_url)
@@ -112,57 +122,79 @@ export default function ProfileEditForm({ profile }: ProfileEditFormProps) {
   }
 
   return (
-    <Card>
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Profile Picture */}
-        <div>
-          <p className="label">Profile Picture</p>
-          <div className="flex items-center gap-5">
-            <Avatar src={previewUrl} name={displayName || profile.display_name} size="xl" />
-            <div>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-                className="hidden"
-              />
-              <Button type="button" variant="secondary" size="sm" onClick={() => fileInputRef.current?.click()}>
-                Change picture
-              </Button>
-              {profileImage && <p className="mt-1.5 text-xs text-zinc-500">{profileImage.name}</p>}
-            </div>
-          </div>
-        </div>
+    <form onSubmit={handleSubmit} className="mt-10 border-t border-line-bright">
+      <div className={ROW}>
+        <label htmlFor="displayName" className={LABEL}>
+          Name on the boards
+        </label>
+        <input
+          id="displayName"
+          type="text"
+          required
+          value={displayName}
+          onChange={(e) => setDisplayName(e.target.value)}
+          className={`input ${FIELD}`}
+          placeholder="Your display name"
+        />
+      </div>
 
-        {/* Display Name */}
-        <div>
-          <label htmlFor="displayName" className="label">
-            Display Name
-          </label>
-          <input
-            id="displayName"
-            type="text"
-            required
-            value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
-            className="input"
-            placeholder="Your display name"
-          />
-        </div>
-
-        {error && <Banner tone="error">{error}</Banner>}
-        {message && <Banner tone="success">{message}</Banner>}
-
-        <div className="flex gap-3">
-          <Button type="submit" disabled={loading} className="flex-1">
-            {loading ? 'Saving…' : 'Save changes'}
+      <div className={ROW}>
+        <span className={LABEL}>Picture</span>
+        <div className={`${FIELD} flex flex-wrap items-center gap-x-4 gap-y-2`}>
+          <Avatar src={previewUrl} name={displayName || profile.display_name} size="lg" />
+          <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+          <Button type="button" variant="secondary" onClick={() => fileInputRef.current?.click()}>
+            Upload a picture
           </Button>
-          <Button type="button" variant="secondary" onClick={() => router.back()}>
+          <span className="min-w-0 truncate text-[13px] text-mute">
+            {profileImage ? profileImage.name : previewUrl ? 'Images up to 5MB.' : 'Initials are used until you add one.'}
+          </span>
+        </div>
+      </div>
+
+      <div className={ROW}>
+        <span className={LABEL}>House</span>
+        <div className={`${FIELD} flex flex-wrap items-center justify-between gap-x-4`}>
+          {houseName ? <HouseChip name={houseName} className="text-[15px] text-white" /> : <span className="text-[15px] text-mute">No house yet</span>}
+          <TextLink href="/profile/join-dorm" className="min-h-[44px] text-[13px]">
+            {houseName ? 'Change house' : 'Join a house'}
+          </TextLink>
+        </div>
+      </div>
+
+      <div className={ROW}>
+        <span className={LABEL}>Email</span>
+        <span className={`${FIELD} tabular truncate text-sm text-zinc-300`}>{email}</span>
+      </div>
+
+      <div className={ROW}>
+        <span className={LABEL}>Password</span>
+        <div className={`${FIELD} flex flex-wrap items-center justify-between gap-x-4`}>
+          <span className="text-sm text-mute">Used to sign in with your email.</span>
+          <TextLink href="/setup-password" className="min-h-[44px] text-[13px]">
+            Change it
+          </TextLink>
+        </div>
+      </div>
+
+      {(error || message) && (
+        <div className="space-y-3 pt-6">
+          {error && <Banner tone="error">{error}</Banner>}
+          {message && <Banner tone="success">{message}</Banner>}
+        </div>
+      )}
+
+      <div className="flex flex-wrap items-center justify-between gap-4 pt-7">
+        <div className="flex gap-2">
+          <Button type="submit" size="lg" disabled={loading}>
+            {loading ? 'Saving…' : 'Save'}
+          </Button>
+          <Button type="button" variant="ghost" size="lg" className="px-4" onClick={() => router.back()}>
             Cancel
           </Button>
         </div>
-      </form>
-    </Card>
+        <SignOutButton />
+      </div>
+    </form>
   )
 }

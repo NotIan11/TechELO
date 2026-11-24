@@ -6,7 +6,7 @@ export default function SponsorRow({ sponsors, size = 'md', className }: { spons
   if (sponsors.length === 0) return null
   return (
     <div className={cn('flex flex-wrap items-center gap-x-5 gap-y-2', className)}>
-      <span className="eyebrow">Sponsored by</span>
+      <span className="text-xs text-mute">Sponsored by</span>
       {sponsors.map((s) => {
         const inner = s.logo_url ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -17,7 +17,7 @@ export default function SponsorRow({ sponsors, size = 'md', className }: { spons
             className={cn('object-contain grayscale transition hover:grayscale-0', size === 'sm' ? 'h-6 max-w-[80px]' : 'h-9 max-w-[140px]')}
           />
         ) : (
-          <span className={cn('font-semibold text-zinc-300', size === 'sm' ? 'text-sm' : 'text-base')}>{s.name}</span>
+          <span className={cn('text-zinc-300', size === 'sm' ? 'text-[13px]' : 'text-[15px]')}>{s.name}</span>
         )
         return s.website_url ? (
           <a key={s.id} href={s.website_url} target="_blank" rel="noopener noreferrer" className="opacity-70 transition hover:opacity-100">

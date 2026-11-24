@@ -11,7 +11,7 @@
     content: '';
     position: fixed;
     inset: 0 0 auto 0;
-    height: 2px;
+    height: 1px;
     background: theme('colors.orange.500');
     z-index: 60;
     pointer-events: none;
@@ -19,7 +19,7 @@
   h1,
   h2,
   h3 {
-    @apply font-display tracking-tight;
+    @apply font-display font-normal tracking-tight;
   }
   *:focus-visible {
     outline: 2px solid theme('colors.orange.500');
@@ -28,20 +28,26 @@
 }
 
 @layer components {
+  /* A panel is a hairline outline over near-black, never a filled card */
   .card {
-    @apply rounded-2xl border border-line bg-ink-800;
+    @apply rounded border border-line bg-white/[0.02];
   }
   .input {
-    @apply block w-full min-h-[44px] rounded-lg border border-line bg-ink-900 px-3.5 py-2.5 text-base text-white transition placeholder:text-zinc-600 focus:border-orange-500/60 focus:outline-none focus:ring-2 focus:ring-orange-500/30;
+    @apply block w-full min-h-[44px] rounded border border-line-strong bg-transparent px-3 py-2.5 text-base text-white transition placeholder:text-zinc-600 focus:border-orange-500 focus:outline-none;
   }
   .label {
-    @apply mb-1.5 block text-[13px] font-medium text-zinc-300;
+    @apply mb-1.5 block text-[13px] text-zinc-400;
   }
+  /* Small sentence-case label. No uppercase, no tracking. */
   .eyebrow {
-    @apply text-[11px] font-semibold uppercase tracking-[0.14em] text-zinc-500;
+    @apply text-xs font-normal text-mute;
   }
   .link {
-    @apply font-medium text-orange-400 underline decoration-orange-400/30 underline-offset-4 transition hover:decoration-orange-400;
+    @apply text-orange-400 underline decoration-orange-400/30 underline-offset-4 transition hover:decoration-orange-400;
+  }
+  /* Ruled row used by lists and tables */
+  .row {
+    @apply border-b border-line;
   }
 }
 
@@ -50,6 +56,7 @@
     text-wrap: balance;
   }
   .tabular {
+    font-family: theme('fontFamily.mono');
     font-variant-numeric: tabular-nums;
   }
 }

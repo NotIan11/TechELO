@@ -3,12 +3,13 @@ import { cn } from '@/lib/utils'
 export type BadgeTone = 'neutral' | 'orange' | 'win' | 'loss' | 'warn' | 'live'
 
 const tones: Record<BadgeTone, string> = {
-  neutral: 'border-line bg-ink-700 text-zinc-300',
-  orange: 'border-orange-500/25 bg-orange-500/10 text-orange-400',
-  win: 'border-win/20 bg-win/10 text-win',
-  loss: 'border-loss/20 bg-loss/10 text-loss',
-  warn: 'border-warn/20 bg-warn/10 text-warn',
-  live: 'border-loss/20 bg-loss/10 text-loss',
+  // Tags are plain coloured text with an optional dot: no fill, no outline
+  neutral: 'text-zinc-400',
+  orange: 'text-orange-400',
+  win: 'text-win',
+  loss: 'text-loss',
+  warn: 'text-warn',
+  live: 'text-loss',
 }
 
 const dots: Record<BadgeTone, string> = {
@@ -33,7 +34,7 @@ export default function Badge({ tone = 'neutral', dot, className, children }: Ba
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium',
+        'inline-flex items-center gap-1.5 whitespace-nowrap text-xs font-normal',
         tones[t],
         className
       )}

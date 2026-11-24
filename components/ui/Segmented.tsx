@@ -15,10 +15,10 @@ interface SegmentedProps<T extends string> {
   className?: string
 }
 
-/** Scoreboard-style tab switcher: dark track, active tab underlined in orange */
+/** In-page switcher drawn as underlined text tabs on a hairline */
 export default function Segmented<T extends string>({ options, value, onChange, className }: SegmentedProps<T>) {
   return (
-    <div className={cn('inline-flex rounded-lg border border-line bg-ink-900 p-1', className)} role="tablist">
+    <div className={cn('inline-flex gap-6 border-b border-line-strong', className)} role="tablist">
       {options.map((option) => {
         const active = option.value === value
         return (
@@ -29,10 +29,8 @@ export default function Segmented<T extends string>({ options, value, onChange, 
             aria-selected={active}
             onClick={() => onChange(option.value)}
             className={cn(
-              'relative inline-flex min-h-[36px] items-center gap-2 rounded-md px-3.5 text-sm font-medium transition',
-              active
-                ? 'bg-ink-600 text-white after:absolute after:inset-x-3 after:bottom-0.5 after:h-0.5 after:rounded-full after:bg-orange-500'
-                : 'text-zinc-400 hover:text-white'
+              'relative -mb-px inline-flex min-h-[44px] items-center gap-2 border-b text-sm transition',
+              active ? 'border-white text-white' : 'border-transparent text-mute hover:text-white'
             )}
           >
             {option.icon}

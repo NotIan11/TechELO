@@ -7,8 +7,8 @@ const sizes: Record<Size, string> = {
   xs: 'text-xs',
   sm: 'text-sm',
   md: 'text-base',
-  lg: 'font-display text-2xl tracking-tight',
-  xl: 'font-display text-4xl tracking-tight',
+  lg: 'text-2xl tracking-tighter',
+  xl: 'text-5xl tracking-tighter',
 }
 
 export function moneyTone(cents: number): 'positive' | 'negative' | 'zero' {
@@ -16,7 +16,8 @@ export function moneyTone(cents: number): 'positive' | 'negative' | 'zero' {
 }
 
 const textTones = { positive: 'text-win', negative: 'text-loss', zero: 'text-zinc-500' }
-const chipTones = { positive: 'bg-win/10 text-win', negative: 'bg-loss/10 text-loss', zero: 'bg-ink-600 text-zinc-400' }
+// `chip` is kept for call sites but no longer draws a filled chip: money is plain coloured mono
+const chipTones = textTones
 
 interface MoneyDeltaProps {
   cents: number
@@ -34,9 +35,9 @@ export default function MoneyDelta({ cents, size = 'sm', chip, compact, classNam
   return (
     <span
       className={cn(
-        'tabular inline-flex items-center font-semibold',
+        'tabular inline-flex items-center font-normal',
         sizes[size],
-        chip ? cn('rounded-md px-1.5 py-0.5', chipTones[tone]) : textTones[tone],
+        chip ? chipTones[tone] : textTones[tone],
         className
       )}
     >

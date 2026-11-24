@@ -1,4 +1,3 @@
-import Card from './Card'
 import { cn } from '@/lib/utils'
 
 export type StatTone = 'default' | 'win' | 'loss' | 'orange' | 'muted'
@@ -10,7 +9,7 @@ const valueTones: Record<StatTone, string> = {
   muted: 'text-zinc-500',
 }
 
-const sizes = { sm: 'text-lg', md: 'text-2xl', lg: 'text-3xl' }
+const sizes = { sm: 'text-lg', md: 'text-2xl', lg: 'text-4xl' }
 
 interface StatTileProps {
   label: string
@@ -29,14 +28,11 @@ export default function StatTile({ label, value, sub, tone = 'default', size = '
   const body = (
     <>
       <p className="eyebrow truncate">{label}</p>
-      <p className={cn('tabular mt-1 truncate font-display font-bold tracking-tight', sizes[size], valueTones[t])}>{value}</p>
-      {sub != null && <p className="mt-0.5 truncate text-xs text-zinc-500">{sub}</p>}
+      <p className={cn('tabular mt-1.5 truncate font-normal tracking-tighter', sizes[size], valueTones[t])}>{value}</p>
+      {sub != null && <p className="mt-1 truncate text-xs text-mute">{sub}</p>}
     </>
   )
+  // Stat tiles sit on a top rule instead of in a box
   if (bare) return <div className={cn('min-w-0', className)}>{body}</div>
-  return (
-    <Card padding="sm" className={cn('min-w-0', className)}>
-      {body}
-    </Card>
-  )
+  return <div className={cn('min-w-0 border-t border-line-strong pt-3', className)}>{body}</div>
 }

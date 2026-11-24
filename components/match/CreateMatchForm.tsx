@@ -3,13 +3,9 @@
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import Avatar from '@/components/ui/Avatar'
+import { calculateElo } from '@/lib/elo'
 import Banner from '@/components/ui/Banner'
 import Button from '@/components/ui/Button'
-import Card from '@/components/ui/Card'
-import GameIcon, { gameLabel } from '@/components/ui/GameIcon'
-import HouseChip from '@/components/ui/HouseChip'
-import Icon from '@/components/ui/Icon'
 
 type GameType = 'pool' | 'ping_pong'
 
@@ -19,6 +15,8 @@ interface Opponent {
   profile_image_url: string | null
   dorm_name: string | null
   ratings: Record<string, number>
+  /** Rank per game; absent until they have a confirmed match in it */
+  ranks?: Record<string, number>
 }
 
 interface CreateMatchFormProps {
@@ -28,30 +26,51 @@ interface CreateMatchFormProps {
   initialGameType: GameType
 }
 
+const GAMES: { value: GameType; label: string }[] = [
+  { value: 'pool', label: 'Pool' },
+  { value: 'ping_pong', label: 'Ping pong' },
+]
+
+const signed = (n: number) => `${n >= 0 ? '+' : '−'}${Math.abs(n)}`
+
 export default function CreateMatchForm({
   opponents,
   myRatings,
   initialOpponentId,
   initialGameType,
 }: CreateMatchFormProps) {
+  const pinnedId = initialOpponentId && opponents.some((o) => o.id === initialOpponentId) ? initialOpponentId : ''
   const [gameType, setGameType] = useState<GameType>(initialGameType)
-  const [opponentId, setOpponentId] = useState(
-    initialOpponentId && opponents.some((o) => o.id === initialOpponentId) ? initialOpponentId : ''
-  )
+  const [opponentId, setOpponentId] = useState(pinnedId)
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
 
-  const filtered = useMemo(() => {
+  const myRating = myRatings[gameType] ?? 1500
+
+  // Closest to the viewer's rating first; a player the link preselected stays on top
+  const rows = useMemo(() => {
     const q = search.trim().toLowerCase()
-    if (!q) return opponents
-    return opponents.filter(
-      (o) =>
-        o.display_name.toLowerCase().includes(q) ||
-        (o.dorm_name ?? '').toLowerCase().includes(q)
-    )
-  }, [opponents, search])
+    return opponents
+      .filter((o) => !q || o.display_name.toLowerCase().includes(q) || (o.dorm_name ?? '').toLowerCase().includes(q))
+      .map((o) => {
+        const rating = o.ratings[gameType] ?? 1500
+        return {
+          ...o,
+          rating,
+          rank: o.ranks?.[gameType] ?? null,
+          win: calculateElo(myRating, rating, 1).ratingChange1,
+          lose: calculateElo(myRating, rating, 2).ratingChange1,
+        }
+      })
+      .sort(
+        (a, b) =>
+          Number(b.id === pinnedId) - Number(a.id === pinnedId) ||
+          Math.abs(a.rating - myRating) - Math.abs(b.rating - myRating) ||
+          a.display_name.localeCompare(b.display_name)
+      )
+  }, [opponents, search, gameType, myRating, pinnedId])
 
   const selected = opponents.find((o) => o.id === opponentId)
 
@@ -82,111 +101,96 @@ export default function CreateMatchForm({
     }
   }
 
+  const grid = 'grid grid-cols-[28px_minmax(0,1fr)_56px_104px] sm:grid-cols-[28px_minmax(0,1fr)_70px_150px]'
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Game selector */}
-      <div>
-        <p className="label">Game</p>
-        <div className="grid grid-cols-2 gap-3">
-          {(['pool', 'ping_pong'] as const).map((game) => {
-            const active = gameType === game
+    <form onSubmit={handleSubmit}>
+      <div className="flex flex-wrap items-center gap-3">
+        <div role="group" aria-label="Game" className="inline-flex rounded border border-line-strong">
+          {GAMES.map((g, i) => {
+            const active = gameType === g.value
             return (
               <button
-                key={game}
+                key={g.value}
                 type="button"
-                onClick={() => setGameType(game)}
+                onClick={() => setGameType(g.value)}
                 aria-pressed={active}
                 className={cn(
-                  'card flex flex-col items-center gap-2 p-5 transition',
-                  active ? 'border-orange-500 bg-orange-500/10' : 'hover:border-line-strong'
+                  'min-h-[44px] px-4 text-sm transition',
+                  i > 0 && 'border-l border-line-strong',
+                  active ? 'bg-white font-medium text-ink-950' : 'text-zinc-400 hover:text-white'
                 )}
               >
-                <GameIcon game={game} size="xl" className="text-orange-400" />
-                <span className="text-sm font-semibold text-white">{gameLabel(game)}</span>
-                <span className="tabular text-xs text-zinc-500">
-                  Your rating: {myRatings[game] ?? 1500}
-                </span>
+                {g.label}
               </button>
             )
           })}
         </div>
-      </div>
-
-      {/* Opponent picker */}
-      <div>
-        <label htmlFor="opponent-search" className="label">
-          Opponent
-        </label>
         <input
           id="opponent-search"
           type="search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search by name or house…"
-          className="input mb-3"
+          aria-label="Find a player"
+          placeholder="Find a player or a house"
+          className="input min-w-0 flex-[1_1_200px]"
         />
-        <Card padding="none" className="max-h-80 overflow-y-auto">
-          {filtered.length === 0 ? (
-            <p className="p-5 text-center text-sm text-zinc-500">No players match “{search}”.</p>
-          ) : (
-            <ul className="divide-y divide-line">
-              {filtered.map((opponent) => {
-                const active = opponent.id === opponentId
-                return (
-                  <li key={opponent.id}>
-                    <button
-                      type="button"
-                      onClick={() => setOpponentId(active ? '' : opponent.id)}
-                      aria-pressed={active}
-                      className={cn(
-                        'flex w-full items-center gap-3 px-4 py-3 text-left transition',
-                        active ? 'bg-orange-500/10' : 'hover:bg-ink-700'
-                      )}
-                    >
-                      <Avatar
-                        src={opponent.profile_image_url}
-                        name={opponent.display_name}
-                        size="sm"
-                      />
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm font-medium text-white">
-                          {opponent.display_name}
-                        </span>
-                        <span className="mt-0.5 flex items-center gap-2">
-                          <HouseChip name={opponent.dorm_name} />
-                        </span>
-                      </span>
-                      <span className="tabular shrink-0 text-sm font-semibold text-zinc-300">
-                        {opponent.ratings[gameType] ?? 1500}
-                      </span>
-                      <span
-                        className={cn(
-                          'inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition',
-                          active
-                            ? 'border-orange-500 bg-orange-500 text-white'
-                            : 'border-line-strong text-transparent'
-                        )}
-                      >
-                        <Icon name="check" className="h-3 w-3" strokeWidth={3} />
-                      </span>
-                    </button>
-                  </li>
-                )
-              })}
-            </ul>
-          )}
-        </Card>
       </div>
 
-      {error && <Banner tone="error">{error}</Banner>}
+      <div className={cn(grid, 'mt-5 pb-2 text-xs text-mute')}>
+        <span />
+        <span>Closest to you first · you are at <span className="tabular">{myRating}</span></span>
+        <span className="text-right">Rating</span>
+        <span className="text-right">Win · Lose</span>
+      </div>
 
-      <Button type="submit" size="lg" full disabled={loading || !opponentId}>
-        {loading
-          ? 'Sending challenge…'
-          : selected
-            ? `Challenge ${selected.display_name}`
-            : 'Send challenge'}
-      </Button>
+      <div role="radiogroup" aria-label="Opponent" className="max-h-[420px] overflow-y-auto border-b border-line">
+        {rows.length === 0 ? (
+          <p className="border-t border-line py-5 text-sm text-mute">No players match “{search}”.</p>
+        ) : (
+          rows.map((o) => {
+            const active = o.id === opponentId
+            return (
+              <button
+                key={o.id}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                onClick={() => setOpponentId(active ? '' : o.id)}
+                className={cn(grid, 'w-full items-center border-t border-line text-left transition min-h-[52px]', active ? 'bg-white/[0.05]' : 'hover:bg-white/[0.03]')}
+              >
+                <span aria-hidden="true" className={cn('ml-0.5 h-3.5 w-3.5 border', active ? 'border-orange-500 bg-orange-500' : 'border-white/40')} />
+                <span className="flex min-w-0 flex-wrap items-baseline gap-x-2.5 py-1.5">
+                  <span className="truncate text-[15px] text-white">{o.display_name}</span>
+                  <span className="text-xs text-mute">
+                    {o.rank != null ? <span className="tabular">#{o.rank}</span> : 'Unranked'}
+                    {o.dorm_name ? ` · ${o.dorm_name}` : ''}
+                  </span>
+                </span>
+                <span className="tabular text-right text-sm text-white">{o.rating}</span>
+                <span className="tabular text-right text-sm">
+                  <span className="text-win">{signed(o.win)}</span>
+                  <span className="text-zinc-600"> · </span>
+                  <span className="text-loss">{signed(o.lose)}</span>
+                </span>
+              </button>
+            )
+          })
+        )}
+      </div>
+
+      {error && (
+        <Banner tone="error" className="mt-5">
+          {error}
+        </Banner>
+      )}
+
+      <div className="mt-6 flex flex-wrap items-center gap-4">
+        <Button type="submit" size="lg" disabled={loading || !opponentId}>
+          {loading ? 'Sending challenge…' : selected ? `Challenge ${selected.display_name}` : 'Pick someone to challenge'}
+        </Button>
+        <span className="text-[13px] text-mute">{selected ? 'They have an hour to accept.' : 'They get an hour to accept.'}</span>
+      </div>
     </form>
   )
 }

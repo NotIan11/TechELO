@@ -51,8 +51,8 @@ export default function ConfirmStrip({
   return (
     <div
       className={cn(
-        'mt-3 rounded-lg border bg-ink-900 p-3',
-        tone === 'danger' ? 'border-loss/20' : 'border-line',
+        'mt-3 rounded border p-4',
+        tone === 'danger' ? 'border-loss/50' : 'border-line-bright',
         inline && !children && errors.length === 0 && warnings.length === 0 && 'flex flex-wrap items-center gap-3',
         className
       )}

@@ -11,11 +11,9 @@ export interface ChipOption<T extends string> {
 /** Shared pill styling for ChipSelect, ChipToggle and any ad-hoc chip */
 export function chipClass(active: boolean, size: 'sm' | 'md' = 'md'): string {
   return cn(
-    'inline-flex items-center gap-2 rounded-full border font-medium transition',
-    size === 'sm' ? 'min-h-[32px] px-3 text-xs' : 'min-h-[36px] px-3.5 text-sm',
-    active
-      ? 'border-orange-500 bg-orange-500/10 text-orange-400'
-      : 'border-line bg-ink-700 text-zinc-300 hover:border-line-strong hover:text-white'
+    'inline-flex items-center gap-2 rounded border transition',
+    size === 'sm' ? 'min-h-[36px] px-3 text-xs' : 'min-h-[44px] px-3.5 text-sm',
+    active ? 'border-white text-white' : 'border-line-strong text-zinc-300 hover:border-line-bright hover:text-white'
   )
 }
 
@@ -118,7 +116,7 @@ export default function ChipSelect<T extends string>({
       {showCustom && (
         <input
           type="text"
-          className={cn('input w-40', size === 'sm' && 'min-h-[32px] px-3 py-1 text-sm')}
+          className={cn('input w-40', size === 'sm' && 'min-h-[36px] px-3 py-1 text-sm')}
           placeholder={customPlaceholder}
           value={value ?? ''}
           autoFocus

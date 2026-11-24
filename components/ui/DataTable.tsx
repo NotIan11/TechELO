@@ -1,4 +1,3 @@
-import Card from './Card'
 import { cn } from '@/lib/utils'
 
 type Hide = 'sm' | 'md' | 'lg'
@@ -9,14 +8,12 @@ const HIDE: Record<Hide, string> = {
 }
 const ALIGN = { left: 'text-left', right: 'text-right', center: 'text-center' }
 
-/** Card-wrapped, horizontally scrollable table */
+/** Ruled, horizontally scrollable table (no card around it) */
 export function Table({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <Card padding="none" className={cn('overflow-hidden', className)}>
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-line">{children}</table>
-      </div>
-    </Card>
+    <div className={cn('overflow-x-auto', className)}>
+      <table className="min-w-full border-collapse [&_tbody_tr]:border-t [&_tbody_tr]:border-line [&_tfoot_tr]:border-t [&_tfoot_tr]:border-line-bright">{children}</table>
+    </div>
   )
 }
 
@@ -31,7 +28,7 @@ export function Th({
   className?: string
   children?: React.ReactNode
 }) {
-  return <th className={cn('eyebrow px-4 py-3 sm:px-5', ALIGN[align], hide && HIDE[hide], className)}>{children}</th>
+  return <th className={cn('eyebrow px-3 pb-2.5 pt-3 first:pl-0 last:pr-0', ALIGN[align], hide && HIDE[hide], className)}>{children}</th>
 }
 
 export function Tr({
@@ -51,8 +48,8 @@ export function Tr({
     <tr
       className={cn(
         'transition',
-        hover && 'hover:bg-ink-700/60',
-        me ? 'bg-orange-500/10' : tint === 'win' ? 'bg-win/5' : undefined,
+        hover && 'hover:bg-white/[0.03]',
+        me ? 'bg-white/[0.05]' : tint === 'win' ? undefined : undefined,
         className
       )}
     >
@@ -77,7 +74,7 @@ export function Td({
   return (
     <td
       className={cn(
-        'whitespace-nowrap px-4 py-3.5 text-sm sm:px-5',
+        'h-[52px] whitespace-nowrap px-3 text-sm first:pl-0 last:pr-0',
         numeric ? 'tabular text-right text-zinc-300' : ALIGN[align],
         hide && HIDE[hide],
         className
@@ -102,11 +99,11 @@ export function MiniBar({
 }) {
   const pct = Math.max(6, Math.round((Math.abs(value) / Math.max(1, max)) * 100))
   return (
-    <span className={cn('h-1.5 w-16 overflow-hidden rounded-full bg-ink-600', className)} aria-hidden="true">
+    <span className={cn('h-0.5 w-16 overflow-hidden bg-white/10', className)} aria-hidden="true">
       <span
         className={cn(
-          'block h-full rounded-full',
-          tone === 'orange' ? 'bg-orange-500/70' : value >= 0 ? 'bg-win/70' : 'bg-loss/70'
+          'block h-full',
+          tone === 'orange' ? 'bg-white' : value >= 0 ? 'bg-win' : 'bg-loss'
         )}
         style={{ width: `${pct}%` }}
       />

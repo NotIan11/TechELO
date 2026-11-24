@@ -1,4 +1,3 @@
-import { useId } from 'react'
 import { cn } from '@/lib/utils'
 
 interface PnlChartProps {
@@ -12,12 +11,10 @@ interface PnlChartProps {
 }
 
 /**
- * Cumulative PnL line with a dashed zero baseline; the area is tinted win above
- * zero and loss below. Line color comes from currentColor. Renders nothing with
+ * Cumulative PnL line with a dotted zero baseline. Line color comes from currentColor. Renders nothing with
  * fewer than 2 points.
  */
 export default function PnlChart({ values, width = 320, height = 96, className, fluid = true }: PnlChartProps) {
-  const id = useId().replace(/:/g, '')
   if (values.length < 2) return null
 
   const pad = 4
@@ -33,7 +30,6 @@ export default function PnlChart({ values, width = 320, height = 96, className, 
   const zeroY = y(0)
   const [lastX, lastY] = points[points.length - 1]
   const last = values[values.length - 1]
-  const area = `${path} L${lastX.toFixed(1)},${zeroY.toFixed(1)} L${points[0][0].toFixed(1)},${zeroY.toFixed(1)} Z`
 
   return (
     <svg
@@ -44,16 +40,6 @@ export default function PnlChart({ values, width = 320, height = 96, className, 
       className={cn('overflow-visible', fluid && 'h-24 w-full', className)}
       aria-hidden="true"
     >
-      <defs>
-        <clipPath id={`${id}-above`}>
-          <rect x="0" y="0" width={width} height={Math.max(zeroY, 0)} />
-        </clipPath>
-        <clipPath id={`${id}-below`}>
-          <rect x="0" y={zeroY} width={width} height={Math.max(height - zeroY, 0)} />
-        </clipPath>
-      </defs>
-      <path d={area} className="fill-win" opacity="0.15" clipPath={`url(#${id}-above)`} />
-      <path d={area} className="fill-loss" opacity="0.15" clipPath={`url(#${id}-below)`} />
       <line
         x1={pad}
         x2={width - pad}
@@ -61,7 +47,7 @@ export default function PnlChart({ values, width = 320, height = 96, className, 
         y2={zeroY}
         stroke="currentColor"
         strokeOpacity="0.3"
-        strokeDasharray="3 3"
+        strokeDasharray="2 4"
         strokeWidth="1"
         vectorEffect="non-scaling-stroke"
       />
@@ -69,7 +55,7 @@ export default function PnlChart({ values, width = 320, height = 96, className, 
         d={path}
         fill="none"
         stroke="currentColor"
-        strokeWidth="2"
+        strokeWidth="1.25"
         strokeLinejoin="round"
         strokeLinecap="round"
         vectorEffect="non-scaling-stroke"

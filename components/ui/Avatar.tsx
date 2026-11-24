@@ -15,21 +15,17 @@ const sizes = {
   xl: 'h-20 w-20 text-2xl',
 }
 
+/** Square, hairline-edged avatar: a photo, or initials until there is one */
 export default function Avatar({ src, name, size = 'md', className }: AvatarProps) {
-  const base = cn('shrink-0 rounded-full ring-1 ring-line select-none', sizes[size], className)
-
+  const base = cn('shrink-0 rounded border border-line-strong select-none', sizes[size], className)
   if (src) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
       <img src={src} alt={name} className={cn(base, 'object-cover')} />
     )
   }
-
   return (
-    <span
-      className={cn(base, 'inline-flex items-center justify-center bg-ink-700 font-semibold text-zinc-300')}
-      aria-hidden="true"
-    >
+    <span className={cn(base, 'inline-flex items-center justify-center bg-ink-950 font-medium text-zinc-300')} aria-hidden="true">
       {getInitials(name)}
     </span>
   )

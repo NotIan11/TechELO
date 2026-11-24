@@ -11,7 +11,7 @@ interface ListRowProps {
   trailing?: React.ReactNode
   /** Defaults to true when href is set */
   chevron?: boolean
-  /** Flat left accent bar (hex), e.g. a house color */
+  /** Small colour square before the row (hex), e.g. a house color */
   accent?: string
   tone?: 'default' | 'live'
   size?: 'md' | 'sm'
@@ -19,7 +19,7 @@ interface ListRowProps {
   className?: string
 }
 
-/** The one list-row card used for matches, sessions, houses, members, awards */
+/** The one list row used for matches, sessions, houses, members, awards: a ruled line, not a card */
 export default function ListRow({
   href,
   leading,
@@ -36,23 +36,23 @@ export default function ListRow({
 }: ListRowProps) {
   const showChevron = chevron ?? !!href
   const classes = cn(
-    'card group relative flex items-center overflow-hidden transition',
-    size === 'md' ? 'gap-4 p-4 sm:p-5' : 'gap-3 p-3',
-    href && 'hover:-translate-y-px hover:border-line-strong',
-    tone === 'live' && 'border-loss/40',
+    'group relative flex items-center border-b border-line transition',
+    size === 'md' ? 'gap-4 py-4' : 'gap-3 py-3',
+    href && 'hover:border-line-bright',
+    tone === 'live' && 'border-loss/50',
     dim && 'opacity-70',
     className
   )
   const body = (
     <>
-      {accent && <span aria-hidden="true" className="absolute inset-y-0 left-0 w-1" style={{ backgroundColor: accent }} />}
+      {accent && <span aria-hidden="true" className="h-3 w-3 shrink-0 ring-1 ring-white/30" style={{ backgroundColor: accent }} />}
       {leading}
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <p className="truncate text-sm font-semibold text-white group-hover:text-orange-400">{title}</p>
+          <p className="truncate text-[15px] text-white">{title}</p>
           {badges}
         </div>
-        {meta && <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-zinc-500">{meta}</div>}
+        {meta && <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-mute">{meta}</div>}
       </div>
       {(trailing || showChevron) && (
         <div className="flex shrink-0 items-center gap-3">

@@ -1,14 +1,16 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import AppShell from '@/components/layout/AppShell'
-import PageHeader from '@/components/ui/PageHeader'
-import StartSessionForm from '@/components/poker/StartSessionForm'
-import { loadHouseNames, loadIsOfficer, loadLiveSessionFor, loadSponsors } from '@/lib/poker/queries'
+import { loadLiveSessionFor } from '@/lib/poker/queries'
 
+/**
+ * The start form now lives on /play. This route keeps its guards (sign in first;
+ * a host with a live table goes back to it) and otherwise forwards there with
+ * whatever query string it was given.
+ */
 export default async function NewPokerSessionPage({
   searchParams,
 }: {
-  searchParams: Promise<{ kind?: string }>
+  searchParams: Promise<Record<string, string | string[] | undefined>>
 }) {
   const params = await searchParams
   const supabase = await createClient()
@@ -22,24 +24,11 @@ export default async function NewPokerSessionPage({
     redirect(`/poker/sessions/${live.id}`)
   }
 
-  const [isOfficer, sponsors, houseNames] = await Promise.all([
-    loadIsOfficer(supabase, user.id),
-    loadSponsors(supabase),
-    loadHouseNames(supabase),
-  ])
-
-  return (
-    <AppShell promo="tables" width="2xl">
-      <PageHeader
-        title="Start a session"
-        subtitle="Set the table up, then add players and buy-ins as the night goes."
-      />
-      <StartSessionForm
-        isOfficer={isOfficer}
-        sponsors={sponsors}
-        houseNames={houseNames}
-        initialKind={params.kind === 'tournament' ? 'tournament' : 'cash'}
-      />
-    </AppShell>
-  )
+  const qs = new URLSearchParams()
+  for (const [key, value] of Object.entries(params)) {
+    const v = Array.isArray(value) ? value[0] : value
+    if (v != null && v !== '') qs.set(key, v)
+  }
+  const query = qs.toString()
+  redirect(`/play${query ? `?${query}` : ''}`)
 }

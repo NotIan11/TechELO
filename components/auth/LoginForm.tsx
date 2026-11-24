@@ -3,13 +3,21 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { isValidUniversityEmail } from '@/lib/utils'
+import { cn, isValidUniversityEmail } from '@/lib/utils'
 import { useRouter, useSearchParams } from 'next/navigation'
-import AuthShell from './AuthShell'
+import AuthShell, { AUTH_FIELD, AUTH_LABEL } from './AuthShell'
 import Banner from '@/components/ui/Banner'
 import Button from '@/components/ui/Button'
 
-export default function LoginForm() {
+/** One live figure in the ruled row under the statement */
+export interface LoginFigure {
+  label: string
+  value: string
+  name: string
+  tone?: 'win'
+}
+
+export default function LoginForm({ figures = [] }: { figures?: LoginFigure[] }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -96,61 +104,76 @@ export default function LoginForm() {
   }
 
   return (
-    <AuthShell title="Sign in" subtitle="Pool, ping pong and poker for the Houses.">
-      <form onSubmit={handleLogin} className="space-y-5">
+    <AuthShell
+      statement="Settle it at the table."
+      lede="Ratings for pool and ping pong, a ledger for poker. Every result confirmed by the people you played."
+      footer={
+        figures.length > 0 ? (
+          <dl className="grid grid-cols-3 gap-6 border-t border-line-strong pt-5">
+            {figures.map((f) => (
+              <div key={f.label} className="min-w-0">
+                <dt className="text-xs text-mute">{f.label}</dt>
+                <dd className={cn('tabular mt-1.5 truncate text-2xl tracking-[-0.03em]', f.tone === 'win' ? 'text-win' : 'text-white')}>{f.value}</dd>
+                <dd className="mt-0.5 truncate text-[13px] text-zinc-400">{f.name}</dd>
+              </div>
+            ))}
+          </dl>
+        ) : null
+      }
+      title="Sign in"
+      below={
+        <>
+          New here?{' '}
+          <Link href="/signup" className="link">
+            Join with your university email
+          </Link>
+        </>
+      }
+    >
+      <form onSubmit={handleLogin} className="flex flex-col gap-[18px]">
         <div>
-          <label htmlFor="email" className="label">
-            University Email
+          <label htmlFor="email" className={AUTH_LABEL}>
+            University email
           </label>
           <input
             id="email"
             name="email"
             type="email"
+            autoComplete="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="input"
+            className={AUTH_FIELD}
             placeholder={`your.email${universityDomain}`}
           />
-          <p className="mt-1.5 text-xs text-zinc-500">Must be a {universityDomain} email address</p>
+          <p className="mt-1.5 text-xs text-mute">Must be a {universityDomain} email address</p>
         </div>
 
         <div>
-          <label htmlFor="password" className="label">
-            Password
-          </label>
+          <div className="mb-1.5 flex items-baseline justify-between gap-3 text-[13px] text-zinc-400">
+            <label htmlFor="password">Password</label>
+            <Link href="/setup-password" className="link">
+              Need to set a password?
+            </Link>
+          </div>
           <input
             id="password"
             name="password"
             type="password"
+            autoComplete="current-password"
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="input"
+            className={AUTH_FIELD}
             placeholder="Enter your password"
           />
         </div>
 
         {error && <Banner tone="error">{error}</Banner>}
 
-        <Button type="submit" full disabled={loading}>
+        <Button type="submit" size="lg" full disabled={loading}>
           {loading ? 'Signing in…' : 'Sign in'}
         </Button>
-
-        <div className="space-y-1.5 text-center text-sm text-zinc-400">
-          <p>
-            Don&apos;t have an account?{' '}
-            <Link href="/signup" className="link">
-              Sign up
-            </Link>
-          </p>
-          <p>
-            Need to set a password?{' '}
-            <Link href="/setup-password" className="link">
-              Set password
-            </Link>
-          </p>
-        </div>
       </form>
     </AuthShell>
   )

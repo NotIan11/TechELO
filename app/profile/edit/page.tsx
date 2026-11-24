@@ -1,8 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import ProfileEditForm from '@/components/profile/ProfileEditForm'
 import AppShell from '@/components/layout/AppShell'
-import PageHeader from '@/components/ui/PageHeader'
+import PageIntro from '@/components/ui/PageIntro'
 
 export default async function ProfileEditPage() {
   const supabase = await createClient()
@@ -14,7 +15,7 @@ export default async function ProfileEditPage() {
 
   const { data: profile } = await supabase
     .from('users')
-    .select('*')
+    .select('*, dorms (id, name)')
     .eq('id', user.id)
     .single()
 
@@ -23,9 +24,18 @@ export default async function ProfileEditPage() {
   }
 
   return (
-    <AppShell width="2xl">
-      <PageHeader title="Edit profile" subtitle="Your name and picture, as the boards show them" />
-      <ProfileEditForm profile={profile} />
+    <AppShell width="4xl">
+      <div className="max-w-[736px]">
+        <PageIntro
+          kicker={
+            <Link href={`/profile/${profile.id}`} className="underline decoration-white/20 underline-offset-[3px] transition hover:text-white">
+              {profile.display_name}
+            </Link>
+          }
+          title="Settings"
+        />
+        <ProfileEditForm profile={profile} email={profile.university_email ?? user.email ?? ''} houseName={profile.dorms?.name ?? null} />
+      </div>
     </AppShell>
   )
 }

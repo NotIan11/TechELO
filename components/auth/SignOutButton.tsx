@@ -37,7 +37,7 @@ export default function SignOutButton({ variant = 'ghost', size = 'md', row, cla
 
   return (
     <Button variant={variant} size={size} onClick={handleSignOut} type="button" className={className}>
-      <Icon name="logout" className="h-4 w-4" /> Sign out
+      Sign out
     </Button>
   )
 }

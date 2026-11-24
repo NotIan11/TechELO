@@ -26,8 +26,6 @@ export default function Sparkline({ values, width = 160, height = 40, className 
   })
 
   const path = points.map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`).join(' ')
-  const [lastX, lastY] = points[points.length - 1]
-  const area = `${path} L${lastX.toFixed(1)},${height - pad} L${points[0][0].toFixed(1)},${height - pad} Z`
 
   return (
     <svg
@@ -37,9 +35,7 @@ export default function Sparkline({ values, width = 160, height = 40, className 
       className={cn('overflow-visible', className)}
       aria-hidden="true"
     >
-      <path d={area} fill="currentColor" opacity="0.12" />
-      <path d={path} fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
-      <circle cx={lastX} cy={lastY} r="2.5" fill="currentColor" />
+      <path d={path} fill="none" stroke="currentColor" strokeWidth="1.25" strokeLinejoin="round" strokeLinecap="round" />
     </svg>
   )
 }

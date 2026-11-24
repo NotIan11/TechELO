@@ -2,14 +2,11 @@
 
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { cn } from '@/lib/utils'
 import Banner from '@/components/ui/Banner'
 import Button from '@/components/ui/Button'
-import Card from '@/components/ui/Card'
 import ChipSelect, { ChipToggle } from '@/components/ui/ChipSelect'
 import DollarInput from '@/components/ui/DollarInput'
-import GameIcon from '@/components/ui/GameIcon'
-import Segmented from '@/components/ui/Segmented'
+import SegmentedBox from './SegmentedBox'
 import { BUY_IN_PRESETS_CENTS, ENTRY_FEE_PRESETS_CENTS, STAKES_PRESETS, VARIANT_OPTIONS } from '@/lib/poker/constants'
 import { formatCents } from '@/lib/poker/money'
 import { fromDateTimeLocalValue, termLabel, toDateTimeLocalValue } from '@/lib/poker/periods'
@@ -22,6 +19,9 @@ interface StartSessionFormProps {
   initialKind: PokerSessionKind
 }
 
+const FIELD_LABEL = 'mb-2 block text-[13px] text-mute'
+
+/** Opens a poker table. Sits in a narrow column under a heading supplied by the page. */
 export default function StartSessionForm({ isOfficer, sponsors, houseNames, initialKind }: StartSessionFormProps) {
   const router = useRouter()
   const [kind, setKind] = useState<PokerSessionKind>(initialKind)
@@ -99,259 +99,184 @@ export default function StartSessionForm({ isOfficer, sponsors, houseNames, init
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div>
-        <p className="label">What are you playing?</p>
-        <div className="grid grid-cols-2 gap-3">
-          {(['cash', 'tournament'] as const).map((k) => {
-            const active = kind === k
-            return (
-              <button
-                key={k}
-                type="button"
-                onClick={() => {
-                  setKind(k)
-                  setStandardBuyIn(k === 'cash' ? 2000 : 1000)
-                }}
-                aria-pressed={active}
-                className={cn(
-                  'card flex flex-col items-center gap-2 p-5 transition',
-                  active ? 'border-orange-500 bg-orange-500/10' : 'hover:border-line-strong'
-                )}
-              >
-                <GameIcon game="poker" size="xl" className="text-orange-400" />
-                <span className="text-sm font-semibold text-white">{k === 'cash' ? 'Cash game' : 'Tournament'}</span>
-                <span className="text-xs text-zinc-500">
-                  {k === 'cash' ? 'Buy-ins & cash-outs' : 'Entries, places & payouts'}
-                </span>
-              </button>
-            )
-          })}
-        </div>
-      </div>
+      <SegmentedBox<PokerSessionKind>
+        aria-label="Kind"
+        value={kind}
+        onChange={(k) => {
+          if (k === kind) return
+          setKind(k)
+          setStandardBuyIn(k === 'cash' ? 2000 : 1000)
+        }}
+        options={[
+          { value: 'cash', label: 'Cash game' },
+          { value: 'tournament', label: 'Tournament' },
+        ]}
+      />
 
       {kind === 'tournament' && isOfficer && (
-        <Card padding="sm" className={cn(official && 'border-orange-500/40 bg-orange-500/5')}>
-          <label className="flex cursor-pointer items-start gap-3">
-            <input
-              type="checkbox"
-              className="mt-1 h-4 w-4 accent-orange-500"
-              checked={official}
-              onChange={(e) => setOfficial(e.target.checked)}
-            />
-            <span>
-              <span className="block text-sm font-semibold text-white">Official Tech Poker tournament</span>
-              <span className="block text-xs text-zinc-400">
-                Free entry, sponsor logos, and a public event page people can RSVP to. Auto-titled “{officialTitlePreview}”.
-              </span>
+        <label className="flex cursor-pointer items-start gap-3 border-y border-line py-3.5">
+          <input type="checkbox" className="mt-1 h-4 w-4 shrink-0 accent-orange-500" checked={official} onChange={(e) => setOfficial(e.target.checked)} />
+          <span>
+            <span className="block text-sm text-white">Official Tech Poker tournament</span>
+            <span className="mt-0.5 block text-[13px] text-mute">
+              Free entry, sponsor logos, and a public page people can RSVP to. Titled “{officialTitlePreview}” unless you name it.
             </span>
-          </label>
-        </Card>
+          </span>
+        </label>
       )}
 
-      <Card className="space-y-5">
-        {isOfficial ? (
-          <>
+      {isOfficial ? (
+        <>
+          <SegmentedBox
+            aria-label="When it starts"
+            options={[
+              { value: 'schedule', label: 'Schedule it' },
+              { value: 'now', label: 'Starting now' },
+            ]}
+            value={scheduleAhead ? 'schedule' : 'now'}
+            onChange={(v) => setScheduleAhead(v === 'schedule')}
+          />
+          {scheduleAhead && (
             <div>
-              <Segmented
-                options={[
-                  { value: 'schedule', label: 'Schedule it' },
-                  { value: 'now', label: 'Starting now' },
-                ]}
-                value={scheduleAhead ? 'schedule' : 'now'}
-                onChange={(v) => setScheduleAhead(v === 'schedule')}
-              />
-            </div>
-            {scheduleAhead && (
-              <div>
-                <label htmlFor="scheduled-for" className="label">
-                  When
-                </label>
-                <input
-                  id="scheduled-for"
-                  type="datetime-local"
-                  className="input"
-                  value={scheduledFor}
-                  onChange={(e) => setScheduledFor(e.target.value)}
-                  required
-                />
-              </div>
-            )}
-            <div>
-              <label htmlFor="title" className="label">
-                Title <span className="font-normal text-zinc-500">(optional; defaults to the term title)</span>
+              <label htmlFor="scheduled-for" className={FIELD_LABEL}>
+                When
               </label>
-              <input
-                id="title"
-                type="text"
-                className="input"
-                placeholder={officialTitlePreview}
-                value={title}
-                maxLength={80}
-                onChange={(e) => setTitle(e.target.value)}
-              />
+              <input id="scheduled-for" type="datetime-local" className="input tabular" value={scheduledFor} onChange={(e) => setScheduledFor(e.target.value)} required />
             </div>
-            <div>
-              <p className="label">Sponsors</p>
-              {sponsors.length === 0 ? (
-                <p className="text-sm text-zinc-500">
-                  No sponsors in the library yet.{' '}
-                  <a href="/poker/sponsors" className="link">
-                    add some
-                  </a>
-                  .
-                </p>
-              ) : (
-                <div className="flex flex-wrap gap-2">
-                  {sponsors.map((s) => {
-                    const active = sponsorIds.includes(s.id)
-                    return (
-                      <ChipToggle key={s.id} pressed={active} onClick={() => setSponsorIds((ids) => (active ? ids.filter((id) => id !== s.id) : [...ids, s.id]))}>
-                        {s.logo_url && (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={s.logo_url} alt="" className="h-5 w-5 rounded object-contain" />
-                        )}
-                        {s.name}
-                      </ChipToggle>
-                    )
-                  })}
-                </div>
-              )}
-            </div>
-          </>
-        ) : (
-          <>
-            {kind === 'cash' && (
-              <div>
-                <p className="label">Stakes</p>
-                <ChipSelect
-                  options={STAKES_PRESETS.map((s) => ({ value: s, label: s }))}
-                  value={stakes}
-                  onChange={setStakes}
-                  allowCustom
-                  customPlaceholder="$0.05/$0.10"
-                  aria-label="Stakes"
-                />
-              </div>
-            )}
-            <div>
-              <p className="label">{kind === 'cash' ? 'Standard buy-in' : 'Entry fee'}</p>
-              <div className="flex flex-wrap items-center gap-2">
-                <ChipSelect
-                  options={buyInPresets}
-                  value={standardBuyIn != null ? String(standardBuyIn) : null}
-                  onChange={(v) => setStandardBuyIn(v != null ? Number(v) : null)}
-                  clearable={false}
-                  aria-label={kind === 'cash' ? 'Standard buy-in' : 'Entry fee'}
-                />
-                <DollarInput
-                  valueCents={standardBuyIn}
-                  onChange={setStandardBuyIn}
-                  size="sm"
-                  className="w-28"
-                  aria-label="Custom amount"
-                  chain={false}
-                />
-              </div>
-              <p className="mt-1.5 text-xs text-zinc-500">
-                {kind === 'cash'
-                  ? 'Used for the “+ buy-in” quick button on each player. Everyone’s amounts stay editable.'
-                  : 'Applied to every entry; rebuys and add-ons multiply it. Editable per player.'}
-              </p>
-            </div>
-            {kind === 'tournament' && (
-              <div>
-                <label htmlFor="title" className="label">
-                  Title <span className="font-normal text-zinc-500">(optional)</span>
-                </label>
-                <input
-                  id="title"
-                  type="text"
-                  className="input"
-                  placeholder="Friday night freezeout"
-                  value={title}
-                  maxLength={80}
-                  onChange={(e) => setTitle(e.target.value)}
-                />
-              </div>
-            )}
-          </>
-        )}
-
-        <div>
-          <p className="label">Variant</p>
-          <ChipSelect
-            options={VARIANT_OPTIONS.map((v) => ({ value: v, label: v }))}
-            value={variant}
-            onChange={setVariant}
-            aria-label="Variant"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="location" className="label">
-            Location <span className="font-normal text-zinc-500">(optional)</span>
-          </label>
-          <input
-            id="location"
-            type="text"
-            className="input"
-            list="house-locations"
-            placeholder="Lloyd lounge"
-            value={location}
-            maxLength={80}
-            onChange={(e) => setLocation(e.target.value)}
-          />
-          <datalist id="house-locations">
-            {houseNames.map((n) => (
-              <option key={n} value={n} />
-            ))}
-          </datalist>
-        </div>
-
-        {!isOfficial && (
+          )}
           <div>
-            <label className="flex cursor-pointer items-center gap-3 text-sm text-zinc-300">
-              <input
-                type="checkbox"
-                className="h-4 w-4 accent-orange-500"
-                checked={backdate}
-                onChange={(e) => setBackdate(e.target.checked)}
-              />
-              This already happened. Log a past session
+            <label htmlFor="title" className={FIELD_LABEL}>
+              Title, if not the term title
             </label>
-            {backdate && (
-              <input
-                type="datetime-local"
-                className="input mt-3"
-                value={playedAt}
-                max={toDateTimeLocalValue(new Date())}
-                onChange={(e) => setPlayedAt(e.target.value)}
-              />
+            <input id="title" type="text" className="input" placeholder={officialTitlePreview} value={title} maxLength={80} onChange={(e) => setTitle(e.target.value)} />
+          </div>
+          <div>
+            <p className={FIELD_LABEL}>Sponsors</p>
+            {sponsors.length === 0 ? (
+              <p className="text-sm text-mute">
+                No sponsors on file yet.{' '}
+                <a href="/poker/sponsors" className="link">
+                  Add some
+                </a>
+              </p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {sponsors.map((s) => {
+                  const active = sponsorIds.includes(s.id)
+                  return (
+                    <ChipToggle key={s.id} pressed={active} onClick={() => setSponsorIds((ids) => (active ? ids.filter((id) => id !== s.id) : [...ids, s.id]))}>
+                      {s.logo_url && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={s.logo_url} alt="" className="h-5 w-5 object-contain" />
+                      )}
+                      {s.name}
+                    </ChipToggle>
+                  )
+                })}
+              </div>
             )}
           </div>
-        )}
-      </Card>
+        </>
+      ) : (
+        <>
+          {kind === 'cash' && (
+            <div>
+              <p className={FIELD_LABEL}>Stakes</p>
+              <ChipSelect
+                options={STAKES_PRESETS.map((s) => ({ value: s, label: s }))}
+                value={stakes}
+                onChange={setStakes}
+                allowCustom
+                customPlaceholder="$0.05/$0.10"
+                aria-label="Stakes"
+                className="tabular"
+              />
+            </div>
+          )}
+          <div>
+            <p className={FIELD_LABEL}>{kind === 'cash' ? 'Standard buy-in' : 'Entry fee'}</p>
+            <div className="flex flex-wrap items-center gap-2">
+              <ChipSelect
+                options={buyInPresets}
+                value={standardBuyIn != null ? String(standardBuyIn) : null}
+                onChange={(v) => setStandardBuyIn(v != null ? Number(v) : null)}
+                clearable={false}
+                aria-label={kind === 'cash' ? 'Standard buy-in' : 'Entry fee'}
+                className="tabular [&>button]:min-w-[56px] [&>button]:justify-center"
+              />
+              <DollarInput valueCents={standardBuyIn} onChange={setStandardBuyIn} className="w-28 [&_input]:tabular" aria-label="Another amount" chain={false} />
+            </div>
+            <p className="mt-2 text-xs text-mute">
+              {kind === 'cash'
+                ? 'One tap adds this much when someone reloads. Every amount stays editable.'
+                : 'Applied to every entry; rebuys and add-ons multiply it. Editable per player.'}
+            </p>
+          </div>
+          {kind === 'tournament' && (
+            <div>
+              <label htmlFor="title" className={FIELD_LABEL}>
+                Title, if you want one
+              </label>
+              <input id="title" type="text" className="input" placeholder="Friday night freezeout" value={title} maxLength={80} onChange={(e) => setTitle(e.target.value)} />
+            </div>
+          )}
+        </>
+      )}
+
+      <div>
+        <p className={FIELD_LABEL}>Variant</p>
+        <ChipSelect options={VARIANT_OPTIONS.map((v) => ({ value: v, label: v }))} value={variant} onChange={setVariant} aria-label="Variant" />
+      </div>
+
+      <div>
+        <label htmlFor="location" className={FIELD_LABEL}>
+          Where, if you want to say
+        </label>
+        <input id="location" type="text" className="input" list="house-locations" placeholder="Lloyd lounge" value={location} maxLength={80} onChange={(e) => setLocation(e.target.value)} />
+        <datalist id="house-locations">
+          {houseNames.map((n) => (
+            <option key={n} value={n} />
+          ))}
+        </datalist>
+      </div>
+
+      {!isOfficial && (
+        <div>
+          <label className="flex min-h-[44px] cursor-pointer items-center gap-3 text-sm text-zinc-300">
+            <input type="checkbox" className="h-4 w-4 shrink-0 accent-orange-500" checked={backdate} onChange={(e) => setBackdate(e.target.checked)} />
+            Log a night that already happened
+          </label>
+          {backdate && (
+            <input
+              type="datetime-local"
+              aria-label="When it was played"
+              className="input tabular mt-2"
+              value={playedAt}
+              max={toDateTimeLocalValue(new Date())}
+              onChange={(e) => setPlayedAt(e.target.value)}
+            />
+          )}
+        </div>
+      )}
 
       {error && <Banner tone="error">{error}</Banner>}
 
-      <Button type="submit" size="lg" full disabled={loading}>
-        {loading
-          ? 'Starting…'
-          : isOfficial
-            ? scheduleAhead
-              ? 'Schedule tournament'
-              : 'Start official tournament'
-            : backdate
-              ? 'Open the ledger'
-              : kind === 'cash'
-                ? 'Start game'
-                : 'Start tournament'}
-      </Button>
-      {!backdate && !isOfficial && (
-        <p className="text-center text-xs text-zinc-500">
-          The session is saved as soon as you start. Closing the tab or refreshing loses nothing.
-        </p>
-      )}
+      <div>
+        <Button type="submit" size="lg" variant="outline" disabled={loading}>
+          {loading
+            ? 'Opening…'
+            : isOfficial
+              ? scheduleAhead
+                ? 'Schedule tournament'
+                : 'Start official tournament'
+              : backdate
+                ? 'Open the ledger'
+                : kind === 'cash'
+                  ? 'Open the table'
+                  : 'Start tournament'}
+        </Button>
+        {!backdate && !isOfficial && <p className="mt-3 text-[13px] text-mute">Saved the moment it opens. Add players as they sit down.</p>}
+      </div>
     </form>
   )
 }

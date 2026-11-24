@@ -175,7 +175,7 @@ export async function loadLiveSessionFor(
 export const SESSION_LIST_SELECT = `
   *,
   host:users!host_id(id, display_name, profile_image_url),
-  entries:poker_entries(id, user_id, guest_id, net_cents, cash_out_cents, user:users(id, display_name, profile_image_url), guest:poker_guests(id, name))
+  entries:poker_entries(id, user_id, guest_id, buy_in_cents, net_cents, cash_out_cents, acknowledged_at, disputed_at, user:users(id, display_name, profile_image_url), guest:poker_guests(id, name))
 `
 
 /** Guests without an account yet, for the player picker (any host can seat any guest) */
@@ -258,6 +258,18 @@ export async function loadGuestSummaries(
       last_played_at: st?.last ?? null,
     }
   })
+}
+
+/** Counts shown on the Poker tabs: every session on the list, and (signed in) the viewer's guests still without an account */
+export async function loadPokerTabCounts(
+  supabase: SupabaseClient,
+  userId: string | null
+): Promise<{ sessions: number | null; guests: number | null }> {
+  const [{ count }, guests] = await Promise.all([
+    supabase.from('poker_sessions').select('id', { count: 'exact', head: true }),
+    userId ? loadUnlinkedGuestCount(supabase, userId) : Promise.resolve(null),
+  ])
+  return { sessions: count ?? null, guests }
 }
 
 export async function loadIsOfficer(supabase: SupabaseClient, userId: string): Promise<boolean> {

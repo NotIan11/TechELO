@@ -3,24 +3,21 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import AppShell from '@/components/layout/AppShell'
 import SignOutButton from '@/components/auth/SignOutButton'
-import Avatar from '@/components/ui/Avatar'
+import PlayerBoard from '@/components/profile/PlayerBoard'
+import MostPlayed from '@/components/profile/MostPlayed'
+import { FIGURE_CELL, GAME_NAMES, buildFeed, buildRivals, gameTrend, sinceLabel, type ProfileMatch, type TableGame } from '@/components/profile/activity'
 import Button from '@/components/ui/Button'
-import Card from '@/components/ui/Card'
-import EmptyState from '@/components/ui/EmptyState'
-import GameIcon, { gameLabel } from '@/components/ui/GameIcon'
+import Figure from '@/components/ui/Figure'
 import HouseChip from '@/components/ui/HouseChip'
-import PageHeader from '@/components/ui/PageHeader'
-import SectionHeader from '@/components/ui/SectionHeader'
+import PageIntro from '@/components/ui/PageIntro'
 import Sparkline from '@/components/ui/Sparkline'
-import StatTile from '@/components/ui/StatTile'
-import StreakChip from '@/components/ui/StreakChip'
 import TextLink from '@/components/ui/TextLink'
 import WinLossDots from '@/components/ui/WinLossDots'
-import MatchCard, { type MatchWithPlayers } from '@/components/match/MatchCard'
-import PokerProfileSection from '@/components/poker/PokerProfileSection'
-import { formatDate } from '@/lib/utils'
-import { ratingHistory, recentForm, currentStreak } from '@/lib/stats'
+import { tablemates } from '@/lib/poker/stats'
 import type { PlayerRef, PokerCountedEntry } from '@/lib/poker/types'
+import { cn } from '@/lib/utils'
+
+const TABLE_GAMES: TableGame[] = ['pool', 'ping_pong']
 
 export default async function ProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -51,139 +48,164 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
 
   const pokerEntries = (pokerRows ?? []) as PokerCountedEntry[]
   let tableEntries: PokerCountedEntry[] = []
-  const pokerPlayers: Record<string, PlayerRef> = {}
+  const pokerPlayers = new Map<string, PlayerRef>()
   if (pokerEntries.length > 0) {
     const sessionIds = Array.from(new Set(pokerEntries.map((e) => e.session_id)))
     const { data: tableRows } = await supabase.from('poker_counted_entries').select('*').in('session_id', sessionIds).limit(5000)
     tableEntries = (tableRows ?? []) as PokerCountedEntry[]
     const ids = Array.from(new Set(tableEntries.map((e) => e.user_id).filter((id): id is string => id != null)))
     const { data: users } = await supabase.from('users').select('id, display_name, profile_image_url').in('id', ids)
-    for (const u of users ?? []) pokerPlayers[u.id] = { id: u.id, display_name: u.display_name, profile_image_url: u.profile_image_url }
+    for (const u of users ?? []) pokerPlayers.set(u.id, { id: u.id, display_name: u.display_name, profile_image_url: u.profile_image_url })
   }
 
-  const completedMatches = (matches ?? []) as MatchWithPlayers[]
+  const completedMatches = (matches ?? []) as ProfileMatch[]
 
-  const games = (['pool', 'ping_pong'] as const).map((game) => {
-    const rating = eloRatings?.find((r) => r.game_type === game)
-    const history = ratingHistory(completedMatches as any, id, game)
-    const form = recentForm(completedMatches as any, id, game)
-    const streak = currentStreak(form)
-    const played = rating?.matches_played ?? 0
-    return {
-      game,
-      rating: rating?.rating ?? 1500,
-      wins: rating?.wins ?? 0,
-      losses: rating?.losses ?? 0,
-      played,
-      winRate: played > 0 ? Math.round(((rating?.wins ?? 0) / played) * 100) : 0,
-      history,
-      form,
-      streak,
-    }
-  })
+  // Rank the way the leaderboard does: higher rating first, wins break ties; only players with a match count
+  const games = await Promise.all(
+    TABLE_GAMES.map(async (game) => {
+      const row = eloRatings?.find((r) => r.game_type === game)
+      const played: number = row?.matches_played ?? 0
+      const rating: number = row?.rating ?? 1500
+      const wins: number = row?.wins ?? 0
+      const losses: number = row?.losses ?? 0
+      let rank: number | null = null
+      let ranked: number | null = null
+      if (played > 0) {
+        const [{ count: above }, { count: tied }, { count: total }] = await Promise.all([
+          supabase.from('elo_ratings').select('*', { count: 'exact', head: true }).eq('game_type', game).gt('matches_played', 0).gt('rating', rating),
+          supabase.from('elo_ratings').select('*', { count: 'exact', head: true }).eq('game_type', game).gt('matches_played', 0).eq('rating', rating).gt('wins', wins),
+          supabase.from('elo_ratings').select('*', { count: 'exact', head: true }).eq('game_type', game).gt('matches_played', 0),
+        ])
+        rank = 1 + (above ?? 0) + (tied ?? 0)
+        ranked = total ?? null
+      }
+      return { game, played, rating, wins, losses, rank, ranked, winRate: played > 0 ? Math.round((wins / played) * 100) : 0, ...gameTrend(completedMatches, id, game, rating) }
+    })
+  )
+
+  const feed = buildFeed(completedMatches, pokerEntries, id, isOwnProfile)
+  const rivals = buildRivals(completedMatches, id, tablemates(id, tableEntries, pokerPlayers, 1000))
+  const firstName = profile.display_name.trim().split(/\s+/)[0] || profile.display_name
 
   return (
     <AppShell>
-      <PageHeader
-        size="md"
-        leading={<Avatar src={profile.profile_image_url} name={profile.display_name} size="xl" />}
-        title={<span className="text-2xl sm:text-3xl">{profile.display_name}</span>}
-        meta={
+      <PageIntro
+        kicker={
           <>
             {profile.dorms ? (
-              <Link href={`/dorms/${profile.dorms.id}`} className="transition hover:opacity-80">
-                <HouseChip name={profile.dorms.name} />
+              <Link href={`/dorms/${profile.dorms.id}`} className="inline-flex min-h-[24px] items-center transition hover:text-white">
+                <HouseChip name={profile.dorms.name} className="text-[13px] text-inherit" />
               </Link>
             ) : (
               <span>No house yet</span>
             )}
-            <span>· member since {formatDate(profile.created_at)}</span>
-            {isOwnProfile && <span className="truncate">· {profile.university_email}</span>}
+            <span>· playing since {sinceLabel(profile.created_at)}</span>
           </>
         }
+        title={profile.display_name}
         actions={
           isOwnProfile ? (
             <>
               <Button href="/profile/edit" variant="secondary">
-                Edit profile
+                Edit
               </Button>
-              {!profile.dorms && <Button href="/profile/join-dorm">Join a house</Button>}
+              {!profile.dorms && (
+                <Button href="/profile/join-dorm" variant="secondary">
+                  Join a house
+                </Button>
+              )}
               <SignOutButton />
             </>
           ) : (
-            user && <Button href={`/matches/new?opponent=${id}`}>Challenge</Button>
+            user && <Button href={`/play?opponent=${id}`}>Challenge</Button>
           )
         }
-        className="mb-8"
       />
 
-      <div className="mb-6 grid gap-6 md:grid-cols-2">
-        {games.map(({ game, rating, wins, losses, played, winRate, history, form, streak }) => (
-          <Card key={game}>
-            <div className="flex items-center justify-between gap-3">
-              <Link href={`/leaderboard?game_type=${game}`} className="flex items-center gap-2 font-display text-lg font-semibold text-white transition hover:text-orange-400">
-                <GameIcon game={game} className="text-orange-400" />
-                {gameLabel(game)}
-              </Link>
-              {streak && streak.count >= 2 && <StreakChip type={streak.type} count={streak.count} />}
-            </div>
-
-            <div className="mt-4 flex items-end justify-between gap-4">
-              <div>
-                <p className="tabular font-display text-4xl font-bold tracking-tight text-white">{rating}</p>
-                <p className="mt-1 text-xs text-zinc-500">
-                  {played > 0 ? (
-                    `${played} matches played`
-                  ) : isOwnProfile ? (
-                    <>
-                      Unranked. One confirmed match puts you on the board.{' '}
-                      <TextLink href="/matches/new" arrow="right" className="text-xs">
-                        Play
-                      </TextLink>
-                    </>
-                  ) : (
-                    'Unranked'
+      <PlayerBoard
+        displayName={profile.display_name}
+        isOwnProfile={isOwnProfile}
+        feed={feed}
+        entries={pokerEntries}
+        aside={<MostPlayed rows={rivals} subject={isOwnProfile ? 'you' : firstName} />}
+        tableFigures={games.map(({ game, played, rating, wins, losses, rank, ranked, winRate, history, peak, change30, form, streak }) => (
+          <div key={game} className={FIGURE_CELL}>
+            {played === 0 ? (
+              <Figure
+                label={<GameLink game={game} />}
+                aside="Unranked"
+                value={rating}
+                tone="muted"
+                size="lg"
+              >
+                <p className="mt-4 max-w-[280px]">{isOwnProfile ? 'Unranked. One confirmed match puts you on the board.' : 'Unranked'}</p>
+                {isOwnProfile && (
+                  <TextLink href={`/play?game_type=${game}`} className="min-h-[44px] text-[13px]">
+                    Play
+                  </TextLink>
+                )}
+              </Figure>
+            ) : (
+              <Figure
+                label={<GameLink game={game} />}
+                aside={
+                  <span className="tabular">
+                    {rank != null && (
+                      <>
+                        #{rank}
+                        {ranked != null && <span className="font-sans"> of </span>}
+                        {ranked}
+                        <span className="font-sans"> · </span>
+                      </>
+                    )}
+                    {wins}–{losses}
+                  </span>
+                }
+                value={rating}
+                size="lg"
+              >
+                {history.length >= 2 && <Sparkline values={history} width={320} height={48} className="mt-4 h-auto w-full text-white" />}
+                <p className="mt-2 flex flex-wrap justify-between gap-x-3 text-xs text-mute">
+                  <span>
+                    {peak != null && (
+                      <>
+                        Peak <span className="tabular">{peak}</span> ·{' '}
+                      </>
+                    )}
+                    <span className="tabular">{winRate}%</span> won
+                  </span>
+                  {change30 != null && (
+                    <span className={cn('tabular', change30 > 0 ? 'text-win' : change30 < 0 ? 'text-loss' : undefined)}>
+                      {change30 > 0 ? '+' : change30 < 0 ? '−' : ''}
+                      {Math.abs(change30)} in 30 days
+                    </span>
                   )}
                 </p>
-              </div>
-              <Sparkline values={history} className="text-orange-400" />
-            </div>
-
-            <div className="mt-5 grid grid-cols-3 gap-3 border-t border-line pt-4 text-center">
-              <StatTile bare size="sm" label="Wins" value={wins} tone={wins > 0 ? 'win' : 'muted'} />
-              <StatTile bare size="sm" label="Losses" value={losses} tone={losses > 0 ? 'loss' : 'muted'} />
-              <StatTile bare size="sm" label="Win rate" value={`${winRate}%`} />
-            </div>
-
-            {form.length > 0 && (
-              <div className="mt-4 flex items-center justify-between">
-                <span className="text-xs text-zinc-500">Recent form</span>
-                <WinLossDots form={form} />
-              </div>
+                {(form.length > 0 || (streak && streak.count >= 2)) && (
+                  <p className="mt-1 flex flex-wrap items-center justify-between gap-x-3 text-xs">
+                    {streak && streak.count >= 2 ? (
+                      <span className={streak.type === 'W' ? 'text-win' : 'text-loss'}>
+                        <span className="tabular">{streak.count}</span> {streak.type === 'W' ? 'wins' : 'losses'} in a row
+                      </span>
+                    ) : (
+                      <span className="text-mute">Recent form</span>
+                    )}
+                    <WinLossDots form={form} />
+                  </p>
+                )}
+              </Figure>
             )}
-          </Card>
-        ))}
-      </div>
-
-      <PokerProfileSection userId={id} displayName={profile.display_name} isOwnProfile={isOwnProfile} entries={pokerEntries} tableEntries={tableEntries} players={pokerPlayers} />
-
-      <section>
-        <SectionHeader title="Match history" />
-        {completedMatches.length === 0 ? (
-          <EmptyState
-            icon={<GameIcon game="ping_pong" />}
-            title="No completed matches"
-            description={isOwnProfile ? 'Confirmed matches show up here with the rating change.' : `${profile.display_name} has not completed any matches yet.`}
-            action={isOwnProfile ? <Button href="/matches/new">Challenge someone</Button> : undefined}
-          />
-        ) : (
-          <div className="space-y-3">
-            {completedMatches.slice(0, 15).map((match) => (
-              <MatchCard key={match.id} match={match} viewerId={id} />
-            ))}
           </div>
-        )}
-      </section>
+        ))}
+      />
     </AppShell>
+  )
+}
+
+function GameLink({ game }: { game: TableGame }) {
+  return (
+    <Link href={`/leaderboard?game_type=${game}`} className="transition hover:text-white">
+      {GAME_NAMES[game]}
+    </Link>
   )
 }

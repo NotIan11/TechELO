@@ -1,9 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import AppShell from '@/components/layout/AppShell'
-import PageHeader from '@/components/ui/PageHeader'
-import Button from '@/components/ui/Button'
+import PageIntro from '@/components/ui/PageIntro'
+import TextLink from '@/components/ui/TextLink'
 import SponsorLibrary from '@/components/poker/SponsorLibrary'
+import { numberWord, plural } from '@/lib/poker/phrases'
 import { loadIsOfficer, loadSponsors } from '@/lib/poker/queries'
 
 export default async function PokerSponsorsPage() {
@@ -17,13 +18,30 @@ export default async function PokerSponsorsPage() {
     redirect('/poker')
   }
   const sponsors = await loadSponsors(supabase)
+  const logos = sponsors.filter((s) => s.logo_url).length
 
   return (
-    <AppShell promo="tables" width="4xl">
-      <PageHeader
+    <AppShell width="4xl">
+      <PageIntro
+        kicker={
+          <>
+            <TextLink href="/poker" muted>
+              Poker
+            </TextLink>
+            <span>· officers only</span>
+          </>
+        }
         title="Sponsors"
-        subtitle="Logos reused across every official tournament"
-        actions={<Button href="/poker/sessions/new?kind=tournament" variant="secondary">Schedule a tournament</Button>}
+        lede={
+          sponsors.length === 0
+            ? 'No sponsors on file yet. The ones you add here can be attached to any official tournament.'
+            : `${numberWord(sponsors.length, true)} ${plural(sponsors.length, 'sponsor')} on file, ${logos === sponsors.length ? (logos === 1 ? 'with a logo' : 'all with logos') : `${numberWord(logos)} with a logo`}. They show on every official tournament you attach them to.`
+        }
+        actions={
+          <TextLink href="/play?kind=tournament" className="text-sm">
+            Schedule a tournament
+          </TextLink>
+        }
       />
       <SponsorLibrary sponsors={sponsors} />
     </AppShell>

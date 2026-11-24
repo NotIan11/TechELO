@@ -2,22 +2,23 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Avatar from '@/components/ui/Avatar'
+import Link from 'next/link'
 import Badge from '@/components/ui/Badge'
 import Banner from '@/components/ui/Banner'
 import Button from '@/components/ui/Button'
-import Card from '@/components/ui/Card'
 import { ChipToggle } from '@/components/ui/ChipSelect'
 import ConfirmStrip from '@/components/ui/ConfirmStrip'
-import Hero from '@/components/ui/Hero'
-import Icon from '@/components/ui/Icon'
-import PokerStatusBadge from '@/components/ui/PokerStatusBadge'
+import PageIntro, { Num } from '@/components/ui/PageIntro'
+import TextLink from '@/components/ui/TextLink'
 import ShareButton from './ShareButton'
 import SponsorRow from './SponsorRow'
 import { formatPokerDateTime, fromDateTimeLocalValue, toDateTimeLocalValue } from '@/lib/poker/periods'
+import { numberWord } from '@/lib/poker/phrases'
 import { sessionTitle } from '@/lib/poker/stats'
 import type { SessionFull } from '@/lib/poker/queries'
 import type { PokerSponsorRow } from '@/lib/poker/types'
+
+const FIELD_LABEL = 'mb-2 block text-[13px] text-mute'
 
 interface EventPageProps {
   session: SessionFull
@@ -91,88 +92,102 @@ export default function EventPage({ session, currentUserId, isHost, sponsors }: 
     if (ok) setEditing(false)
   }
 
+  const going = session.rsvp_count
+
   return (
-    <div className="space-y-6">
-      <Hero
-        panel
-        eyebrow={
-          <Badge tone="orange" dot>
-            Official Tech Poker tournament
-          </Badge>
-        }
-        aside={
+    <div>
+      <PageIntro
+        className="sm:items-start"
+        kicker={
           <>
-            <PokerStatusBadge status="scheduled" />
-            <ShareButton path={`/poker/sessions/${session.id}`} title={displayTitle} />
+            <TextLink href="/poker/sessions" muted>
+              Poker sessions
+            </TextLink>
+            <span>· Official Tech Poker tournament</span>
+            <Badge tone="orange" dot>
+              Upcoming
+            </Badge>
           </>
         }
         title={displayTitle}
         lede={
           <>
-            {when}
-            {session.location && <> · {session.location}</>}
-            <span className="text-zinc-500"> · Free entry</span>
+            <Num>{when}</Num>
+            {session.location && <> at {session.location}</>}. Entry is free
+            {going === 0 ? (
+              ' and nobody has said they are in yet.'
+            ) : (
+              <>
+                {' '}
+                and <Num>{going}</Num> {going === 1 ? 'player is' : 'players are'} in.
+              </>
+            )}
           </>
         }
-      >
-        {session.sponsors.length > 0 && <SponsorRow sponsors={session.sponsors} className="mt-5" />}
-        {session.notes && <p className="mt-5 max-w-2xl whitespace-pre-wrap border-t border-line pt-5 text-sm text-zinc-300">{session.notes}</p>}
-      </Hero>
+        actions={<ShareButton path={`/poker/sessions/${session.id}`} title={displayTitle} />}
+      />
 
-      {notice && <Banner tone="success">{notice}</Banner>}
-      {error && <Banner tone="error">{error}</Banner>}
+      {session.sponsors.length > 0 && <SponsorRow sponsors={session.sponsors} className="mt-7" />}
+      {session.notes && <p className="mt-7 max-w-2xl whitespace-pre-wrap text-[15px] text-zinc-300">{session.notes}</p>}
 
-      <Card>
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <p className="font-display text-lg font-semibold text-white">
-              {session.rsvp_count === 0 ? 'Nobody has RSVP’d yet' : `${session.rsvp_count} ${session.rsvp_count === 1 ? 'player is' : 'players are'} in`}
-            </p>
-            <p className="mt-0.5 text-sm text-zinc-400">RSVPs pre-fill the ledger when the tournament starts.</p>
-          </div>
-          {currentUserId ? (
-            myRsvp ? (
-              <div className="flex items-center gap-3">
-                <span className="inline-flex items-center gap-1 text-sm text-win">
-                  <Icon name="check" className="h-4 w-4" strokeWidth={2.5} /> You are in
-                </span>
-                <Button variant="secondary" size="sm" disabled={busy} type="button" onClick={() => post('/api/poker/sessions/rsvp', { session_id: session.id, attending: false })}>
-                  Can’t make it
-                </Button>
-              </div>
-            ) : (
-              <Button disabled={busy} type="button" onClick={() => post('/api/poker/sessions/rsvp', { session_id: session.id, attending: true })}>
-                I’m in
-              </Button>
-            )
-          ) : (
-            <Button href={`/login?redirect=/poker/sessions/${session.id}`}>Sign in to RSVP</Button>
-          )}
+      {(notice || error) && (
+        <div className="mt-6 space-y-2">
+          {notice && <Banner tone="success">{notice}</Banner>}
+          {error && <Banner tone="error">{error}</Banner>}
         </div>
+      )}
+
+      <section className="mt-9 flex flex-wrap items-center justify-between gap-5 rounded border border-line-strong px-5 py-5 sm:px-6">
+        <div className="min-w-0">
+          <h2 className="font-display text-[22px] tracking-tight text-white">{myRsvp ? 'You are in' : 'Are you in?'}</h2>
+          <p className="mt-1.5 text-[13px] text-mute">Everyone who says yes is on the ledger when the tournament starts.</p>
+        </div>
+        {currentUserId ? (
+          myRsvp ? (
+            <Button variant="secondary" size="lg" disabled={busy} type="button" onClick={() => post('/api/poker/sessions/rsvp', { session_id: session.id, attending: false })}>
+              Can’t make it
+            </Button>
+          ) : (
+            <Button size="lg" disabled={busy} type="button" onClick={() => post('/api/poker/sessions/rsvp', { session_id: session.id, attending: true })}>
+              I’m in
+            </Button>
+          )
+        ) : (
+          <Button size="lg" href={`/login?redirect=/poker/sessions/${session.id}`}>
+            Sign in to RSVP
+          </Button>
+        )}
+      </section>
+
+      <section className="mt-10">
+        <h2 className="border-b border-line-bright pb-2.5 font-sans text-xs tracking-normal text-mute">
+          {going === 0 ? 'Nobody has RSVP’d yet' : `${numberWord(going, true)} going`}
+        </h2>
         {session.rsvps.length > 0 && (
-          <ul className="mt-5 flex flex-wrap gap-2">
+          <ul className="sm:columns-2 sm:gap-x-12">
             {session.rsvps.map((r) =>
               r.user ? (
-                <li key={r.user.id} className="inline-flex items-center gap-2 rounded-full border border-line bg-ink-700 py-1 pl-1 pr-3 text-sm text-zinc-200">
-                  <Avatar src={r.user.profile_image_url} name={r.user.display_name} size="xs" />
-                  {r.user.display_name}
+                <li key={r.user.id} className="flex min-h-[48px] break-inside-avoid items-baseline gap-2 border-b border-line py-3">
+                  <Link href={`/profile/${r.user.id}`} className="truncate text-[15px] text-white underline-offset-4 hover:underline">
+                    {r.user.display_name}
+                  </Link>
+                  {r.user.id === currentUserId && <span className="text-xs text-orange-400">you</span>}
                 </li>
               ) : null
             )}
           </ul>
         )}
-      </Card>
+      </section>
 
       {isHost && (
-        <Card>
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p className="font-medium text-white">Organizer controls</p>
-              <p className="mt-0.5 text-sm text-zinc-400">Start it when the cards are in the air. Everyone who RSVP’d lands in the ledger.</p>
-            </div>
+        <section className="mt-10 border-t border-line-strong pt-5">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <p className="max-w-xl text-sm text-zinc-400">
+              <span className="text-white">You are organizing this.</span> Start it when the cards are in the air. Everyone who RSVP’d lands in the ledger.
+            </p>
             {confirming == null && !editing && (
               <div className="flex flex-wrap gap-2">
-                <Button onClick={() => setConfirming('open')} disabled={busy} type="button">
+                <Button variant="outline" onClick={() => setConfirming('open')} disabled={busy} type="button">
                   Start tournament
                 </Button>
                 <Button variant="secondary" onClick={() => setEditing(true)} disabled={busy} type="button">
@@ -188,6 +203,7 @@ export default function EventPage({ session, currentUserId, isHost, sponsors }: 
           {confirming === 'open' && (
             <ConfirmStrip
               text={`Start the tournament now? ${session.rsvp_count} RSVP${session.rsvp_count === 1 ? '' : 's'} will be added to the ledger.`}
+              confirmLabel="Start tournament"
               busy={busy}
               busyLabel="Starting…"
               onBack={() => setConfirming(null)}
@@ -199,6 +215,7 @@ export default function EventPage({ session, currentUserId, isHost, sponsors }: 
             <ConfirmStrip
               text="Cancel this event? The page stays visible as voided and cannot be reopened."
               tone="danger"
+              confirmLabel="Cancel event"
               busy={busy}
               busyLabel="Cancelling…"
               onBack={() => setConfirming(null)}
@@ -208,36 +225,36 @@ export default function EventPage({ session, currentUserId, isHost, sponsors }: 
           )}
 
           {editing && (
-            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <div className="mt-6 grid gap-5 sm:grid-cols-2">
               <div className="sm:col-span-2">
-                <label htmlFor="ev-title" className="label">
-                  Title <span className="font-normal text-zinc-500">(blank = term title)</span>
+                <label htmlFor="ev-title" className={FIELD_LABEL}>
+                  Title, or leave blank for the term title
                 </label>
                 <input id="ev-title" type="text" className="input" value={title} maxLength={80} onChange={(e) => setTitle(e.target.value)} />
               </div>
               <div>
-                <label htmlFor="ev-when" className="label">
+                <label htmlFor="ev-when" className={FIELD_LABEL}>
                   When
                 </label>
-                <input id="ev-when" type="datetime-local" className="input" value={scheduledFor} onChange={(e) => setScheduledFor(e.target.value)} />
+                <input id="ev-when" type="datetime-local" className="input tabular" value={scheduledFor} onChange={(e) => setScheduledFor(e.target.value)} />
               </div>
               <div>
-                <label htmlFor="ev-where" className="label">
-                  Location
+                <label htmlFor="ev-where" className={FIELD_LABEL}>
+                  Where
                 </label>
                 <input id="ev-where" type="text" className="input" value={location} maxLength={80} onChange={(e) => setLocation(e.target.value)} />
               </div>
               <div className="sm:col-span-2">
-                <label htmlFor="ev-notes" className="label">
+                <label htmlFor="ev-notes" className={FIELD_LABEL}>
                   Description
                 </label>
                 <textarea id="ev-notes" className="input min-h-[96px]" value={notes} maxLength={1000} onChange={(e) => setNotes(e.target.value)} />
               </div>
               <div className="sm:col-span-2">
-                <p className="label">Sponsors</p>
+                <p className={FIELD_LABEL}>Sponsors</p>
                 {sponsors.length === 0 ? (
-                  <p className="text-sm text-zinc-500">
-                    No sponsors in the library.{' '}
+                  <p className="text-sm text-mute">
+                    No sponsors on file.{' '}
                     <a href="/poker/sponsors" className="link">
                       Add some
                     </a>
@@ -256,7 +273,7 @@ export default function EventPage({ session, currentUserId, isHost, sponsors }: 
                 )}
               </div>
               <div className="flex gap-2 sm:col-span-2">
-                <Button onClick={saveDetails} disabled={busy} type="button">
+                <Button variant="outline" onClick={saveDetails} disabled={busy} type="button">
                   {busy ? 'Saving…' : 'Save details'}
                 </Button>
                 <Button variant="ghost" onClick={() => setEditing(false)} disabled={busy} type="button">
@@ -265,10 +282,10 @@ export default function EventPage({ session, currentUserId, isHost, sponsors }: 
               </div>
             </div>
           )}
-        </Card>
+        </section>
       )}
 
-      <p className="text-center text-xs text-zinc-500">Hosted by {session.host?.display_name ?? 'the poker club'} · Tech Poker</p>
+      <p className="mt-10 text-xs text-mute">Hosted by {session.host?.display_name ?? 'the poker club'} · Tech Poker</p>
     </div>
   )
 }

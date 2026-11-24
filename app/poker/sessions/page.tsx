@@ -1,12 +1,14 @@
 import { createClient } from '@/lib/supabase/server'
 import AppShell from '@/components/layout/AppShell'
-import PageHeader from '@/components/ui/PageHeader'
-import Button from '@/components/ui/Button'
+import PageIntro, { Num } from '@/components/ui/PageIntro'
 import LiveSessionBanner from '@/components/poker/LiveSessionBanner'
+import { ParamCheckbox, ParamSelect } from '@/components/poker/ParamControls'
+import PokerTabs from '@/components/poker/PokerTabs'
 import SessionsListClient from '@/components/poker/SessionsListClient'
 import type { SessionListItem } from '@/components/poker/SessionCard'
 import { PAGE_SIZE } from '@/lib/poker/constants'
-import { SESSION_LIST_SELECT, loadLiveSessionFor } from '@/lib/poker/queries'
+import { numberWord, plural } from '@/lib/poker/phrases'
+import { SESSION_LIST_SELECT, loadLiveSessionFor, loadPokerTabCounts } from '@/lib/poker/queries'
 import type { PokerKindFilter } from '@/lib/poker/types'
 
 export default async function PokerSessionsPage({
@@ -51,34 +53,62 @@ export default async function PokerSessionsPage({
     liveQuery = liveQuery.in('id', mineIds.length > 0 ? mineIds : ['00000000-0000-0000-0000-000000000000'])
   }
 
-  const [{ data: sessions, count }, { data: live }, myLive] = await Promise.all([
+  const [{ data: sessions, count }, { data: live }, myLive, tabCounts, satRes] = await Promise.all([
     listQuery,
-    page === 1 ? liveQuery : Promise.resolve({ data: [] as unknown[] }),
+    liveQuery,
     user ? loadLiveSessionFor(supabase, user.id) : Promise.resolve(null),
+    loadPokerTabCounts(supabase, user?.id ?? null),
+    user ? supabase.from('poker_counted_entries').select('id', { count: 'exact', head: true }).eq('user_id', user.id) : Promise.resolve({ count: null }),
   ])
+  const liveRows = (live ?? []) as unknown as SessionListItem[]
+  const nights = (count ?? 0) + liveRows.length
+  const sat = satRes.count
+  const what = kind === 'cash' ? 'cash game' : kind === 'tournament' ? 'tournament' : 'night'
 
   const totalPages = Math.max(1, Math.ceil((count ?? 0) / PAGE_SIZE))
 
   return (
-    <AppShell promo="tables" width="4xl">
-      <PageHeader
-        title="Sessions"
-        subtitle="Every logged session, newest first"
-        actions={
-          user ? (
-            <Button href="/poker/sessions/new">{myLive ? 'Resume live session' : 'Start a session'}</Button>
+    <AppShell>
+      <PageIntro
+        title="Poker"
+        lede={
+          nights === 0 ? (
+            <>{mine ? `You have not sat at a ${what} yet.` : `No ${what}s on the books yet.`}</>
           ) : (
-            <Button href="/login?redirect=/poker/sessions/new" variant="secondary">
-              Sign in to log a session
-            </Button>
+            <>
+              <Num>{nights}</Num> {plural(nights, what)} {mine ? 'with you at the table' : 'on the books'}
+              {liveRows.length > 0 && <>, {liveRows.length === 1 ? (nights === 1 ? 'and it is' : 'one of them') : `${numberWord(liveRows.length)} of them`} still going</>}.
+              {!mine && sat != null && (
+                <>
+                  {' '}
+                  You sat at <Num>{sat}</Num>.
+                </>
+              )}
+            </>
           )
         }
+        actions={
+          <>
+            {user && <ParamCheckbox param="mine" checked={mine} label="Only nights I played" />}
+            <ParamSelect
+              param="kind"
+              value={kind}
+              defaultValue="all"
+              aria-label="Kind"
+              options={[
+                { value: 'all', label: 'Cash and tournaments' },
+                { value: 'cash', label: 'Cash games' },
+                { value: 'tournament', label: 'Tournaments' },
+              ]}
+            />
+          </>
+        }
       />
-      <LiveSessionBanner session={myLive} />
+      <PokerTabs active="sessions" sessions={tabCounts.sessions} guests={tabCounts.guests} signedIn={!!user} />
+      <LiveSessionBanner session={myLive} className="mt-6" />
       <SessionsListClient
-        live={(live ?? []) as unknown as SessionListItem[]}
+        live={page === 1 ? liveRows : []}
         sessions={(sessions ?? []) as unknown as SessionListItem[]}
-        kind={kind}
         mine={mine}
         currentPage={page}
         totalPages={totalPages}

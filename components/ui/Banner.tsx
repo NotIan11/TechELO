@@ -3,10 +3,10 @@ import { cn } from '@/lib/utils'
 export type BannerTone = 'error' | 'success' | 'warning' | 'info'
 
 const tones: Record<BannerTone, string> = {
-  error: 'border-loss/20 bg-loss/10 text-loss',
-  success: 'border-win/20 bg-win/10 text-win animate-fade-up',
-  warning: 'border-warn/20 bg-warn/10 text-warn',
-  info: 'border-orange-500/25 bg-orange-500/10 text-orange-400',
+  error: 'border-loss/50 text-loss',
+  success: 'border-win/50 text-win animate-fade-up',
+  warning: 'border-warn/50 text-warn',
+  info: 'border-line-bright text-zinc-200',
 }
 
 interface BannerProps {
@@ -24,8 +24,8 @@ export default function Banner({ tone, children, action, compact, className }: B
     <div
       role={tone === 'error' ? 'alert' : 'status'}
       className={cn(
-        'flex flex-wrap items-center justify-between gap-3 rounded-lg border text-sm',
-        compact ? 'px-3 py-2' : 'p-4',
+        'flex flex-wrap items-center justify-between gap-3 rounded border text-sm',
+        compact ? 'px-3 py-2' : 'px-4 py-3',
         tones[tone],
         className
       )}

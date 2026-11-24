@@ -48,7 +48,7 @@ export default function UserButton() {
   }, [])
 
   if (loading) {
-    return <div className="h-8 w-8 animate-pulse rounded-full bg-ink-700" />
+    return <div className="h-8 w-8 animate-pulse rounded border border-line" />
   }
 
   if (!userId) {
@@ -60,7 +60,7 @@ export default function UserButton() {
   }
 
   return (
-    <Link href="/profile" aria-label="Your profile" className="rounded-full transition hover:ring-2 hover:ring-orange-500/40">
+    <Link href="/profile" aria-label="Your profile" className="rounded transition hover:opacity-80">
       <Avatar src={profile?.profile_image_url} name={profile?.display_name || 'Me'} size="sm" />
     </Link>
   )

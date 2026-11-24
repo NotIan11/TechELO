@@ -1,10 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import AppShell from '@/components/layout/AppShell'
-import Button from '@/components/ui/Button'
-import PageHeader from '@/components/ui/PageHeader'
+import PageIntro from '@/components/ui/PageIntro'
 import GuestsClient from '@/components/poker/GuestsClient'
-import { loadGuestSummaries, loadIsOfficer, loadPickerPlayers } from '@/lib/poker/queries'
+import PokerTabs from '@/components/poker/PokerTabs'
+import { numberWord } from '@/lib/poker/phrases'
+import { loadGuestSummaries, loadIsOfficer, loadPickerPlayers, loadPokerTabCounts } from '@/lib/poker/queries'
 
 /** Guests a host seated before they had an account; link them once they sign up. */
 export default async function PokerGuestsPage() {
@@ -14,23 +15,27 @@ export default async function PokerGuestsPage() {
     redirect('/login?redirect=/poker/guests')
   }
   const isOfficer = await loadIsOfficer(supabase, user.id)
-  const [guests, players] = await Promise.all([loadGuestSummaries(supabase, user.id, isOfficer), loadPickerPlayers(supabase)])
+  const [guests, players, tabCounts] = await Promise.all([
+    loadGuestSummaries(supabase, user.id, isOfficer),
+    loadPickerPlayers(supabase),
+    loadPokerTabCounts(supabase, user.id),
+  ])
+  const waiting = guests.filter((g) => !g.linked_user_id).length
+  const seated = isOfficer ? 'seated at a table' : 'you seated'
 
   return (
-    <AppShell promo="tables" width="4xl">
-      <PageHeader
-        title="Guests"
-        subtitle={
-          isOfficer
-            ? 'Everyone seated before they had an account. Link a guest once they sign up and every session moves to their record.'
-            : 'People you seated before they had an account. Link them once they sign up and every session they played moves to their record.'
-        }
-        actions={
-          <Button href="/poker/sessions/new" variant="secondary">
-            Start a game
-          </Button>
+    <AppShell>
+      <PageIntro
+        title="Poker"
+        lede={
+          waiting === 0
+            ? guests.length === 0
+              ? `Nobody ${isOfficer ? 'has been seated as a guest' : 'you seated is a guest'} yet. Guests are people at the table who have no account.`
+              : `Everyone ${seated} as a guest now has an account.`
+            : `${numberWord(waiting, true)} ${waiting === 1 ? 'person' : 'people'} ${seated} still ${waiting === 1 ? 'has' : 'have'} no account. Link them when they sign up and every night they played moves to their record.`
         }
       />
+      <PokerTabs active="guests" sessions={tabCounts.sessions} guests={tabCounts.guests} signedIn />
       <GuestsClient guests={guests} players={players} currentUserId={user.id} isOfficer={isOfficer} />
     </AppShell>
   )

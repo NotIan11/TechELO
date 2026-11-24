@@ -1,22 +1,30 @@
 import { createClient } from '@/lib/supabase/server'
 import AppShell from '@/components/layout/AppShell'
-import Button from '@/components/ui/Button'
-import MoneyDelta from '@/components/ui/MoneyDelta'
-import PageHeader from '@/components/ui/PageHeader'
-import SectionHeader from '@/components/ui/SectionHeader'
-import StatTile from '@/components/ui/StatTile'
+import PageIntro, { Num } from '@/components/ui/PageIntro'
 import TextLink from '@/components/ui/TextLink'
 import FeaturedEventCard, { type FeaturedEvent } from '@/components/poker/FeaturedEventCard'
 import HallOfFame from '@/components/poker/HallOfFame'
+import LiveNowPanel from '@/components/poker/LiveNowPanel'
 import LiveSessionBanner from '@/components/poker/LiveSessionBanner'
+import { ParamSelect } from '@/components/poker/ParamControls'
 import PokerLeaderboardClient from '@/components/poker/PokerLeaderboardClient'
+import PokerTabs from '@/components/poker/PokerTabs'
 import SessionCard, { type SessionListItem } from '@/components/poker/SessionCard'
-import { PAGE_SIZE, SHARK_MIN_SESSIONS } from '@/lib/poker/constants'
-import { formatCents, formatRoi } from '@/lib/poker/money'
+import { PAGE_SIZE, PERIOD_OPTIONS, SHARK_MIN_SESSIONS } from '@/lib/poker/constants'
+import { formatCents } from '@/lib/poker/money'
 import { isPokerPeriod, periodBounds, periodLabel } from '@/lib/poker/periods'
-import { SESSION_LIST_SELECT, loadLiveSessionFor, loadUnlinkedGuestCount } from '@/lib/poker/queries'
-import { groupAwards, playerSummary, sessionResults } from '@/lib/poker/stats'
-import type { PlayerRef, PokerCountedEntry, PokerKindFilter, PokerLeaderboardRow, PokerSessionRow, PokerSort, PokerSponsorRow } from '@/lib/poker/types'
+import { plural } from '@/lib/poker/phrases'
+import { SESSION_LIST_SELECT, loadIsOfficer, loadLiveSessionFor, loadPokerTabCounts } from '@/lib/poker/queries'
+import { groupAwards, playerSummary } from '@/lib/poker/stats'
+import type { PlayerRef, PokerCountedEntry, PokerKindFilter, PokerLeaderboardRow, PokerPeriod, PokerSessionRow, PokerSort, PokerSponsorRow } from '@/lib/poker/types'
+
+/** How the period reads at the end of a sentence */
+const PERIOD_PHRASE: Record<PokerPeriod, string> = {
+  term: 'this term',
+  '30d': 'in the last 30 days',
+  year: 'this year',
+  all: 'since the ledger opened',
+}
 
 const SORTS: PokerSort[] = ['net', 'roi', 'staked', 'sessions']
 
@@ -37,7 +45,7 @@ export default async function PokerHubPage({
   const minSessions = sort === 'roi' ? SHARK_MIN_SESSIONS : 1
   const rpcKind = kind === 'all' ? null : kind
 
-  const [{ data: { user } }, leaderboardRes, countRes, { data: dorms }, entriesRes, sessionsRes, recentRes, featuredRes] =
+  const [{ data: { user } }, leaderboardRes, countRes, { data: dorms }, entriesRes, sessionsRes, recentRes, featuredRes, liveRes] =
     await Promise.all([
       supabase.auth.getUser(),
       supabase.rpc('get_poker_leaderboard', {
@@ -91,6 +99,7 @@ export default async function PokerHubPage({
         .order('status', { ascending: false }) // enum order: scheduled < live, so descending puts a live event first
         .order('scheduled_for', { ascending: true })
         .limit(1),
+      supabase.from('poker_sessions').select(SESSION_LIST_SELECT).eq('status', 'live').order('started_at', { ascending: false }).limit(5),
     ])
 
   const rows = ((leaderboardRes.data ?? []) as PokerLeaderboardRow[]).map((r) => ({
@@ -109,36 +118,27 @@ export default async function PokerHubPage({
     'id' | 'kind' | 'title' | 'stakes' | 'variant' | 'is_official' | 'played_at' | 'total_buy_in_cents' | 'player_count'
   >[]
 
-  // Player lookups for awards + form dots (guest rows have no user)
+  // Player lookups for the superlatives (guest rows have no user)
   const userIds = Array.from(new Set(entries.map((e) => e.user_id).filter((id): id is string => id != null)))
-  const guestIds = new Set(entries.filter((e) => e.user_id == null && e.guest_id).map((e) => e.guest_id as string))
   const players = new Map<string, PlayerRef>()
   if (userIds.length > 0) {
     const { data: users } = await supabase.from('users').select('id, display_name, profile_image_url').in('id', userIds)
     for (const u of users ?? []) players.set(u.id, { id: u.id, display_name: u.display_name, profile_image_url: u.profile_image_url })
   }
-  const byUser = new Map<string, PokerCountedEntry[]>()
-  for (const e of entries) {
-    if (e.user_id == null) continue
-    const list = byUser.get(e.user_id) ?? []
-    list.push(e)
-    byUser.set(e.user_id, list)
-  }
-  const formByUser: Record<string, ('W' | 'L')[]> = {}
-  for (const r of rows) formByUser[r.user_id] = sessionResults(byUser.get(r.user_id) ?? [], 5)
 
   const awards = groupAwards({ entries, sessions: periodSessions, players })
 
-  // Tiles
-  const mySummary = user ? playerSummary(byUser.get(user.id) ?? []) : null
-  const clubStaked = periodSessions.reduce((s, x) => s + Number(x.total_buy_in_cents), 0)
+  const myEntries = user ? entries.filter((e) => e.user_id === user.id) : []
+  const mySummary = user && myEntries.length > 0 ? playerSummary(myEntries) : null
+  const clubStaked = periodSessions.reduce((sum, x) => sum + Number(x.total_buy_in_cents), 0)
   const clubSessions = periodSessions.length
-  const clubPlayers = userIds.length + guestIds.size
-  const biggestNight = periodSessions.reduce((m, x) => Math.max(m, Number(x.total_buy_in_cents)), 0)
 
-  const [myLive, unlinkedGuests] = user
-    ? await Promise.all([loadLiveSessionFor(supabase, user.id), loadUnlinkedGuestCount(supabase, user.id)])
-    : [null, 0]
+  const [myLive, tabCounts, isOfficer] = await Promise.all([
+    user ? loadLiveSessionFor(supabase, user.id) : Promise.resolve(null),
+    loadPokerTabCounts(supabase, user?.id ?? null),
+    user ? loadIsOfficer(supabase, user.id) : Promise.resolve(false),
+  ])
+  const unlinkedGuests = tabCounts.guests ?? 0
   const recent = (recentRes.data ?? []) as unknown as SessionListItem[]
   const featuredRaw = (featuredRes.data ?? [])[0] as
     | (PokerSessionRow & { session_sponsors: { position: number; sponsor: PokerSponsorRow | null }[] })
@@ -154,78 +154,99 @@ export default async function PokerHubPage({
       }
     : null
 
+  // The rail shows a table that is open right now; the host's own is already in the banner, an official one in the tournament block
+  const liveNow =
+    ((liveRes.data ?? []) as unknown as SessionListItem[]).find((l) => l.id !== myLive?.id && l.id !== featured?.id) ?? null
+
   const plabel = periodLabel(period)
+  const phrase = PERIOD_PHRASE[period]
+  const what = kind === 'cash' ? 'cash game' : kind === 'tournament' ? 'tournament' : 'session'
+  const myNet = mySummary?.netCents ?? 0
 
   return (
-    <AppShell promo="tables">
-      <PageHeader
-        eyebrow="Poker"
-        title="The ledger"
-        subtitle={`${plabel} · cash games and tournaments, confirmed by everyone at the table`}
-        actions={
-          user ? (
-            myLive ? (
-              <Button href={`/poker/sessions/`}>Resume live session</Button>
-            ) : (
-              <>
-                <Button href="/poker/sessions/new">Start a game</Button>
-                <Button href="/poker/sessions/new?kind=tournament" variant="secondary">
-                  Start a tournament
-                </Button>
-              </>
-            )
+    <AppShell>
+      <PageIntro
+        title="Poker"
+        lede={
+          clubSessions === 0 ? (
+            <>No {what}s have been logged {phrase}.</>
           ) : (
-            <Button href="/login?redirect=/poker/sessions/new" variant="secondary">
-              Sign in to log a session
-            </Button>
+            <>
+              <Num>{formatCents(clubStaked, { compact: true })}</Num> has changed hands over <Num>{clubSessions}</Num> {plural(clubSessions, what)} {phrase}.
+              {mySummary && (
+                <>
+                  {' '}
+                  {myNet === 0 ? (
+                    'You are even.'
+                  ) : (
+                    <>
+                      You are {myNet > 0 ? 'up' : 'down'} <Num tone={myNet > 0 ? 'win' : 'loss'}>{formatCents(Math.abs(myNet), { compact: true })}</Num>.
+                    </>
+                  )}
+                </>
+              )}
+            </>
           )
+        }
+        actions={
+          <>
+            {myLive ? (
+              <TextLink href={`/poker/sessions/${myLive.id}`} className="text-sm">
+                Back to your table
+              </TextLink>
+            ) : (
+              <TextLink href={user ? '/play' : '/login?redirect=/play'} className="text-sm">
+                Open a table
+              </TextLink>
+            )}
+            {isOfficer && (
+              <>
+                <TextLink href="/play?kind=tournament" muted className="text-sm">
+                  Schedule a tournament
+                </TextLink>
+                <TextLink href="/poker/sponsors" muted className="text-sm">
+                  Sponsors
+                </TextLink>
+              </>
+            )}
+            <ParamSelect
+              param="period"
+              value={period}
+              defaultValue="term"
+              aria-label="Period"
+              options={PERIOD_OPTIONS.map((o) => ({ value: o.value, label: o.value === 'term' || o.value === 'year' ? plabelFor(o.value) : o.label }))}
+            />
+          </>
         }
       />
 
-      <LiveSessionBanner session={myLive} />
+      <PokerTabs active="ledger" sessions={tabCounts.sessions} guests={tabCounts.guests} signedIn={!!user} />
+
+      <LiveSessionBanner session={myLive} className="mt-6" />
 
       {unlinkedGuests > 0 && (
-        <p className="mb-6 text-[13px] text-zinc-400">
+        <p className="mt-5 text-[13px] text-zinc-400">
           {unlinkedGuests === 1 ? 'One guest on your ledgers has' : `${unlinkedGuests} guests on your ledgers have`} no account yet.{' '}
-          <TextLink href="/poker/guests" arrow="right" className="text-[13px]">
+          <TextLink href="/poker/guests" className="text-[13px]">
             Link accounts
           </TextLink>
         </p>
       )}
 
-      <div className="space-y-10">
-        {featured && <FeaturedEventCard event={featured} />}
+      {/* Time-sensitive panels lead on narrow screens; from lg they sit in the rail */}
+      {(liveNow || featured) && (
+        <div className="mt-6 space-y-6 lg:hidden">
+          {liveNow && <LiveNowPanel session={liveNow} viewerId={user?.id ?? null} />}
+          {featured && <FeaturedEventCard event={featured} />}
+        </div>
+      )}
 
-        {/* Tiles */}
-        {mySummary && mySummary.sessions > 0 ? (
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-            <StatTile label={`Your net · ${plabel}`} value={<MoneyDelta cents={mySummary.netCents} size="lg" compact />} />
-            <StatTile label="Sessions" value={mySummary.sessions} sub={`${Math.round(mySummary.winningPct ?? 0)}% winning`} />
-            <StatTile label="ROI" value={formatRoi(mySummary.roiPct)} tone={mySummary.roiPct == null ? 'muted' : mySummary.roiPct >= 0 ? 'win' : 'loss'} sub={`${formatCents(mySummary.stakedCents, { compact: true })} staked`} />
-            <StatTile
-              label="Streak"
-              value={mySummary.currentStreak ? `${mySummary.currentStreak.count}${mySummary.currentStreak.type}` : '—'}
-              tone={mySummary.currentStreak?.type === 'W' ? 'win' : mySummary.currentStreak?.type === 'L' ? 'loss' : 'muted'}
-              sub={mySummary.currentStreak ? (mySummary.currentStreak.type === 'W' ? 'winning sessions in a row' : 'losing sessions in a row') : 'no active streak'}
-            />
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-            <StatTile label={`Changed hands · ${plabel}`} value={formatCents(clubStaked, { compact: true })} tone="orange" />
-            <StatTile label="Sessions logged" value={clubSessions} />
-            <StatTile label="Players" value={clubPlayers} />
-            <StatTile label="Biggest night" value={formatCents(biggestNight, { compact: true })} />
-          </div>
-        )}
-
-        {/* Leaderboard */}
-        <section>
-          <SectionHeader title={`Leaderboard · ${plabel}`} />
+      <div className="mt-2 flex flex-wrap gap-x-[72px] gap-y-12">
+        <section className="min-w-0 flex-[999_1_560px]">
           <PokerLeaderboardClient
             rows={rows}
-            formByUser={formByUser}
+            total={total}
             kind={kind}
-            period={period}
             sort={sort}
             dorms={dorms ?? []}
             selectedDormId={dormId}
@@ -235,22 +256,40 @@ export default async function PokerHubPage({
           />
         </section>
 
-        {/* Recent sessions */}
-        <section>
-          <SectionHeader title="Recent sessions" aside={<TextLink href="/poker/sessions" arrow="right">See all</TextLink>} />
-          {recent.length === 0 ? (
-            <p className="text-sm text-zinc-500">No sessions logged yet.</p>
-          ) : (
-            <div className="space-y-3">
-              {recent.map((s) => (
-                <SessionCard key={s.id} session={s} viewerId={user?.id ?? null} />
-              ))}
+        <aside className="min-w-0 flex-[1_1_300px] space-y-7 pt-3.5 lg:max-w-[400px]">
+          {liveNow && (
+            <div className="hidden lg:block">
+              <LiveNowPanel session={liveNow} viewerId={user?.id ?? null} />
             </div>
           )}
-        </section>
 
-        {entries.length > 0 && <HallOfFame awards={awards} periodLabel={plabel} />}
+          {featured && (
+            <div className="hidden lg:block">
+              <FeaturedEventCard event={featured} />
+            </div>
+          )}
+
+          <section>
+            <div className="flex items-baseline justify-between gap-3 border-b border-line-strong pb-2.5">
+              <h2 className="font-sans text-xs tracking-normal text-mute">Recent nights</h2>
+              <TextLink href="/poker/sessions" className="text-xs">
+                All sessions
+              </TextLink>
+            </div>
+            {recent.length === 0 ? (
+              <p className="border-b border-line py-3 text-sm text-mute">No sessions logged yet.</p>
+            ) : (
+              recent.map((s) => <SessionCard key={s.id} session={s} viewerId={user?.id ?? null} />)
+            )}
+          </section>
+
+          {entries.length > 0 && <HallOfFame awards={awards} heading={period === 'term' ? 'This term' : plabel.charAt(0).toUpperCase() + plabel.slice(1)} />}
+        </aside>
       </div>
     </AppShell>
   )
+}
+
+function plabelFor(period: PokerPeriod): string {
+  return periodLabel(period)
 }

@@ -21,7 +21,7 @@ export default function PageHeader({ title, eyebrow, subtitle, meta, leading, ac
     <div
       className={cn(
         'flex flex-col gap-4',
-        size === 'lg' ? 'mb-8 sm:flex-row sm:items-end sm:justify-between' : 'sm:flex-row sm:items-start sm:justify-between',
+        size === 'lg' ? 'mb-9 sm:flex-row sm:items-end sm:justify-between' : 'sm:flex-row sm:items-start sm:justify-between',
         centered && 'items-center text-center',
         className
       )}
@@ -32,14 +32,14 @@ export default function PageHeader({ title, eyebrow, subtitle, meta, leading, ac
           {eyebrow && <p className="eyebrow mb-2">{eyebrow}</p>}
           <h1
             className={cn(
-              'font-display font-bold tracking-tight text-white',
-              size === 'lg' ? 'text-3xl' : 'truncate text-xl sm:text-2xl'
+              'font-display font-normal text-white',
+              size === 'lg' ? 'text-4xl tracking-[-0.03em] sm:text-[44px] sm:leading-[1.1]' : 'truncate text-2xl tracking-tight sm:text-3xl'
             )}
           >
             {title}
           </h1>
-          {subtitle && <p className={cn('text-zinc-400', size === 'lg' ? 'mt-1.5' : 'mt-1 text-sm')}>{subtitle}</p>}
-          {meta && <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-zinc-500">{meta}</div>}
+          {subtitle && <p className={cn('text-zinc-400', size === 'lg' ? 'mt-2.5 text-[15px]' : 'mt-1.5 text-sm')}>{subtitle}</p>}
+          {meta && <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-mute">{meta}</div>}
         </div>
       </div>
       {actions && <div className={cn('flex flex-wrap items-center gap-2 sm:shrink-0', size === 'lg' && 'gap-3')}>{actions}</div>}

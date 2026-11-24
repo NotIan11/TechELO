@@ -1,9 +1,10 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter, Inter_Tight } from 'next/font/google'
+import { IBM_Plex_Mono, Inter, Inter_Tight } from 'next/font/google'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-body' })
 const interTight = Inter_Tight({ subsets: ['latin'], variable: '--font-display' })
+const plexMono = IBM_Plex_Mono({ subsets: ['latin'], weight: ['400', '500'], variable: '--font-mono' })
 
 export const metadata: Metadata = {
   title: {
@@ -31,7 +32,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`dark ${inter.variable} ${interTight.variable}`}>
+    <html lang="en" className={`dark ${inter.variable} ${interTight.variable} ${plexMono.variable}`}>
       <body className="font-sans">{children}</body>
     </html>
   )

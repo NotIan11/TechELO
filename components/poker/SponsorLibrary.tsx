@@ -5,11 +5,12 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Banner from '@/components/ui/Banner'
 import Button from '@/components/ui/Button'
-import Card from '@/components/ui/Card'
 import ConfirmStrip from '@/components/ui/ConfirmStrip'
-import EmptyState from '@/components/ui/EmptyState'
-import Icon from '@/components/ui/Icon'
 import type { PokerSponsorRow } from '@/lib/poker/types'
+import { cn } from '@/lib/utils'
+
+const GRID = 'grid grid-cols-[48px_minmax(0,1fr)] items-center gap-x-4 gap-y-2 md:grid-cols-[72px_minmax(0,1fr)_minmax(0,1fr)_170px] md:gap-x-5'
+const ROW_ACTION = 'inline-flex min-h-[44px] items-center text-[13px] transition disabled:opacity-50'
 
 interface SponsorLibraryProps {
   sponsors: PokerSponsorRow[]
@@ -22,7 +23,8 @@ const emptyDraft: Draft = { id: null, name: '', website_url: '', logo_url: null 
 export default function SponsorLibrary({ sponsors }: SponsorLibraryProps) {
   const router = useRouter()
   const fileRef = useRef<HTMLInputElement>(null)
-  const [draft, setDraft] = useState<Draft | null>(null)
+  /** The one form in play: `id: null` is the add row at the foot of the list, otherwise the sponsor being edited */
+  const [draft, setDraft] = useState<Draft>({ ...emptyDraft })
   const [file, setFile] = useState<File | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -56,8 +58,14 @@ export default function SponsorLibrary({ sponsors }: SponsorLibraryProps) {
     reader.readAsDataURL(f)
   }
 
+  const resetDraft = () => {
+    setDraft({ ...emptyDraft })
+    setFile(null)
+    setPreview(null)
+    if (fileRef.current) fileRef.current.value = ''
+  }
+
   const save = async () => {
-    if (!draft) return
     if (!draft.name.trim()) {
       setError('Sponsor name is required.')
       return
@@ -89,8 +97,7 @@ export default function SponsorLibrary({ sponsors }: SponsorLibraryProps) {
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data.error || 'Could not save sponsor')
       setNotice(draft.id ? 'Sponsor updated.' : 'Sponsor added.')
-      setDraft(null)
-      setFile(null)
+      resetDraft()
       router.refresh()
     } catch (err: any) {
       setError(err.message || 'Something went wrong')
@@ -120,108 +127,137 @@ export default function SponsorLibrary({ sponsors }: SponsorLibraryProps) {
     }
   }
 
-  return (
-    <div className="space-y-5">
-      {notice && <Banner tone="success">{notice}</Banner>}
-      {error && <Banner tone="error">{error}</Banner>}
+  const editingId = draft.id
 
-      {draft ? (
-        <Card className="space-y-5">
-          <p className="font-display text-lg font-semibold text-white">{draft.id ? 'Edit sponsor' : 'New sponsor'}</p>
-          <div className="flex items-center gap-5">
-            <span className="inline-flex h-20 w-20 items-center justify-center overflow-hidden rounded-lg border border-line bg-ink-700">
-              {preview ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={preview} alt="" className="h-full w-full object-contain p-1" />
-              ) : (
-                <span className="text-xs text-zinc-500">No logo</span>
-              )}
-            </span>
-            <div>
-              <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onFile} />
-              <Button type="button" variant="secondary" size="sm" onClick={() => fileRef.current?.click()}>
-                {preview ? 'Change logo' : 'Upload logo'}
-              </Button>
-              <p className="mt-1.5 text-xs text-zinc-500">PNG or SVG with a transparent background looks best.</p>
-            </div>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label htmlFor="sp-name" className="label">
-                Name
-              </label>
-              <input id="sp-name" type="text" className="input" value={draft.name} maxLength={60} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
-            </div>
-            <div>
-              <label htmlFor="sp-url" className="label">
-                Website <span className="font-normal text-zinc-500">(optional)</span>
-              </label>
-              <input id="sp-url" type="url" className="input" placeholder="https://" value={draft.website_url} maxLength={300} onChange={(e) => setDraft({ ...draft, website_url: e.target.value })} />
-            </div>
-          </div>
-          <div className="flex gap-3">
-            <Button onClick={save} disabled={busy} type="button">
-              {busy ? 'Saving…' : 'Save sponsor'}
-            </Button>
-            <Button variant="ghost" onClick={() => setDraft(null)} disabled={busy} type="button">
-              Cancel
-            </Button>
-          </div>
-        </Card>
-      ) : (
-        <div className="flex justify-end">
-          <Button onClick={() => startEdit()} type="button">
-            <Icon name="plus" className="h-4 w-4" strokeWidth={2} /> Add sponsor
+  /** The inline form: the last row when adding, or in place of the row being edited */
+  const formRow = (
+    <form
+      className={cn(GRID, 'min-h-[88px] border-b border-line-bright py-3', editingId && '-mt-px border-t')}
+      onSubmit={(e) => {
+        e.preventDefault()
+        void save()
+      }}
+    >
+      <button
+        type="button"
+        onClick={() => fileRef.current?.click()}
+        aria-label={preview ? 'Change the logo' : 'Upload a logo'}
+        className="inline-flex h-12 w-12 items-center justify-center overflow-hidden border border-dashed border-white/40 text-xl text-zinc-300 transition hover:border-white"
+      >
+        {preview ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={preview} alt="" className="h-full w-full object-contain p-1" />
+        ) : (
+          <span aria-hidden="true">+</span>
+        )}
+      </button>
+      <input
+        type="text"
+        className="input"
+        aria-label="Sponsor name"
+        placeholder={editingId ? 'Sponsor name' : 'Add a sponsor'}
+        value={draft.name}
+        maxLength={60}
+        onChange={(e) => setDraft({ ...draft, name: e.target.value })}
+      />
+      <input
+        type="url"
+        className="input col-span-2 md:col-span-1"
+        aria-label="Website"
+        placeholder="https://"
+        value={draft.website_url}
+        maxLength={300}
+        onChange={(e) => setDraft({ ...draft, website_url: e.target.value })}
+      />
+      <span className="col-span-2 flex items-center justify-end gap-2 md:col-span-1">
+        {editingId && (
+          <Button variant="ghost" onClick={resetDraft} disabled={busy} type="button">
+            Cancel
           </Button>
+        )}
+        <Button type="submit" disabled={busy}>
+          {busy ? 'Saving…' : editingId ? 'Save' : 'Add'}
+        </Button>
+      </span>
+    </form>
+  )
+
+  return (
+    <div>
+      {(notice || error) && (
+        <div className="mt-6 space-y-2">
+          {notice && <Banner tone="success">{notice}</Banner>}
+          {error && <Banner tone="error">{error}</Banner>}
         </div>
       )}
 
-      {sponsors.length === 0 ? (
-        <EmptyState
-          icon="gift"
-          title="No sponsors yet"
-          description="Add the companies backing the term tournament. Their logos show on the event page and hub card."
-        />
-      ) : (
-        <Card padding="none" className="overflow-hidden">
-          <ul className="divide-y divide-line">
-            {sponsors.map((s) => (
-              <li key={s.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
-                <div className="flex items-center gap-3">
-                  <span className="inline-flex h-12 w-12 items-center justify-center overflow-hidden rounded-lg border border-line bg-ink-700">
-                    {s.logo_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={s.logo_url} alt="" className="h-full w-full object-contain p-1" />
-                    ) : (
-                      <span className="text-xs text-zinc-500">—</span>
-                    )}
-                  </span>
-                  <div>
-                    <p className="text-sm font-semibold text-white">{s.name}</p>
-                    {s.website_url && (
-                      <a href={s.website_url} target="_blank" rel="noopener noreferrer" className="text-xs text-zinc-500 hover:text-zinc-300">
-                        {s.website_url.replace(/^https?:\/\//, '')}
-                      </a>
-                    )}
-                  </div>
-                </div>
-                {confirmDelete === s.id ? (
-                  <ConfirmStrip inline tone="danger" text={`Remove ${s.name}?`} busy={busy} onConfirm={() => remove(s.id)} onBack={() => setConfirmDelete(null)} className="mt-0" />
+      <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onFile} />
+
+      <div className={cn(GRID, 'mt-10 border-b border-line-bright pb-2.5 text-xs text-mute')}>
+        <span>Logo</span>
+        <span>Name</span>
+        <span className="hidden md:block">Website</span>
+        <span className="hidden md:block" />
+      </div>
+
+      {sponsors.length === 0 && <p className="border-b border-line py-4 text-sm text-mute">No sponsors yet. Add the companies backing the term tournament below.</p>}
+
+      {sponsors.map((s) =>
+        s.id === editingId ? (
+          <div key={s.id}>{formRow}</div>
+        ) : (
+          <div key={s.id} className="border-b border-line">
+            <div className={cn(GRID, 'min-h-[72px] py-2')}>
+              <span className={cn('inline-flex h-12 w-12 items-center justify-center overflow-hidden border', s.logo_url ? 'border-line-strong' : 'border-dashed border-line-bright')}>
+                {s.logo_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={s.logo_url} alt="" className="h-full w-full object-contain p-1" />
                 ) : (
-                  <div className="flex gap-2">
-                    <Button size="sm" variant="secondary" onClick={() => startEdit(s)} disabled={busy} type="button">
-                      Edit
-                    </Button>
-                    <Button size="sm" variant="ghost" onClick={() => setConfirmDelete(s.id)} disabled={busy} type="button">
-                      Remove
-                    </Button>
-                  </div>
+                  <span className="text-[10px] text-mute">none</span>
                 )}
-              </li>
-            ))}
-          </ul>
-        </Card>
+              </span>
+              <span className="min-w-0">
+                <span className="block truncate text-[15px] text-white">{s.name}</span>
+                <span className="block truncate text-xs text-mute md:hidden">{s.website_url ? s.website_url.replace(/^https?:\/\//, '') : 'No website'}</span>
+              </span>
+              <span className="hidden min-w-0 truncate text-sm md:block">
+                {s.website_url ? (
+                  <a href={s.website_url} target="_blank" rel="noopener noreferrer" className="text-zinc-400 underline-offset-4 transition hover:text-white hover:underline">
+                    {s.website_url.replace(/^https?:\/\//, '')}
+                  </a>
+                ) : (
+                  <span className="text-mute">No website</span>
+                )}
+              </span>
+              {confirmDelete !== s.id && (
+                <span className="col-span-2 flex justify-end gap-4 md:col-span-1">
+                  <button type="button" className={cn(ROW_ACTION, 'text-orange-400 hover:text-orange-500')} onClick={() => startEdit(s)} disabled={busy}>
+                    Edit
+                  </button>
+                  <button type="button" className={cn(ROW_ACTION, 'text-zinc-400 hover:text-loss')} onClick={() => setConfirmDelete(s.id)} disabled={busy}>
+                    Remove
+                  </button>
+                </span>
+              )}
+            </div>
+            {confirmDelete === s.id && (
+              <ConfirmStrip
+                inline
+                tone="danger"
+                text={`Remove ${s.name}?`}
+                confirmLabel="Remove"
+                busy={busy}
+                onConfirm={() => remove(s.id)}
+                onBack={() => setConfirmDelete(null)}
+                className="mt-0 border-0 p-0 pb-4"
+              />
+            )}
+          </div>
+        )
       )}
+
+      {!editingId && formRow}
+      <p className="mt-3.5 text-[13px] text-mute">PNG or SVG on a transparent background, under 2MB.</p>
     </div>
   )
 }

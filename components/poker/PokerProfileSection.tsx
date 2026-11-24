@@ -1,88 +1,50 @@
 'use client'
 
-import { useMemo, useState } from 'react'
-import Link from 'next/link'
-import Avatar from '@/components/ui/Avatar'
-import Badge from '@/components/ui/Badge'
-import Button from '@/components/ui/Button'
-import Card from '@/components/ui/Card'
-import GameIcon from '@/components/ui/GameIcon'
+import { useMemo } from 'react'
 import MoneyDelta from '@/components/ui/MoneyDelta'
-import PnlChart from '@/components/ui/PnlChart'
 import Segmented from '@/components/ui/Segmented'
 import StatTile from '@/components/ui/StatTile'
-import StreakChip from '@/components/ui/StreakChip'
 import WinLossDots from '@/components/ui/WinLossDots'
 import { KIND_OPTIONS, PERIOD_OPTIONS } from '@/lib/poker/constants'
 import { formatCents, formatRoi, ordinal } from '@/lib/poker/money'
-import { formatPokerDateTime, periodBounds } from '@/lib/poker/periods'
-import { cumulativePnl, playerSummary, sessionResults, sessionTitle, sortByPlayed, tablemates } from '@/lib/poker/stats'
-import type { PlayerRef, PokerCountedEntry, PokerKindFilter, PokerPeriod } from '@/lib/poker/types'
+import { sessionResults, type PlayerSummary } from '@/lib/poker/stats'
+import type { PokerCountedEntry, PokerKindFilter, PokerPeriod } from '@/lib/poker/types'
 
 interface PokerProfileSectionProps {
-  userId: string
-  displayName: string
-  isOwnProfile: boolean
-  /** The profile user's counted entries (all time) */
+  /** The player's counted entries, already narrowed to `kind` and `period` */
   entries: PokerCountedEntry[]
-  /** Every counted entry in the sessions the user played (for tablemates) */
-  tableEntries: PokerCountedEntry[]
-  players: Record<string, PlayerRef>
+  /** `playerSummary(entries)`, computed once by the parent (it also feeds the headline figure) */
+  summary: PlayerSummary
+  kind: PokerKindFilter
+  period: PokerPeriod
+  onKindChange: (kind: PokerKindFilter) => void
+  onPeriodChange: (period: PokerPeriod) => void
+  className?: string
 }
 
-export default function PokerProfileSection({ userId, displayName, isOwnProfile, entries, tableEntries, players }: PokerProfileSectionProps) {
-  const [kind, setKind] = useState<PokerKindFilter>('all')
-  const [period, setPeriod] = useState<PokerPeriod>('all')
-
-  const filtered = useMemo(() => {
-    const { since } = periodBounds(period)
-    const sinceT = since ? new Date(since).getTime() : null
-    return entries.filter((e) => (kind === 'all' || e.kind === kind) && (sinceT == null || new Date(e.played_at).getTime() >= sinceT))
-  }, [entries, kind, period])
-
-  const summary = useMemo(() => playerSummary(filtered), [filtered])
-  const series = useMemo(() => cumulativePnl(filtered), [filtered])
-  const results = useMemo(() => sessionResults(filtered, 10), [filtered])
-  const mates = useMemo(() => {
-    const ids = new Set(filtered.map((e) => e.session_id))
-    const playersMap = new Map(Object.entries(players))
-    return tablemates(userId, tableEntries.filter((e) => ids.has(e.session_id)), playersMap, 5)
-  }, [filtered, tableEntries, players, userId])
-  const recent = useMemo(() => sortByPlayed(filtered).reverse().slice(0, 8), [filtered])
-
-  if (entries.length === 0) {
-    return (
-      <Card className="mb-6">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="flex items-center gap-2 font-display text-lg font-semibold text-white">
-            <GameIcon game="poker" className="text-orange-400" />
-            Poker
-          </h2>
-          {isOwnProfile ? (
-            <Button href="/poker/sessions/new" size="sm" variant="secondary">
-              Start a session
-            </Button>
-          ) : null}
-        </div>
-        <p className="mt-2 text-sm text-zinc-500">
-          {isOwnProfile ? 'No sessions logged. Net, ROI and streaks show up after the first one.' : `${displayName} has not played a logged session yet.`}
-        </p>
-      </Card>
-    )
-  }
-
+/**
+ * "Poker in detail": the kind switch, the period select and every poker
+ * statistic as a ruled grid. The headline net, the session list and the
+ * tablemates live higher up the player page (figure, feed, most played against).
+ */
+export default function PokerProfileSection({ entries, summary, kind, period, onKindChange, onPeriodChange, className }: PokerProfileSectionProps) {
+  const results = useMemo(() => sessionResults(entries, 10), [entries])
   const t = summary.tournament
 
   return (
-    <Card className="mb-6 space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="flex items-center gap-2 font-display text-lg font-semibold text-white">
-          <GameIcon game="poker" className="text-orange-400" />
-          Poker
+    <section className={className} aria-labelledby="poker-detail">
+      <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3 border-b border-line-strong">
+        <h2 id="poker-detail" className="flex min-h-[44px] items-center font-display text-xl font-normal text-white">
+          Poker in detail
         </h2>
-        <div className="flex flex-wrap items-center gap-2">
-          <Segmented<PokerKindFilter> value={kind} onChange={setKind} options={KIND_OPTIONS.map((o) => ({ value: o.value, label: o.label }))} />
-          <select value={period} onChange={(e) => setPeriod(e.target.value as PokerPeriod)} aria-label="Period" className="input w-auto cursor-pointer">
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+          <Segmented<PokerKindFilter> value={kind} onChange={onKindChange} options={KIND_OPTIONS.map((o) => ({ value: o.value, label: o.label }))} className="border-b-0" />
+          <select
+            value={period}
+            onChange={(e) => onPeriodChange(e.target.value as PokerPeriod)}
+            aria-label="Period"
+            className="mb-1.5 min-h-[44px] cursor-pointer rounded border border-line-strong bg-ink-950 px-3 text-sm text-white transition hover:border-line-bright focus:border-orange-500 focus:outline-none"
+          >
             {PERIOD_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>
                 {o.label}
@@ -92,33 +54,11 @@ export default function PokerProfileSection({ userId, displayName, isOwnProfile,
         </div>
       </div>
 
-      {filtered.length === 0 ? (
-        <p className="text-sm text-zinc-500">No sessions in this range.</p>
+      {entries.length === 0 ? (
+        <p className="border-b border-line py-5 text-sm text-mute">No sessions in this range.</p>
       ) : (
         <>
-          {/* Headline + chart */}
-          <div className="grid gap-5 md:grid-cols-[auto_1fr] md:items-end">
-            <div>
-              <p className="eyebrow">Net</p>
-              <MoneyDelta cents={summary.netCents} size="xl" compact />
-              <p className="mt-1 text-xs text-zinc-500">
-                {summary.sessions} session{summary.sessions === 1 ? '' : 's'} · {formatCents(summary.stakedCents, { compact: true })} staked
-              </p>
-              {summary.currentStreak && summary.currentStreak.count >= 2 && (
-                <StreakChip type={summary.currentStreak.type} count={summary.currentStreak.count} noun="session" suffix={summary.currentStreak.type === 'W' ? 'heater' : 'cooler'} />
-              )}
-            </div>
-            <div className="text-orange-400">
-              <PnlChart values={series.map((p) => p.cumulativeCents)} />
-              <div className="mt-1 flex justify-between text-[11px] text-zinc-500">
-                <span>{series.length > 0 ? formatPokerDateTime(series[0].playedAt, false) : ''}</span>
-                <span>{series.length > 1 ? formatPokerDateTime(series[series.length - 1].playedAt, false) : ''}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Tiles */}
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          <div className="mt-8 grid grid-cols-2 gap-x-8 gap-y-7 sm:grid-cols-3 lg:grid-cols-4">
             <StatTile label="ROI" value={formatRoi(summary.roiPct)} tone={summary.roiPct == null ? 'muted' : summary.roiPct >= 0 ? 'win' : 'loss'} />
             <StatTile label="Winning sessions" value={`${Math.round(summary.winningPct ?? 0)}%`} sub={`${summary.winningSessions} of ${summary.sessions}`} />
             <StatTile label="Biggest win" value={formatCents(summary.biggestWinCents, { compact: true })} tone={summary.biggestWinCents > 0 ? 'win' : 'muted'} />
@@ -134,14 +74,13 @@ export default function PokerProfileSection({ userId, displayName, isOwnProfile,
             <StatTile label="Longest heater" value={summary.longestWinStreak} sub="winning sessions in a row" tone={summary.longestWinStreak > 0 ? 'win' : 'muted'} />
             <StatTile label="Longest cooler" value={summary.longestLossStreak} sub="losing sessions in a row" tone={summary.longestLossStreak > 0 ? 'loss' : 'muted'} />
             <StatTile label="Rebuys" value={summary.totalRebuys} sub="total reloads" />
-            <StatTile label="Form" value={results.length > 0 ? <WinLossDots form={results} className="mt-1" /> : '—'} sub="most recent first" />
+            <StatTile label="Form" value={results.length > 0 ? <WinLossDots form={results} className="text-base" /> : '—'} sub="most recent first" />
           </div>
 
-          {/* Tournaments */}
           {t.entries > 0 && (
-            <div>
-              <h3 className="mb-2 eyebrow">Tournaments</h3>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+            <div className="mt-12">
+              <h3 className="text-[13px] font-normal text-mute">Tournaments</h3>
+              <div className="mt-4 grid grid-cols-2 gap-x-8 gap-y-7 sm:grid-cols-3 lg:grid-cols-6">
                 <StatTile label="Entries" value={t.entries} />
                 <StatTile label="Cashes" value={t.cashes} />
                 <StatTile label="ITM" value={t.itmPct != null ? `${Math.round(t.itmPct)}%` : '—'} />
@@ -151,63 +90,8 @@ export default function PokerProfileSection({ userId, displayName, isOwnProfile,
               </div>
             </div>
           )}
-
-          {/* Tablemates + recent */}
-          <div className="grid gap-6 md:grid-cols-2">
-            <div>
-              <h3 className="mb-2 eyebrow">Tablemates</h3>
-              {mates.length === 0 ? (
-                <p className="text-sm text-zinc-500">No shared tables yet.</p>
-              ) : (
-                <ul className="space-y-1">
-                  {mates.map((m) => (
-                    <li key={m.user.id}>
-                      <Link href={`/profile/${m.user.id}`} className="flex items-center justify-between gap-3 rounded-lg p-2 transition hover:bg-ink-700">
-                        <span className="flex min-w-0 items-center gap-2.5">
-                          <Avatar src={m.user.profile_image_url} name={m.user.display_name} size="xs" />
-                          <span className="truncate text-sm text-white">{m.user.display_name}</span>
-                          <span className="shrink-0 text-xs text-zinc-500">{m.sharedSessions}×</span>
-                        </span>
-                        <span className="tabular flex shrink-0 items-center gap-1.5 text-xs text-zinc-400">
-                          <span title={`${displayName} at those tables`}>
-                            <MoneyDelta cents={m.myNetCents} size="xs" compact />
-                          </span>
-                          <span className="text-zinc-600">vs</span>
-                          <span title={`${m.user.display_name} at those tables`}>
-                            <MoneyDelta cents={m.theirNetCents} size="xs" compact />
-                          </span>
-                        </span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-            <div>
-              <h3 className="mb-2 eyebrow">Recent sessions</h3>
-              <ul className="space-y-1">
-                {recent.map((e) => (
-                  <li key={e.id}>
-                    <Link href={`/poker/sessions/${e.session_id}`} className="flex items-center justify-between gap-3 rounded-lg p-2 transition hover:bg-ink-700">
-                      <span className="min-w-0">
-                        <span className="flex items-center gap-2">
-                          <span className="truncate text-sm text-white">{sessionTitle(e)}</span>
-                          {e.kind === 'tournament' && e.finish_place != null && (
-                            <Badge tone={e.finish_place === 1 ? 'orange' : 'neutral'}>{ordinal(e.finish_place)}</Badge>
-                          )}
-                          {e.status === 'disputed' && <Badge tone="loss">Disputed</Badge>}
-                        </span>
-                        <span className="block text-xs text-zinc-500">{formatPokerDateTime(e.played_at, false)}</span>
-                      </span>
-                      <MoneyDelta cents={e.net_cents} chip compact />
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
         </>
       )}
-    </Card>
+    </section>
   )
 }

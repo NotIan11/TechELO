@@ -1,15 +1,11 @@
-import Avatar from '@/components/ui/Avatar'
-import Badge from '@/components/ui/Badge'
-import GameIcon from '@/components/ui/GameIcon'
-import IconTile from '@/components/ui/IconTile'
-import ListRow from '@/components/ui/ListRow'
+import Link from 'next/link'
 import MoneyDelta from '@/components/ui/MoneyDelta'
-import PokerStatusBadge from '@/components/ui/PokerStatusBadge'
 import TimeAgo from '@/components/ui/TimeAgo'
-import { formatCents } from '@/lib/poker/money'
+import { LEDGER_TONE_CLASS, ledgerState, plural } from '@/lib/poker/phrases'
 import { formatPokerDateTime } from '@/lib/poker/periods'
-import { binkOfTheNight, confirmableCount, sessionTitle } from '@/lib/poker/stats'
+import { sessionTitle } from '@/lib/poker/stats'
 import type { PlayerRef, PokerSessionRow } from '@/lib/poker/types'
+import { cn } from '@/lib/utils'
 
 export interface SessionListItem extends PokerSessionRow {
   host: PlayerRef | null
@@ -17,71 +13,38 @@ export interface SessionListItem extends PokerSessionRow {
     id: string
     user_id: string | null
     guest_id: string | null
+    buy_in_cents: number
     net_cents: number
     cash_out_cents: number | null
+    acknowledged_at: string | null
+    disputed_at: string | null
     user: PlayerRef | null
     guest: { id: string; name: string } | null
   }[]
 }
 
-function nameOf(e: SessionListItem['entries'][number]): string {
-  return e.user?.display_name ?? e.guest?.name ?? '?'
-}
-
-/** One row in a session list */
+/** Compact ruled row for a session: title, "when · players · ledger state", and the viewer's net */
 export default function SessionCard({ session, viewerId }: { session: SessionListItem; viewerId: string | null }) {
   const mine = viewerId ? session.entries.find((e) => e.user_id === viewerId) : null
   const counts = session.status === 'final' || session.status === 'disputed'
-  const bink = counts ? binkOfTheNight(session.entries) : null
-  const avatars = session.entries.slice(0, 5)
-  const isTourney = session.kind === 'tournament'
+  const state = ledgerState(session, viewerId)
 
   return (
-    <ListRow
+    <Link
       href={`/poker/sessions/${session.id}`}
-      tone={session.status === 'live' ? 'live' : 'default'}
-      leading={<IconTile icon={<GameIcon game="poker" />} size="lg" />}
-      title={sessionTitle(session)}
-      badges={
-        <>
-          <Badge tone="orange">{isTourney ? (session.is_official ? 'Official' : 'Tournament') : 'Cash'}</Badge>
-          <PokerStatusBadge status={session.status} acked={session.ack_count} total={confirmableCount(session)} />
-        </>
-      }
-      meta={
-        <>
-          {session.status === 'scheduled' && session.scheduled_for ? <span>{formatPokerDateTime(session.scheduled_for)}</span> : <TimeAgo date={session.played_at} />}
-          <span>
-            · {session.player_count} player{session.player_count === 1 ? '' : 's'}
-          </span>
-          {session.total_buy_in_cents > 0 && <span>· {formatCents(session.total_buy_in_cents, { compact: true })} in play</span>}
-          {bink && (
-            <span className="hidden sm:inline">
-              · <span className="text-win">{nameOf(bink)}</span> +{formatCents(bink.net_cents, { compact: true })}
-            </span>
-          )}
-          {session.status === 'scheduled' && (
-            <span>
-              · {session.rsvp_count} RSVP{session.rsvp_count === 1 ? '' : 's'}
-            </span>
-          )}
-        </>
-      }
-      trailing={
-        <>
-          {mine && counts && <MoneyDelta cents={mine.net_cents} chip compact />}
-          <span className="hidden items-center -space-x-1.5 sm:flex">
-            {avatars.map((e) => (
-              <Avatar key={e.id} src={e.user?.profile_image_url} name={nameOf(e)} size="xs" className="ring-2 ring-ink-800" />
-            ))}
-            {session.entries.length > 5 && (
-              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-ink-600 text-[10px] font-semibold text-zinc-300 ring-2 ring-ink-800">
-                +{session.entries.length - 5}
-              </span>
-            )}
-          </span>
-        </>
-      }
-    />
+      className={cn('flex min-h-[44px] items-baseline gap-3 border-b border-line py-3 transition hover:border-line-bright', state.dim && 'opacity-50')}
+    >
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-sm text-white">{sessionTitle(session)}</span>
+        <span className="block text-xs text-mute">
+          {session.status === 'scheduled' && session.scheduled_for ? formatPokerDateTime(session.scheduled_for) : <TimeAgo date={session.played_at} />}
+          {' · '}
+          <span className="tabular">{session.player_count}</span> {plural(session.player_count, 'player')}
+          {' · '}
+          <span className={LEDGER_TONE_CLASS[state.tone]}>{state.text.charAt(0).toLowerCase() + state.text.slice(1)}</span>
+        </span>
+      </span>
+      {mine && counts && <MoneyDelta cents={mine.net_cents} compact />}
+    </Link>
   )
 }

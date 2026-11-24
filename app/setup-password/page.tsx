@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import AuthShell from '@/components/auth/AuthShell'
+import { AUTH_FIELD, AUTH_LABEL } from '@/components/auth/AuthShell'
+import MinimalShell from '@/components/layout/MinimalShell'
 import Button from '@/components/ui/Button'
 import Banner from '@/components/ui/Banner'
 import { PageSpinner } from '@/components/ui/Spinner'
@@ -67,49 +68,48 @@ export default function SetupPasswordPage() {
   }
 
   return (
-    <AuthShell
-      title="Set your password"
-      subtitle="Set a password for your account to continue using Tech ELO"
-    >
-      <form onSubmit={handleSetupPassword} className="space-y-5">
+    <MinimalShell title="Set your password" lede="Set a password for your account to continue using Tech ELO">
+      <form onSubmit={handleSetupPassword} className="flex max-w-[380px] flex-col gap-[18px]">
         <div>
-          <label htmlFor="password" className="label">
+          <label htmlFor="password" className={AUTH_LABEL}>
             Password
           </label>
           <input
             id="password"
             name="password"
             type="password"
+            autoComplete="new-password"
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="input"
+            className={AUTH_FIELD}
             placeholder="Choose a password"
           />
         </div>
 
         <div>
-          <label htmlFor="confirmPassword" className="label">
-            Confirm Password
+          <label htmlFor="confirmPassword" className={AUTH_LABEL}>
+            Confirm password
           </label>
           <input
             id="confirmPassword"
             name="confirmPassword"
             type="password"
+            autoComplete="new-password"
             required
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            className="input"
+            className={AUTH_FIELD}
             placeholder="Confirm your password"
           />
         </div>
 
         {error && <Banner tone="error">{error}</Banner>}
 
-        <Button type="submit" full disabled={loading}>
+        <Button type="submit" size="lg" full disabled={loading}>
           {loading ? 'Setting password…' : 'Set password'}
         </Button>
       </form>
-    </AuthShell>
+    </MinimalShell>
   )
 }
