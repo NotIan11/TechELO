@@ -31,19 +31,6 @@ export function isChallengeExpired(createdAt: string | number | Date): boolean {
   return Date.now() - created > CHALLENGE_EXPIRY_MS
 }
 
-/**
- * True when a Supabase RPC failed because the function doesn't exist yet
- * (i.e. migration 012 hasn't been applied). Callers fall back to legacy paths.
- */
-export function isMissingRpc(error: { code?: string; message?: string } | null | undefined): boolean {
-  if (!error) return false
-  return (
-    error.code === 'PGRST202' ||
-    /could not find the function/i.test(error.message ?? '') ||
-    /function .* does not exist/i.test(error.message ?? '')
-  )
-}
-
 /** Maps stable error codes raised by the migration-012 match RPCs to user-facing messages */
 export function matchRpcErrorMessage(message: string | null | undefined): string {
   const msg = message ?? ''

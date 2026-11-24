@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     const { firstName, lastName } = body
     
     // Check if profile already exists
-    const { data: existingProfile, error: checkError } = await supabase
+    const { data: existingProfile } = await supabase
       .from('users')
       .select('id')
       .eq('id', user.id)

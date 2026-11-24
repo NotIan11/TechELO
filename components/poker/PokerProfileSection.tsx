@@ -18,7 +18,6 @@ import { formatCents, formatRoi, ordinal } from '@/lib/poker/money'
 import { formatPokerDateTime, periodBounds } from '@/lib/poker/periods'
 import { cumulativePnl, playerSummary, sessionResults, sessionTitle, sortByPlayed, tablemates } from '@/lib/poker/stats'
 import type { PlayerRef, PokerCountedEntry, PokerKindFilter, PokerPeriod } from '@/lib/poker/types'
-import { cn } from '@/lib/utils'
 
 interface PokerProfileSectionProps {
   userId: string

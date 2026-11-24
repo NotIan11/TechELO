@@ -29,7 +29,7 @@ export async function GET() {
       .limit(1)
     
     // Test 4: Check if RPC functions work
-    const { data: leaderboard, error: rpcError } = await supabase.rpc('get_leaderboard', {
+    const { error: rpcError } = await supabase.rpc('get_leaderboard', {
       p_game_type: 'pool',
       p_limit: 1,
       p_offset: 0,
@@ -68,7 +68,7 @@ export async function GET() {
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     
     // Test 7: Check if storage bucket exists (profile-pictures)
-    const { data: storageData, error: storageError } = await supabase
+    const { error: storageError } = await supabase
       .storage
       .from('profile-pictures')
       .list('', { limit: 1 })

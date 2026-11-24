@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
-import { isMissingRpc, matchRpcErrorMessage } from '@/lib/utils'
+import { matchRpcErrorMessage } from '@/lib/utils'
 
 export async function POST(request: Request) {
   try {
@@ -21,7 +21,7 @@ export async function POST(request: Request) {
       )
     }
 
-    // Validated, race-safe path (migration 012)
+    // Validated, race-safe state change (database function from migration 012)
     const { data: rpcRows, error: rpcError } = await supabase.rpc('decline_match', {
       p_match_id: match_id,
     })
@@ -31,57 +31,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ match: updatedMatch }, { status: 200 })
     }
 
-    if (!isMissingRpc(rpcError)) {
-      return NextResponse.json(
-        { error: matchRpcErrorMessage(rpcError.message) },
-        { status: 400 }
-      )
-    }
-
-    // Legacy fallback for databases without migration 012
-    const { data: match, error: matchError } = await supabase
-      .from('matches')
-      .select('*')
-      .eq('id', match_id)
-      .single()
-
-    if (matchError || !match) {
-      return NextResponse.json(
-        { error: 'Match not found' },
-        { status: 404 }
-      )
-    }
-
-    if (match.status !== 'pending_start') {
-      return NextResponse.json(
-        { error: 'Only pending challenges can be declined' },
-        { status: 400 }
-      )
-    }
-
-    // Only the opponent (player2) can decline
-    if (match.player2_id !== user.id) {
-      return NextResponse.json(
-        { error: 'Only the challenged player can decline' },
-        { status: 403 }
-      )
-    }
-
-    const { data: updatedMatch, error: updateError } = await supabase
-      .from('matches')
-      .update({ status: 'cancelled' })
-      .eq('id', match_id)
-      .select()
-      .single()
-
-    if (updateError) {
-      return NextResponse.json(
-        { error: updateError.message },
-        { status: 500 }
-      )
-    }
-
-    return NextResponse.json({ match: updatedMatch }, { status: 200 })
+    return NextResponse.json(
+      { error: matchRpcErrorMessage(rpcError.message) },
+      { status: 400 }
+    )
   } catch (error: any) {
     return NextResponse.json(
       { error: error.message || 'Internal server error' },

@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
-import { isMissingRpc, matchRpcErrorMessage } from '@/lib/utils'
+import { matchRpcErrorMessage } from '@/lib/utils'
 
 export async function POST(request: Request) {
   try {
@@ -21,7 +21,7 @@ export async function POST(request: Request) {
       )
     }
 
-    // Validated, race-safe path (migration 012)
+    // Validated, race-safe state change (database function from migration 012)
     const { data: rpcRows, error: rpcError } = await supabase.rpc('report_match_result', {
       p_match_id: match_id,
       p_winner_id: winner_id,
@@ -32,96 +32,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ match: updatedMatch }, { status: 200 })
     }
 
-    if (!isMissingRpc(rpcError)) {
-      return NextResponse.json(
-        { error: matchRpcErrorMessage(rpcError.message) },
-        { status: 400 }
-      )
-    }
-
-    // Legacy fallback for databases without migration 012
-    const { data: match, error: matchError } = await supabase
-      .from('matches')
-      .select('*')
-      .eq('id', match_id)
-      .single()
-
-    if (matchError || !match) {
-      return NextResponse.json(
-        { error: 'Match not found' },
-        { status: 404 }
-      )
-    }
-
-    if (match.status !== 'in_progress' && match.status !== 'pending_result') {
-      return NextResponse.json(
-        { error: 'Match is not in a state to accept results' },
-        { status: 400 }
-      )
-    }
-
-    if (match.player1_id !== user.id && match.player2_id !== user.id) {
-      return NextResponse.json(
-        { error: 'Not authorized to accept this match' },
-        { status: 403 }
-      )
-    }
-
-    if (winner_id !== match.player1_id && winner_id !== match.player2_id) {
-      return NextResponse.json(
-        { error: 'Winner must be one of the players' },
-        { status: 400 }
-      )
-    }
-
-    const isPlayer1 = match.player1_id === user.id
-    const updateData: any = {
-      status: 'pending_result',
-    }
-
-    if (isPlayer1) {
-      updateData.player1_result_accepted = true
-      if (!match.winner_id) {
-        updateData.winner_id = winner_id
-      }
-    } else {
-      updateData.player2_result_accepted = true
-      if (!match.winner_id) {
-        updateData.winner_id = winner_id
-      }
-    }
-
-    const player1Accepted = isPlayer1 ? true : match.player1_result_accepted
-    const player2Accepted = !isPlayer1 ? true : match.player2_result_accepted
-
-    // When both have accepted, either complete (if they agree on winner) or mark disputed (if they disagree)
-    if (player1Accepted && player2Accepted) {
-      const otherPlayersWinner = match.winner_id
-      const playersDisagree = otherPlayersWinner != null && winner_id !== otherPlayersWinner
-      if (playersDisagree) {
-        updateData.status = 'disputed'
-        updateData.winner_id = null
-      } else {
-        updateData.status = 'completed'
-        updateData.completed_at = new Date().toISOString()
-      }
-    }
-
-    const { data: updatedMatch, error: updateError } = await supabase
-      .from('matches')
-      .update(updateData)
-      .eq('id', match_id)
-      .select()
-      .single()
-
-    if (updateError) {
-      return NextResponse.json(
-        { error: updateError.message },
-        { status: 500 }
-      )
-    }
-
-    return NextResponse.json({ match: updatedMatch }, { status: 200 })
+    return NextResponse.json(
+      { error: matchRpcErrorMessage(rpcError.message) },
+      { status: 400 }
+    )
   } catch (error: any) {
     return NextResponse.json(
       { error: error.message || 'Internal server error' },
