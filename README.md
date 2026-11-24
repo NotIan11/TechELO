@@ -29,6 +29,7 @@ ELO tracking for pool and ping pong, plus a poker ledger, for Caltech houses.
 ```bash
 npm install
 npm run dev        # local dev server
+npm test           # unit tests (vitest)
 npm run typecheck  # tsc --noEmit
 npm run lint       # eslint
 npm run build      # production build

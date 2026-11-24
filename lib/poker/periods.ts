@@ -45,13 +45,27 @@ function localParts(date: Date): LocalParts {
   }
 }
 
+/** UTC offset of TIME_ZONE at `instant`, in ms (negative west of Greenwich). */
+function offsetAt(instant: number): number {
+  const lp = localParts(new Date(instant))
+  return Date.UTC(lp.year, lp.month - 1, lp.day, lp.hour, lp.minute) - instant
+}
+
+/**
+ * The instant at which TIME_ZONE's wall clock reads the given date and time.
+ * The offset is looked up twice so the result is right on daylight-saving
+ * changeover days, when the offset at the target time differs from the one at
+ * midnight.
+ */
+function zonedInstant(year: number, month: number, day: number, hour = 0, minute = 0): Date {
+  const wall = Date.UTC(year, month - 1, day, hour, minute)
+  const first = wall - offsetAt(wall)
+  return new Date(wall - offsetAt(first))
+}
+
 /** The instant of local midnight in TIME_ZONE for the given calendar date. */
 export function zonedMidnight(year: number, month: number, day: number): Date {
-  const guess = Date.UTC(year, month - 1, day, 0, 0, 0)
-  const lp = localParts(new Date(guess))
-  const asUtc = Date.UTC(lp.year, lp.month - 1, lp.day, lp.hour, lp.minute)
-  const offset = asUtc - guess
-  return new Date(guess - offset)
+  return zonedInstant(year, month, day)
 }
 
 export interface Term {
@@ -152,8 +166,7 @@ export function fromDateTimeLocalValue(value: string): string | null {
   const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(value)
   if (!m) return null
   const [, y, mo, d, h, mi] = m.map(Number) as unknown as number[]
-  const midnight = zonedMidnight(y, mo, d)
-  return new Date(midnight.getTime() + (h * 60 + mi) * 60_000).toISOString()
+  return zonedInstant(y, mo, d, h, mi).toISOString()
 }
 
 /** Date/time formatted in TIME_ZONE so server and client agree */
